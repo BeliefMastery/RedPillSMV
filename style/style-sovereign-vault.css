@@ -1,0 +1,102 @@
+/* ================================================
+   REDPILLAPP STYLE VARIATION 2 — "SOVEREIGN VAULT"
+   ================================================
+   Aesthetic: Ultra-premium luxury. Black marble + 24k gold + deep burgundy. 
+   Feels like a private members club for high-value men. Perfect for SMV evaluation 
+   and "keeper vs sweeper" polarity — elegant, authoritative, expensive vibe. 
+   Gold standard literally. Extremely polished for App Store screenshots.
+*/
+
+:root {
+    /* Primary Colors — Luxury Vault */
+    --brand: #f5f0e6;           /* Warm ivory text */
+    --muted: #8c7a5f;           /* Aged parchment / suede */
+    --accent: #d4af37;          /* 24k gold */
+    --accent-hover: #e8c670;    /* Polished gold hover */
+
+    /* Backgrounds — Marble & Velvet */
+    --bg: #0c0803;              /* Deep espresso black */
+    --glass: rgba(22, 16, 10, 0.94);
+    --glass-light: rgba(32, 24, 16, 0.88);
+    --card-bg: rgba(20, 15, 10, 0.97);
+    --card-hover: rgba(30, 22, 14, 0.99);
+    --accent-panel: rgba(212, 175, 55, 0.12);
+    --accent-panel-strong: rgba(212, 175, 55, 0.22);
+    --brand-panel: rgba(245, 240, 230, 0.07);
+
+    /* Borders & Glows — Subtle gold filigree */
+    --border-subtle: rgba(212, 175, 55, 0.22);
+    --border-medium: rgba(212, 175, 55, 0.38);
+    --border-bright: rgba(212, 175, 55, 0.55);
+    --glow-blue: rgba(212, 175, 55, 0.15);
+    --glow-bright: rgba(212, 175, 55, 0.25);
+    --glow-accent: rgba(212, 175, 55, 0.4);
+
+    /* Shadows — Rich depth */
+    --shadow-sm: 0 8px 32px rgba(0, 0, 0, 0.65);
+    --shadow-md: 0 16px 50px rgba(0, 0, 0, 0.8);
+    --shadow-lg: 0 24px 70px rgba(212, 175, 55, 0.18);
+
+    /* Functional */
+    --success: #4ade80;
+    --warning: #d4af37;
+    --error: #c44a4a;
+
+    /* Layout — Elegant rounded */
+    --radius: 16px;
+    --transition: all .25s cubic-bezier(.25, .1, .25, 1);
+}
+
+/* ================== KEY OVERRIDES FOR SOVEREIGN VAULT ================== */
+
+/* Header — Gold trim luxury */
+header.site-header {
+    background: linear-gradient(180deg, #1a140d 0%, #0c0803 100%);
+    border-bottom: 2px solid #d4af37;
+    box-shadow: 0 4px 30px rgba(212, 175, 55, 0.3);
+}
+
+/* Primary buttons — Heavy gold emboss */
+.btn-primary,
+button:not(.secondary):not(.close-btn),
+#calculate-btn,
+.next-btn {
+    background: linear-gradient(135deg, #d4af37, #f0d070) !important;
+    color: #0c0803 !important;
+    box-shadow: 0 6px 25px rgba(212, 175, 55, 0.5);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
+.btn-primary:hover {
+    box-shadow: 0 0 50px rgba(212, 175, 55, 0.8);
+    transform: scale(1.03);
+}
+
+/* Cards — Marble + gold frame */
+.card,
+.tool-card,
+.portal-card {
+    border: 2px solid #d4af37;
+    background: linear-gradient(135deg, rgba(22,16,10,0.97), rgba(28,20,14,0.97));
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+}
+@media (hover: hover) {
+    .tool-card:hover,
+    .portal-card:hover {
+        border-color: #f0d070;
+        box-shadow: 0 0 45px rgba(212, 175, 55, 0.45);
+    }
+}
+
+/* Accent bars — Gold leaf */
+.tool-card::before,
+.portal-card::before {
+    height: 5px;
+    background: linear-gradient(90deg, #d4af37, #f0d070, transparent);
+}
+
+/* Bottom nav — Gold highlight */
+.bottom-nav-item.active {
+    color: #d4af37;
+    text-shadow: 0 0 15px #d4af37;
+}

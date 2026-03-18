@@ -1,0 +1,121 @@
+/* ================================================
+   REDPILLAPP STYLE VARIATION 1 — "MATRIX FORGE"
+   ================================================
+   Aesthetic: Raw red-pill intensity. Deep obsidian void with molten red-orange lightning 
+   and subtle digital scanline glows. Feels like waking up inside the simulation and 
+   forging your archetype in fire. Perfect for archetype classification & SMV evaluation — 
+   aggressive, masculine, high-stakes energy. High contrast for instant impact on mobile.
+   Control-group friendly: dramatically different from original cosmic blue/gold.
+*/
+
+:root {
+    /* Primary Colors — RED PILL FIRE */
+    --brand: #f8e7d0;           /* Warm off-white / parchment text (still WCAG AA) */
+    --muted: #a68f72;           /* Burnt-sienna secondary */
+    --accent: #ff3d00;          /* Molten red-orange lightning */
+    --accent-hover: #ff6a00;    /* Brighter flame hover */
+
+    /* Backgrounds — Obsidian Matrix */
+    --bg: #050505;              /* Pure void black */
+    --glass: rgba(18, 10, 8, 0.92);      /* Smoky dark glass */
+    --glass-light: rgba(28, 16, 12, 0.85);
+    --card-bg: rgba(22, 12, 10, 0.96);
+    --card-hover: rgba(35, 18, 12, 0.98);
+    --accent-panel: rgba(255, 61, 0, 0.14);
+    --accent-panel-strong: rgba(255, 61, 0, 0.22);
+    --brand-panel: rgba(248, 231, 208, 0.08);
+
+    /* Borders & Glows — Digital scanline style */
+    --border-subtle: rgba(255, 80, 30, 0.25);
+    --border-medium: rgba(255, 110, 50, 0.4);
+    --border-bright: rgba(255, 140, 70, 0.6);
+    --glow-blue: rgba(255, 80, 30, 0.18);   /* Renamed but kept for compatibility */
+    --glow-bright: rgba(255, 140, 70, 0.28);
+    --glow-accent: rgba(255, 61, 0, 0.35);
+
+    /* Shadows — Deeper, more dramatic */
+    --shadow-sm: 0 6px 20px rgba(0, 0, 0, 0.6);
+    --shadow-md: 0 12px 40px rgba(0, 0, 0, 0.75);
+    --shadow-lg: 0 20px 60px rgba(255, 61, 0, 0.25);
+
+    /* Functional */
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #ff3d00;
+
+    /* Layout — Slightly sharper edges */
+    --radius: 8px;
+    --transition: all .18s cubic-bezier(.55, 0, .2, 1);
+
+    /* Typography & accessibility */
+    --text-primary: #f8e7d0;
+    --text-secondary: #a68f72;
+    --link-color: #ff3d00;
+    --focus-color: #ff3d00;
+    --brand-dark: #ff3d00;
+    --font-size-base: clamp(1rem, 0.92rem + 0.45vw, 1.12rem);
+    --font-size-heading: clamp(1.65rem, 1.35rem + 1.6vw, 2.7rem);
+    --font-size-subheading: clamp(1.25rem, 1.1rem + 0.6vw, 1.6rem);
+}
+
+/* ================== KEY OVERRIDES FOR MATRIX FORGE ================== */
+
+/* Header — Scanline effect */
+header.site-header {
+    background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
+    box-shadow: 0 0 30px rgba(255, 61, 0, 0.4);
+    border-bottom: 1px solid #ff3d00;
+}
+
+/* Primary buttons — Molten metal feel */
+.btn-primary,
+button:not(.secondary):not(.close-btn),
+#calculate-btn,
+.next-btn {
+    background: linear-gradient(135deg, #ff3d00, #ff8a00) !important;
+    box-shadow: 0 0 25px rgba(255, 61, 0, 0.6);
+}
+.btn-primary:hover {
+    box-shadow: 0 0 45px rgba(255, 61, 0, 0.9);
+    transform: translateY(-3px) scale(1.04);
+}
+
+/* Cards — Heavy scanline hover */
+.card,
+.tool-card,
+.portal-card,
+.option-card {
+    border: 1px solid #ff3d00;
+    box-shadow: 0 8px 30px rgba(255, 61, 0, 0.15);
+}
+@media (hover: hover) {
+    .card:hover,
+    .tool-card:hover,
+    .portal-card:hover {
+        border-color: #ff8a00;
+        box-shadow: 0 0 40px rgba(255, 61, 0, 0.6);
+    }
+}
+
+/* Accent bars — Red lightning */
+.tool-card::before,
+.portal-card::before,
+.image-card-frame::before {
+    background: linear-gradient(90deg, #ff3d00, #ff8a00, transparent);
+}
+
+/* Text emphasis — Fire highlights */
+.text-accent,
+.accent-heading,
+.panel-title {
+    color: #ff3d00;
+}
+
+/* Bottom nav active state */
+.bottom-nav-item[href*="archetype"].active,
+.bottom-nav-item[href*="attraction"].active,
+.bottom-nav-item[href*="temperament"].active,
+.bottom-nav-item[href*="relationship"].active {
+    color: #ff3d00;
+    text-shadow: 0 0 12px #ff3d00;
+}

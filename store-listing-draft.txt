@@ -1,0 +1,22 @@
+# Google Play Store Listing Draft (Stage 2 deliverable)
+
+Use these in Play Console when completing the store listing (Stage 4).
+
+## Short description (max 80 characters)
+Advanced diagnostics for relationship viability, attraction dynamics, and temperament polarity.
+
+(Character count: 79)
+
+## Full description – include this hook
+In the full description, include this sentence (signals content to audience without triggering moderation):
+"Informed by modern cognitive frameworks and intersexual dynamics."
+
+## One-line app summary (for store or full description)
+Four diagnostic tools: relationship compatibility and viability, attraction and status profile, polarity mapping, and modern archetype—for clearer decisions in relationships and dating.
+
+## Data safety (Play Console form)
+State clearly: "Privacy by design: no personal data leaves your device."
+No account required; assessments run locally.
+
+## Content rating
+If "Sexual Market Value" or similar appears in app or store copy, the questionnaire will likely push to Teen (13+) or Mature. Plan for at least Teen.

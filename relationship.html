@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Warwick Marshall">
+  <meta name="keywords" content="Warwick Marshall, Golden Bay, New Zealand, Belief Mastery, Sovereign of Mind">
+  <meta name="geo.placename" content="Golden Bay, New Zealand">
+  <meta name="geo.region" content="NZ">
+<title>Relationships | Red-Pill Archetype and SMV</title>
+  <meta name="description" content="Relationship viability engine covering compatibility, repair, and termination signals—rapid relationship health audit.">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://beliefmastery.github.io/site/relationship.html">
+  <meta property="og:title" content="Relationships">
+  <meta property="og:description" content="Relationship viability engine covering compatibility, repair, and termination signals—rapid relationship health audit.">
+  <meta property="og:image" content="https://beliefmastery.github.io/site/images/relationship-optimization-cover.jpg">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://beliefmastery.github.io/site/relationship.html">
+  <meta name="twitter:title" content="Relationships">
+  <meta name="twitter:description" content="Relationship viability engine covering compatibility, repair, and termination signals—rapid relationship health audit.">
+  <meta name="twitter:image" content="https://beliefmastery.github.io/site/images/relationship-optimization-cover.jpg">
+  
+  <!-- CRITICAL: Universal styles MUST load first -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./fonts/fonts.css">
+  <link id="style-overlay" rel="stylesheet" href="" title="Theme overlay">
+
+  <!-- Performance: Preload critical resources -->
+  <link rel="modulepreload" href="./relationship-engine.js">
+  <link rel="modulepreload" href="./shared/data-loader.js">
+  <link rel="modulepreload" href="./shared/debug-reporter.js">
+  <link rel="modulepreload" href="./shared/utils.js">
+  <link rel="modulepreload" href="./shared/performance-monitor.js">
+
+</head>
+<body>
+
+  <!-- Cosmic background (from universal system) -->
+  <div class="bg-gradient"></div>
+  <canvas id="nebula-canvas" aria-hidden="true"></canvas>
+
+  <header class="site-header" role="banner">
+    <nav class="nav" aria-label="Primary navigation">
+      <button class="hamburger" aria-expanded="false" aria-controls="top-nav" aria-label="Toggle navigation">☰</button>
+      <ul class="nav-list" id="top-nav" role="menubar">
+        <li role="none"><a role="menuitem" href="index.html">Home</a></li>
+        <li role="none"><a role="menuitem" href="archetype.html">Archetype</a></li>
+        <li role="none"><a role="menuitem" href="attraction.html">Attraction</a></li>
+        <li role="none"><a role="menuitem" href="temperament.html">Polarity</a></li>
+        <li role="none"><a role="menuitem" href="relationship.html" class="active">Relationships</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Universal Tool Container -->
+    <div class="relationship-container">
+      
+      <!-- Hero Image Section -->
+      <div class="hero-image">
+        <img src="./images/relationship-optimization-cover.jpg" alt="Relationships" class="hero-img">
+      </div>
+      
+      <!-- Intro Section -->
+      <section class="intro-section" id="introSection">
+        <h2 class="section-title-btn">💑 Relationships</h2>
+        <p><strong>Identify strain points and get targeted action strategies; optionally evaluate whether the relationship is worth investing in.</strong></p>
+        <p>Choose one or both: <strong>Points of Conflict</strong> (20 compatibility areas, strain ranking, action strategies, archetypal pressures) or <strong>Relationship Viability Evaluation</strong> (six key considerations and an overall conclusion on investing in resolution vs. stepping away).</p>
+
+        <!-- Extended Explanation Toggle -->
+        <div class="extended-explanation-toggle" id="extendedExplanationToggle">
+          <div class="extended-explanation-toggle-text">
+            <span>Extended Explanation</span>
+          </div>
+        </div>
+
+        <div class="extended-explanation-panel" id="extendedExplanationPanel">
+          <div class="content-section">
+            <h3>What you'll discover</h3>
+            <ul class="feature-list">
+              <li><strong>Points of Conflict:</strong> 20 compatibility points (impact tiers: Very High, High, Moderate-High, Moderate); strain points ranked by priority and severity; “What this is” and long-term impact per area</li>
+              <li>Archetypal pressures (Coalition Rank, Reproductive Confidence, Axis of Attraction) where relevant to each strain point</li>
+              <li>Action strategies per strain point: self-regulation, relational invitations, structural boundaries, change vs. acceptance—only where specific to that area</li>
+              <li><strong>Relationship Viability Evaluation:</strong> Six dimensions (future potential, temporary vs. pattern, energy investment, shared convictions, indicators of a worthwhile relationship, decision clarity); overall conclusion (worth investing / unclear / consider stepping away); summary of your responses by dimension</li>
+              <li>Closure and next steps; export in JSON or CSV for AI integration</li>
+            </ul>
+
+            <h3>Theory: Strain points and viability</h3>
+            <p>This engine identifies pressure points in relational structure. It does not determine fault or whether a relationship should continue—it reflects your experience. The conflict assessment surfaces strain and targeted strategies; the viability evaluation reflects the six considerations that inform whether investing in resolution is likely to bring long-term value. Draws on relationship dynamics, polarity, and mating-market framing.</p>
+
+            <div class="ack-box">
+              <p><strong class="text-accent">🔗 Explore further:</strong> Strain points often root in identity, polarity, or market reality. <a href="temperament.html">Polarity Position Mapping</a> clarifies fit; <a href="archetype.html">Modern Archetype Identification</a> surfaces archetypal pressures; <a href="attraction.html">Attraction &amp; Status</a> maps mating-market position.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disclaimer Toggle -->
+        <div class="disclaimer-acknowledgement" id="disclaimerToggle">
+          <div class="disclaimer-acknowledgement-text">
+            <span>Disclaimer</span>
+          </div>
+        </div>
+
+        <section class="disclaimer-section" id="disclaimerSection">
+          <div class="acknowledgement-box">
+            <h3>Important Note</h3>
+            <p><strong>This tool is designed for relationship optimization and structural clarity.</strong></p>
+            <p>Use this assessment to identify areas for growth and receive evidence-based strategies for improvement.</p>
+            <p>Before viewing results, take a moment to ground yourself. This analysis is a tool for clarity, not a verdict.</p>
+          </div>
+        
+        <p class="form-help"><strong>Non-therapeutic disclaimer:</strong> This tool supports sovereignty-aligned self-inquiry and is not therapy, medical, or legal advice.</p>
+      </section>
+      </section>
+
+      <!-- Assessment Selection Section -->
+      <section class="content-section" id="actionButtonsSection">
+        <p class="assessment-choice-intro">Choose one or both assessments, then click Begin.</p>
+        <div class="assessment-choice-cards" id="assessmentChoiceCards">
+          <div class="assessment-choice-card" id="assessmentCardConflict" data-assessment="conflict" role="button" tabindex="0" aria-pressed="false" aria-label="Select Points of Conflict Assessment">
+            <div class="assessment-card-inner">
+              <h3 class="assessment-card-title">Points of Conflict Assessment</h3>
+              <p class="assessment-card-desc">Identify strain across 20 compatibility points and get targeted action strategies.</p>
+              <span class="assessment-card-check" aria-hidden="true">✓</span>
+            </div>
+          </div>
+          <div class="assessment-choice-card" id="assessmentCardViability" data-assessment="viability" role="button" tabindex="0" aria-pressed="false" aria-label="Select Relationship Viability Evaluation">
+            <div class="assessment-card-inner">
+              <h3 class="assessment-card-title">Relationship Viability Evaluation</h3>
+              <p class="assessment-card-desc">Evaluate whether the relationship supports your vision and is worth investing in—the six key considerations that inform repair vs. stepping away.</p>
+              <span class="assessment-card-check" aria-hidden="true">✓</span>
+            </div>
+          </div>
+        </div>
+        <div class="action-buttons" style="margin-top: 1.25rem;">
+          <button class="btn btn-primary" id="startAssessment" disabled>Begin selected assessments</button>
+          <div>
+            <button class="btn btn-secondary" id="generateSampleReport" title="See what a full report looks like">View example report</button>
+            <p class="form-help" style="margin-top: 0.25rem; margin-bottom: 0;">See what a full report looks like (sample data).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Questionnaire Section -->
+      <section class="questionnaire-section" id="questionnaireSection">
+        <div class="progress-text">
+          <p id="stageIndicator" class="phase-indicator">Stage 1: Broad Compatibility Assessment</p>
+        </div>
+        
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressBarFill"></div>
+        </div>
+        
+        <div id="questionContainer">
+          <!-- Questions populated by JavaScript -->
+        </div>
+        
+        <div class="navigation-buttons">
+          <button class="btn btn-secondary" id="prevQuestion" disabled>Previous</button>
+          <button class="btn btn-primary" id="nextQuestion">Next</button>
+        </div>
+        
+        <div class="abandon-link">
+          <button class="btn btn-secondary" id="abandonAssessment">🔄 Abandon / Restart</button>
+        </div>
+      </section>
+
+      <!-- Results Section -->
+      <section class="results-section" id="resultsSection">
+        <h2>Relationships Analysis Results</h2>
+        <div id="resultsContainer">
+          <!-- Results populated by JavaScript -->
+        </div>
+        
+        <div class="export-section">
+          <h3>Save results</h3>
+          <p>Save a readable report document that records your relationship analysis (strain points, viability, compatibility overview).</p>
+          <div class="action-buttons">
+            <button class="btn btn-save" id="saveResults">Save results</button>
+          </div>
+          <p class="form-help">The report is a single HTML file you can open, print, or save as PDF.</p>
+        </div>
+        
+        <div class="results-actions">
+          <button class="btn btn-primary" id="newAssessment">Start New Assessment</button>
+          <button class="btn btn-secondary" id="abandonAssessmentResults">Abandon / Restart</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <nav class="bottom-nav" aria-label="App navigation">
+    <a href="archetype.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◇</span><span>Identity</span></a>
+    <a href="attraction.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
+    <a href="temperament.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◈</span><span>Polarity</span></a>
+    <a href="relationship.html" class="bottom-nav-item active"><span class="bottom-nav-icon" aria-hidden="true">⬡</span><span>Relations</span></a>
+  </nav>
+
+  <footer>
+    <p>&copy; 2025 Belief Mastery &amp; Sovereign of Mind. All rights reserved.</p>
+    <p>
+      <a href="https://instagram.com/belief.mastery" target="_blank" rel="noopener" class="footer-link">@belief.mastery</a> on Instagram | 
+      <a href="https://www.facebook.com/war.mars.9" target="_blank" rel="noopener" class="footer-link">Facebook</a>
+    </p>
+  </footer>
+
+  <!-- Universal background JavaScript -->
+  <script src="./shared/background.js"></script>
+  <script src="./shared/style-switcher.js"></script>
+
+  <script type="module">
+    import { RelationshipEngine } from './relationship-engine.js';
+    import { initializePerformanceMonitoring } from './shared/performance-monitor.js';
+    import { createDebugReporter } from './shared/debug-reporter.js';
+    import { setDebugReporter } from './shared/data-loader.js';
+    
+    // Initialize debug reporter
+    const debugReporter = createDebugReporter('RelationshipEngine');
+    setDebugReporter(debugReporter);
+    
+    // Initialize performance monitoring
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        initializePerformanceMonitoring();
+      });
+    } else {
+      initializePerformanceMonitoring();
+    }
+    
+    // Initialize engine
+    function initEngine() {
+      window.relationshipEngine = new RelationshipEngine();
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initEngine);
+    } else {
+      initEngine();
+    }
+    
+    // Show debug report if requested
+    if (window.location.search.includes('debug=true')) {
+      if (window.relationshipEngine && window.relationshipEngine.debugReporter) {
+        window.relationshipEngine.debugReporter.displayReport();
+        const debugContainer = document.getElementById('debug-report-container');
+        if (debugContainer) {
+          debugContainer.style.display = 'block';
+        }
+      }
+    }
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Toggle helper function
+      const setupToggle = (btnId, panelId) => {
+        const btn = document.getElementById(btnId);
+        const panel = document.getElementById(panelId);
+        if (btn && panel) {
+          btn.addEventListener('click', () => {
+            btn.classList.toggle('expanded');
+            panel.classList.toggle('expanded');
+          });
+        }
+      };
+
+      // Setup toggles
+      setupToggle('disclaimerToggle', 'disclaimerSection');
+      setupToggle('extendedExplanationToggle', 'extendedExplanationPanel');
+      setupToggle('instructionsToggle', 'instructionsPanel');
+
+      // Hamburger menu
+      const hamburger = document.querySelector('.hamburger');
+      const nav = document.querySelector('#top-nav');
+      
+      if (hamburger && nav) {
+        hamburger.addEventListener('click', function() {
+          const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+          hamburger.setAttribute('aria-expanded', !isExpanded);
+          nav.classList.toggle('active');
+        });
+      }
+
+      // Dropdown menu
+      const dropdownToggles = document.querySelectorAll('.nav-dropdown .dropdown-toggle');
+      
+      if (dropdownToggles.length) {
+        dropdownToggles.forEach(toggle => {
+          toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const dropdown = toggle.closest('.nav-dropdown');
+            if (dropdown) {
+              document.querySelectorAll('.nav-dropdown').forEach(dd => {
+                if (dd !== dropdown) {
+                  dd.classList.remove('active');
+                }
+              });
+              dropdown.classList.toggle('active');
+            }
+          });
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.nav-dropdown')) {
+            document.querySelectorAll('.nav-dropdown').forEach(dd => {
+              dd.classList.remove('active');
+            });
+          }
+        });
+      }
+      
+      // Debug panel functionality
+      const debugToggle = document.getElementById('debugToggle');
+      const debugPanel = document.getElementById('debugPanel');
+      const debugClose = document.getElementById('debugClose');
+      const debugClear = document.getElementById('debugClear');
+      const debugLog = document.getElementById('debugLog');
+      
+      if (debugToggle && debugPanel) {
+        debugToggle.addEventListener('click', function() {
+          debugPanel.classList.toggle('active');
+        });
+        
+        if (debugClose) {
+          debugClose.addEventListener('click', function() {
+            debugPanel.classList.remove('active');
+          });
+        }
+        
+        if (debugClear && debugLog) {
+          debugClear.addEventListener('click', function() {
+            debugLog.innerHTML = '';
+            if (window.relationshipEngine) {
+              window.relationshipEngine.debugLog = [];
+            }
+          });
+        }
+      }
+      
+      // Debug mode keyboard shortcut
+      document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+          e.preventDefault();
+          if (window.relationshipEngine) {
+            window.relationshipEngine.debugMode = !window.relationshipEngine.debugMode;
+            console.log('Debug mode:', window.relationshipEngine.debugMode ? 'ENABLED' : 'DISABLED');
+            if (window.relationshipEngine.debugMode) {
+              debugPanel.classList.add('active');
+            }
+          }
+        }
+      });
+    });
+  </script>
+
+  <!-- Debug Panel -->
+  <button class="debug-toggle" id="debugToggle" title="Toggle Debug Panel (Ctrl+D to enable debug mode)">🐛</button>
+  <div class="debug-panel" id="debugPanel">
+    <div class="debug-header">
+      <h3>Debug Log</h3>
+      <div>
+        <button class="debug-toggle" id="debugClear">Clear</button>
+        <button class="debug-toggle" id="debugClose">×</button>
+      </div>
+    </div>
+    <div class="debug-log" id="debugLog">
+      <!-- Debug entries populated here -->
+    </div>
+    <div class="debug-footer">
+      Press Ctrl+D (Cmd+D on Mac) to toggle debug mode
+    </div>
+  </div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

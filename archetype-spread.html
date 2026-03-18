@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Warwick Marshall">
+  <meta name="keywords" content="Warwick Marshall, Golden Bay, New Zealand, Belief Mastery, Sovereign of Mind">
+  <meta name="geo.placename" content="Golden Bay, New Zealand">
+  <meta name="geo.region" content="NZ">
+  <!-- base href removed for offline/local app -->
+  <title>Archetype Spread | Red-Pill Archetype and SMV</title>
+  <meta name="description" content="Comprehensive archetype table with cross-paradigm equivalents and population proportions.">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/archetype-spread.html">
+  <meta property="og:title" content="Archetype Spread | Red-Pill Archetype and SMV">
+  <meta property="og:description" content="Comprehensive archetype table with cross-paradigm equivalents and population proportions.">
+  <meta property="og:image" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/images/redpill-cover.jpg">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Archetype Spread | Red-Pill Archetype and SMV">
+  <meta name="twitter:description" content="Comprehensive archetype table with cross-paradigm equivalents and population proportions.">
+  <meta name="twitter:image" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/images/redpill-cover.jpg">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./fonts/fonts.css">
+  <link id="style-overlay" rel="stylesheet" href="" title="Theme overlay">
+  <style>
+    .archetype-row { cursor: pointer; transition: background 0.2s ease; }
+    .archetype-row:hover { background: rgba(255, 255, 255, 0.05); }
+    .archetype-row.is-open { background: rgba(255, 184, 0, 0.12); }
+    .brutal-truth-row { display: none; }
+    .brutal-truth-row.is-open { display: table-row; }
+    .brutal-truth-panel {
+      background: rgba(100, 0, 0, 0.15);
+      border-left: 4px solid #cc0000;
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.7;
+    }
+    .cluster-total-row td {
+      background: rgba(255, 184, 0, 0.12);
+      border-top: 1px solid rgba(255, 215, 0, 0.3);
+      padding: 0.6rem 1rem;
+      font-weight: 600;
+      color: var(--brand);
+      font-size: 0.95rem;
+    }
+    .cluster-total-row:first-child td { border-top: none; }
+    .spread-intro-inner { text-align: center; }
+    .spread-intro-inner .lead-text { margin-bottom: 0.5rem; }
+    .spread-intro-inner .tools-intro { margin-top: 0; margin-bottom: 0; max-width: 36em; margin-left: auto; margin-right: auto; }
+  </style>
+</head>
+<body class="page-fullbleed">
+  <div class="bg-gradient"></div>
+  <canvas id="nebula-canvas" aria-hidden="true"></canvas>
+
+  <header class="site-header" role="banner">
+    <nav class="nav" aria-label="Primary navigation">
+      <button class="hamburger" aria-expanded="false" aria-controls="top-nav" aria-label="Toggle navigation">☰</button>
+      <ul class="nav-list" id="top-nav" role="menubar">
+        <li role="none"><a role="menuitem" href="index.html">Home</a></li>
+        <li role="none"><a role="menuitem" href="relationship.html">Relationships</a></li>
+        <li role="none"><a role="menuitem" href="temperament.html">Polarity</a></li>
+        <li role="none"><a role="menuitem" href="archetype.html">Archetype</a></li>
+        <li role="none"><a role="menuitem" href="attraction.html">Attraction</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container" id="main-content" role="main">
+    <section id="spread-intro" aria-labelledby="spread-title">
+      <div class="section-inner minimal-section spread-intro-inner">
+        <h1 id="spread-title" class="section-title-btn">Archetype Spread Table</h1>
+        <p class="lead-text">Cross-paradigm equivalents and population proportions for all archetypes.</p>
+        <p class="tools-intro">Social roles with Jungian, Vedic, Greek pantheon, and Tarot correspondences. Cluster totals show each broad category's share of the population.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-inner section-inner-padded">
+        <h2 class="panel-title">Male Archetypes</h2>
+        <div class="table-wrap">
+          <table class="archetype-table" aria-describedby="archetype-table-caption-male">
+            <caption id="archetype-table-caption-male" class="visually-hidden">
+              Male archetype spread table with roles, equivalents, and population proportions
+            </caption>
+            <thead>
+              <tr>
+                <th>Archetype</th>
+                <th>Social Role</th>
+                <th>Jungian/Q-KWML</th>
+                <th>Vedic</th>
+                <th>Greek Pantheon</th>
+                <th>Tarot</th>
+                <th>Population</th>
+              </tr>
+            </thead>
+            <tbody id="archetypeTableBodyMale"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-inner section-inner-padded">
+        <h2 class="panel-title">Female Archetypes</h2>
+        <div class="table-wrap">
+          <table class="archetype-table" aria-describedby="archetype-table-caption-female">
+            <caption id="archetype-table-caption-female" class="visually-hidden">
+              Female archetype spread table with roles, equivalents, and population proportions
+            </caption>
+            <thead>
+              <tr>
+                <th>Archetype</th>
+                <th>Social Role</th>
+                <th>Jungian/Q-KWML</th>
+                <th>Vedic</th>
+                <th>Greek Pantheon</th>
+                <th>Tarot</th>
+                <th>Population</th>
+              </tr>
+            </thead>
+            <tbody id="archetypeTableBodyFemale"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Belief Mastery &amp; Sovereign of Mind. All rights reserved.</p>
+    <p>
+      <a href="https://instagram.com/belief.mastery" target="_blank" rel="noopener">@belief.mastery</a> on Instagram |
+      <a href="https://www.facebook.com/war.mars.9" target="_blank" rel="noopener">Facebook</a>
+    </p>
+  </footer>
+
+  <script src="./shared/background.js"></script>
+  <script src="./shared/style-switcher.js"></script>
+  <script type="module">
+    import { ARCHETYPE_SPREAD } from './archetype-data/archetype-spread.js';
+    import { ARCHETYPES, GENDER_NEUTRAL_MAPPING } from './archetype-data/archetypes.js';
+
+    const tbodyMale = document.getElementById('archetypeTableBodyMale');
+    const tbodyFemale = document.getElementById('archetypeTableBodyFemale');
+
+    const archetypeNameMap = new Map(
+      Object.values(ARCHETYPES || {}).map(archetype => [archetype.name, archetype])
+    );
+
+    const normalizeName = (name) => (name || '').replace(/\s+(Male|Female)$/, '');
+
+    const resolveArchetype = (entryName) => {
+      if (!entryName) return null;
+      const isFemale = entryName.includes('Female');
+      const directMatch = archetypeNameMap.get(entryName);
+      if (directMatch) return directMatch;
+
+      const normalizedName = normalizeName(entryName);
+      const normalizedMatch = archetypeNameMap.get(normalizedName);
+      if (normalizedMatch) return normalizedMatch;
+
+      const neutralId = GENDER_NEUTRAL_MAPPING?.[entryName] || GENDER_NEUTRAL_MAPPING?.[normalizedName];
+      if (neutralId) {
+        if (isFemale && ARCHETYPES?.[`${neutralId}_female`]) {
+          return ARCHETYPES[`${neutralId}_female`];
+        }
+        return ARCHETYPES?.[neutralId] || null;
+      }
+      return null;
+    };
+
+    const buildNarrative = (text) => {
+      if (!text) return 'Brutal truth coming soon.';
+      return text.trim();
+    };
+
+    /** Derive parent cluster from archetype name (e.g. "Delta-Mu Male" → "Delta", "Dark Alpha Male" → "Alpha") */
+    const getCluster = (name) => {
+      if (!name || typeof name !== 'string') return '';
+      const base = name.replace(/\s+(Male|Female)$/, '').trim();
+      if (base.startsWith('Dark ')) return base.replace(/^Dark\s+/, '').split(/[- ]/)[0];
+      return base.split(/[- ]/)[0] || base;
+    };
+
+    const CLUSTER_ORDER = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Sigma', 'Omega', 'Phi'];
+
+    const renderRows = (targetBody, entries) => {
+      if (!targetBody) return;
+
+      const byCluster = {};
+      entries.forEach(entry => {
+        const cluster = getCluster(entry.name);
+        if (!byCluster[cluster]) byCluster[cluster] = [];
+        byCluster[cluster].push(entry);
+      });
+
+      const orderedClusters = CLUSTER_ORDER.filter(c => byCluster[c]?.length);
+
+      orderedClusters.forEach(cluster => {
+        const clusterEntries = byCluster[cluster];
+        const clusterTotal = clusterEntries.reduce((sum, e) => sum + (typeof e.socialProportion === 'number' ? e.socialProportion : 0), 0);
+        const headerRow = document.createElement('tr');
+        headerRow.classList.add('cluster-total-row');
+        const headerCell = document.createElement('td');
+        headerCell.colSpan = 7;
+        headerCell.textContent = `${cluster} — ${clusterTotal.toFixed(1)}% of population`;
+        headerRow.appendChild(headerCell);
+        targetBody.appendChild(headerRow);
+
+        clusterEntries.forEach(entry => {
+        const row = document.createElement('tr');
+        row.classList.add('archetype-row');
+        row.setAttribute('tabindex', '0');
+        row.setAttribute('aria-expanded', 'false');
+
+        const archetype = resolveArchetype(entry.name);
+        const brutalTruth = buildNarrative(archetype?.archetypalNarrative);
+        const populationLabel = typeof entry.socialProportion === 'number'
+          ? `${entry.socialProportion.toFixed(1)}%`
+          : '—';
+        const cells = [
+          entry.name,
+          entry.socialRole,
+          entry.jungianEquivalent,
+          entry.vedicEquivalent,
+          entry.greekPantheon,
+          entry.tarotCard,
+          populationLabel
+        ];
+        cells.forEach(text => {
+          const cell = document.createElement('td');
+          cell.textContent = text || '—';
+          row.appendChild(cell);
+        });
+        targetBody.appendChild(row);
+
+        const detailRow = document.createElement('tr');
+        detailRow.classList.add('brutal-truth-row');
+        const detailCell = document.createElement('td');
+        detailCell.colSpan = 7;
+        const detailPanel = document.createElement('div');
+        detailPanel.classList.add('brutal-truth-panel');
+        detailPanel.textContent = `Archetypal Narrative: The Brutal Truth — ${brutalTruth}`;
+        detailCell.appendChild(detailPanel);
+        detailRow.appendChild(detailCell);
+        targetBody.appendChild(detailRow);
+
+        const toggleDetail = () => {
+          const isOpen = row.classList.toggle('is-open');
+          detailRow.classList.toggle('is-open', isOpen);
+          row.setAttribute('aria-expanded', String(isOpen));
+        };
+
+        row.addEventListener('click', toggleDetail);
+        row.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleDetail();
+          }
+        });
+      });
+      });
+    };
+
+    if (Array.isArray(ARCHETYPE_SPREAD)) {
+      const femaleEntries = ARCHETYPE_SPREAD.filter(entry => entry.name.includes('Female'));
+      const maleEntries = ARCHETYPE_SPREAD.filter(entry => !entry.name.includes('Female'));
+      renderRows(tbodyMale, maleEntries);
+      renderRows(tbodyFemale, femaleEntries);
+    }
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const hamburger = document.querySelector('.hamburger');
+      const nav = document.querySelector('#top-nav');
+      if (hamburger && nav) {
+        hamburger.addEventListener('click', function() {
+          const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+          hamburger.setAttribute('aria-expanded', !isExpanded);
+          nav.classList.toggle('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

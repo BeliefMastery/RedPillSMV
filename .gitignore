@@ -1,0 +1,23 @@
+node_modules/
+.DS_Store
+*.log
+
+# Editor / Cursor
+.cursor/
+.vscode/
+*.swp
+
+# Agent/session artifacts
+agent-transcripts/
+terminals/
+
+# Mobile/Capacitor/Android builds
+android/
+.android/
+
+# Capacitor www output (not needed if you serve from repo root)
+www/
+
+# Git
+.git/
+

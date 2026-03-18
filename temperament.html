@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Warwick Marshall">
+  <meta name="keywords" content="Warwick Marshall, Golden Bay, New Zealand, Belief Mastery, Sovereign of Mind">
+  <meta name="geo.placename" content="Golden Bay, New Zealand">
+  <meta name="geo.region" content="NZ">
+<title>Polarity Position Mapping | Red-Pill Archetype and SMV</title>
+  <meta name="description" content="Masculine/feminine polarity mapping with temperament dynamics and trend markers—rapid temperament profile.">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://beliefmastery.github.io/site/temperament.html">
+  <meta property="og:title" content="Polarity Position Mapping">
+  <meta property="og:description" content="Masculine/feminine polarity mapping with temperament dynamics and trend markers—rapid temperament profile.">
+  <meta property="og:image" content="https://beliefmastery.github.io/site/images/temperament-analysis-cover.jpg">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://beliefmastery.github.io/site/temperament.html">
+  <meta name="twitter:title" content="Polarity Position Mapping">
+  <meta name="twitter:description" content="Masculine/feminine polarity mapping with temperament dynamics and trend markers—rapid temperament profile.">
+  <meta name="twitter:image" content="https://beliefmastery.github.io/site/images/temperament-analysis-cover.jpg">
+  
+  <!-- CRITICAL: Universal styles MUST load first -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./fonts/fonts.css">
+  <link id="style-overlay" rel="stylesheet" href="" title="Theme overlay">
+  
+  <!-- Performance: Preload critical resources -->
+  <link rel="modulepreload" href="./temperament-engine.js">
+  <link rel="modulepreload" href="./shared/data-loader.js">
+  <link rel="modulepreload" href="./shared/debug-reporter.js">
+  <link rel="modulepreload" href="./shared/utils.js">
+  <link rel="modulepreload" href="./shared/performance-monitor.js">
+
+</head>
+<body>
+
+  <!-- Cosmic background (from universal system) -->
+  <div class="bg-gradient"></div>
+  <canvas id="nebula-canvas" aria-hidden="true"></canvas>
+
+  <header class="site-header" role="banner">
+    <nav class="nav" aria-label="Primary navigation">
+      <button class="hamburger" aria-expanded="false" aria-controls="top-nav" aria-label="Toggle navigation">☰</button>
+      <ul class="nav-list" id="top-nav" role="menubar">
+        <li role="none"><a role="menuitem" href="index.html">Home</a></li>
+        <li role="none"><a role="menuitem" href="archetype.html">Archetype</a></li>
+        <li role="none"><a role="menuitem" href="attraction.html">Attraction</a></li>
+        <li role="none"><a role="menuitem" href="temperament.html" class="active">Polarity</a></li>
+        <li role="none"><a role="menuitem" href="relationship.html">Relationships</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Universal Tool Container -->
+    <div class="temperament-container">
+      
+      <!-- Hero Image Section -->
+      <div class="hero-image">
+        <img src="./images/temperament-analysis-cover.jpg" alt="Polarity Position Mapping" class="hero-img">
+      </div>
+      
+      <!-- Intro Section -->
+      <section class="intro-section" id="introSection">
+        <h2 class="section-title-btn">⚖️ Polarity Position Mapping</h2>
+        
+        <p><strong>Map your position on the masculine–feminine spectrum and see how it shapes polarity and compatibility.</strong></p>
+        <p>This assessment uses behavioral patterns, intimate dynamics, attraction responsiveness, and relationship preferences to place you on the temperament spectrum and flag where polarity fit with a partner may matter.</p>
+
+        <!-- Extended Explanation Toggle -->
+        <div class="extended-explanation-toggle" id="extendedExplanationToggle">
+          <div class="extended-explanation-toggle-text">
+            <span>Extended Explanation</span>
+          </div>
+        </div>
+
+        <div class="extended-explanation-panel" id="extendedExplanationPanel">
+          <div class="content-section">
+            <h3>What you'll discover</h3>
+            <ul class="feature-list">
+              <li>Position on the masculine–feminine temperament spectrum (expression and dimension-level scores)</li>
+              <li>Analysis of behavioral patterns, intimate dynamics, and attraction responsiveness</li>
+              <li>Relationship polarity implications and, when relevant, cross-polarity or partner-fit considerations</li>
+              <li>Links to archetype, attraction, and relationship assessments for a fuller picture</li>
+              <li>Export in JSON or CSV for AI integration</li>
+            </ul>
+
+            <h3>Theory: Polarity and chemistry</h3>
+            <p>Temperament here is distinct from biological sex or gender identity. It refers to archetypal energy patterns and behavioral tendencies on a spectrum. Variation across dimensions is normal. Understanding your temperament clarifies relationship polarity, compatibility dynamics, and personal development—and when your position suggests considering partner fit.</p>
+            <p><strong>Contextual framing:</strong> Temperament reflects how energy tends to organize in relational and intimate contexts. It varies by partner, season, safety, and life phase. Results describe tendencies and preferences, not fixed identity or mandates.</p>
+
+            <div class="ack-box">
+              <p><strong class="text-accent">🔗 Explore further:</strong> Polarity sits between identity and outcome. <a href="archetype.html">Modern Archetype Identification</a> reveals patterns behind your expression; <a href="relationship.html">Relationships</a> shows where polarity mismatch creates strain; <a href="attraction.html">Attraction &amp; Status</a> connects polarity to selection dynamics.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disclaimer Toggle -->
+        <div class="disclaimer-acknowledgement" id="disclaimerToggle">
+          <div class="disclaimer-acknowledgement-text">
+            <span>Disclaimer</span>
+          </div>
+        </div>
+
+        <section class="disclaimer-section" id="disclaimerSection">
+          <div class="acknowledgement-box">
+            <h3>Important Note</h3>
+            <p><strong>This assessment includes questions about intimate dynamics, sexual preferences, and attraction patterns.</strong></p>
+            <p>Answer honestly based on your authentic experience.</p>
+          </div>
+        
+        <p class="form-help"><strong>Non-therapeutic disclaimer:</strong> This tool supports sovereignty-aligned self-inquiry and is not therapy, medical, or legal advice.</p>
+      </section>
+      </section>
+
+      <!-- Assessment Selection Section -->
+      <section class="content-section" id="actionButtonsSection">
+        <div class="action-buttons">
+          <button class="btn btn-secondary" id="generateSampleReport">Generate Sample Report</button>
+          <button class="btn btn-primary" id="startAssessment">Begin Temperament Assessment</button>
+        </div>
+      </section>
+
+      <!-- Questionnaire Section -->
+      <section class="questionnaire-section" id="questionnaireSection">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="progress-text">
+          <span id="questionCount"></span>
+        </div>
+        
+        <div id="questionContainer">
+          <!-- Questions populated by JavaScript -->
+        </div>
+        
+        <div class="navigation-buttons">
+          <button class="btn btn-secondary" id="prevQuestion" disabled>Previous</button>
+          <button class="btn btn-primary" id="nextQuestion">Next</button>
+        </div>
+        
+        <div class="abandon-link">
+          <button class="btn btn-secondary" id="abandonAssessment">Abandon / Restart</button>
+        </div>
+      </section>
+
+      <!-- Results Section -->
+      <section class="results-section" id="resultsSection">
+        <h2>Your Temperament Analysis</h2>
+        <div id="temperamentResults">
+          <!-- Results populated by JavaScript -->
+        </div>
+        
+        <div class="export-section">
+          <h3>Save results</h3>
+          <p>Save a readable report document that records your polarity position, dimension scores, and cross-polarity findings.</p>
+          <div class="action-buttons">
+            <button class="btn btn-save" id="saveResults">Save results</button>
+            <button class="btn btn-secondary" id="newAssessment">New Assessment</button>
+          </div>
+          <p class="form-help">The report is a single HTML file you can open, print, or save as PDF.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <nav class="bottom-nav" aria-label="App navigation">
+    <a href="archetype.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◇</span><span>Identity</span></a>
+    <a href="attraction.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
+    <a href="temperament.html" class="bottom-nav-item active"><span class="bottom-nav-icon" aria-hidden="true">◈</span><span>Polarity</span></a>
+    <a href="relationship.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⬡</span><span>Relations</span></a>
+  </nav>
+
+  <footer>
+    <p>&copy; 2025 Belief Mastery &amp; Sovereign of Mind. All rights reserved.</p>
+  </footer>
+
+  <!-- Universal background JavaScript -->
+  <script src="./shared/background.js"></script>
+  <script src="./shared/style-switcher.js"></script>
+
+  <script type="module" src="temperament-engine.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Toggle helper function
+      const setupToggle = (btnId, panelId) => {
+        const btn = document.getElementById(btnId);
+        const panel = document.getElementById(panelId);
+        if (btn && panel) {
+          btn.addEventListener('click', () => {
+            btn.classList.toggle('expanded');
+            panel.classList.toggle('expanded');
+          });
+        }
+      };
+
+      // Setup toggles
+      setupToggle('disclaimerToggle', 'disclaimerSection');
+      setupToggle('extendedExplanationToggle', 'extendedExplanationPanel');
+      // Disclaimer toggle
+      const disclaimerToggle = document.getElementById('disclaimerToggle');
+      const disclaimerSection = document.getElementById('disclaimerSection');
+      
+      if (disclaimerToggle && disclaimerSection) {
+        disclaimerToggle.addEventListener('click', function() {
+          disclaimerToggle.classList.toggle('expanded');
+          disclaimerSection.classList.toggle('expanded');
+        });
+      }
+
+      // Hamburger menu
+      const hamburger = document.querySelector('.hamburger');
+      const nav = document.querySelector('#top-nav');
+      
+      if (hamburger && nav) {
+        hamburger.addEventListener('click', function() {
+          const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+          hamburger.setAttribute('aria-expanded', !isExpanded);
+          nav.classList.toggle('active');
+        });
+      }
+
+      // Dropdown menu
+      const dropdownToggles = document.querySelectorAll('.nav-dropdown .dropdown-toggle');
+      
+      if (dropdownToggles.length) {
+        dropdownToggles.forEach(toggle => {
+          toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const dropdown = toggle.closest('.nav-dropdown');
+            if (dropdown) {
+              document.querySelectorAll('.nav-dropdown').forEach(dd => {
+                if (dd !== dropdown) {
+                  dd.classList.remove('active');
+                }
+              });
+              dropdown.classList.toggle('active');
+            }
+          });
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.nav-dropdown')) {
+            document.querySelectorAll('.nav-dropdown').forEach(dd => {
+              dd.classList.remove('active');
+            });
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

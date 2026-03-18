@@ -1,0 +1,24 @@
+{
+  "name": "red-pill-relationships",
+  "version": "1.0.0",
+  "description": "Offline toolkit: modern archetype, polarity, SMV, and relationship viability. Map where you fit in the modern relationship marketplace. No login, no tracking.",
+  "main": "archetype-engine.js",
+  "scripts": {
+    "copy:www": "node scripts/copy-to-www.js",
+    "cap:sync": "npm run copy:www && npx cap sync android",
+    "serve": "serve . -p 3000",
+    "serve:www": "npm run copy:www && serve www -p 3000",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@fontsource/inter": "^5.2.8",
+    "serve": "^14.2.4"
+  }
+}
