@@ -781,9 +781,10 @@ header.site-header {
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 @media (max-width: 768px) {
-  .bottom-nav { display: flex; }
-  body.page-fullbleed { padding-bottom: 64px; }
-  main.container { padding-bottom: 2rem; }
+  /* Footer nav removed on mobile to avoid redundancy with sticky header links */
+  .bottom-nav { display: none !important; }
+  body.page-fullbleed { padding-bottom: 0; }
+  main.container { padding-bottom: 0; }
 }
 .bottom-nav-item {
   display: flex;
