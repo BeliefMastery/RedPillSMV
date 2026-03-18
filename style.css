@@ -53,6 +53,9 @@
     --font-size-subheading: clamp(1.25rem, 1.1rem + 0.75vw, 1.75rem);
 
     --brand-dark: #3a7acc;
+
+    /* Global font scaling (controlled by UI in style-switcher.js) */
+    --font-scale: 1;
 }
 
 /* ========== BASE STYLES ========== */
@@ -70,7 +73,7 @@ html, body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
-    font-size: var(--font-size-base);
+    font-size: calc(var(--font-size-base) * var(--font-scale));
     line-height: 1.6;
 }
 
@@ -632,7 +635,7 @@ header.site-header {
     margin-top: 2.5rem;
     margin-bottom: 1rem;
     text-shadow: 0 2px 10px rgba(100, 160, 255, 0.2); /* Subtle cosmic lift */
-    font-size: var(--font-size-heading, var(--font-size-subheading));
+    font-size: calc((var(--font-size-heading, var(--font-size-subheading))) * var(--font-scale));
 }
 
 .content-section p,
@@ -1675,46 +1678,34 @@ h3[style*="text-align:center"][style*="border-bottom"] {
     }
 }
 
-/* Home landing: mobile = 2x2 image grid only (no card bloat, no CTAs) */
+/* Home landing: 2x2 image grid only (no cards, no buttons) */
+.home-image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    max-width: 100%;
+}
+.home-image-grid-link {
+    display: block;
+    line-height: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+}
+.home-image-grid-link:hover {
+    box-shadow: var(--shadow-lg);
+    transform: scale(1.02);
+}
+.home-image-grid-link img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+}
 @media (max-width: 768px) {
-    .home-tools-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-        margin: 1rem 0;
-    }
-    .home-tools-grid .tool-card {
-        padding: 0;
-        display: block;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-    }
-    .home-tools-grid .tool-card::before {
-        display: none;
-    }
-    .home-tools-grid .tool-card:hover {
-        transform: none;
-    }
-    .home-tools-grid .tool-card-header {
-        margin: 0;
-    }
-    .home-tools-grid .tool-card-thumb-link {
-        max-width: none;
-        width: 100%;
-        display: block;
-        border-radius: var(--radius);
-        overflow: hidden;
-        box-shadow: var(--shadow-md);
-    }
-    .home-tools-grid .tool-card-thumb {
-        width: 100%;
-        max-width: none;
-        aspect-ratio: 1;
-        object-fit: cover;
-    }
-    .home-tools-grid .home-tools-cta {
-        display: none !important;
-    }
     #tools .section-subtitle {
         display: none;
     }
@@ -3229,7 +3220,9 @@ footer a {
 
 /* Style overlay switcher (index.html footer) */
 .style-switcher-wrap {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
     margin-right: 1rem;
     font-size: 0.9rem;
 }
@@ -3247,6 +3240,21 @@ footer a {
     border-radius: var(--radius);
     color: var(--brand);
     cursor: pointer;
+}
+
+.font-scale-select {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    background: var(--glass-light);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    color: var(--brand);
+    cursor: pointer;
+}
+
+.font-scale-select:focus {
+    outline: none;
+    border-color: var(--accent);
 }
 
 .style-overlay-select:focus {

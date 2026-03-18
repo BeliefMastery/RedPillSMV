@@ -4,6 +4,7 @@
  */
 (function() {
   var STORAGE_KEY = 'redpill-style-overlay';
+  var FONT_SCALE_STORAGE_KEY = 'redpill-font-scale';
 
   var THEMES = [
     { id: 'signal', label: 'Signal' },
@@ -35,6 +36,13 @@
       return;
     }
     link.href = './style/' + id + '.css';
+  }
+
+  function applyFontScale(scale) {
+    try {
+      // scale is a number (e.g. 0.9, 0.8). Default is 1.
+      document.documentElement.style.setProperty('--font-scale', String(scale || 1));
+    } catch (e) {}
   }
 
   function saveAndApply(id) {
@@ -83,6 +91,50 @@
 
     container.appendChild(label);
     container.appendChild(select);
+
+    // Font size scaling (global)
+    var fontLabel = document.createElement('label');
+    fontLabel.htmlFor = 'font-scale-select';
+    fontLabel.textContent = 'Font: ';
+    fontLabel.className = 'style-switcher-label';
+
+    var fontSelect = document.createElement('select');
+    fontSelect.id = 'font-scale-select';
+    fontSelect.setAttribute('aria-label', 'Font size');
+    fontSelect.className = 'font-scale-select';
+
+    var options = [
+      { value: '1', label: '100%' },
+      { value: '0.95', label: '95%' },
+      { value: '0.9', label: '90%' },
+      { value: '0.85', label: '85%' },
+      { value: '0.8', label: '80%' },
+      { value: '0.7', label: '70%' }
+    ];
+
+    options.forEach(function(o) {
+      var opt = document.createElement('option');
+      opt.value = o.value;
+      opt.textContent = o.label;
+      fontSelect.appendChild(opt);
+    });
+
+    try {
+      var savedScale = localStorage.getItem(FONT_SCALE_STORAGE_KEY);
+      if (savedScale) fontSelect.value = savedScale;
+      else fontSelect.value = '1';
+    } catch (e) {}
+
+    fontSelect.addEventListener('change', function() {
+      var scale = fontSelect.value || '1';
+      try {
+        localStorage.setItem(FONT_SCALE_STORAGE_KEY, scale);
+      } catch (e) {}
+      applyFontScale(scale);
+    });
+
+    container.appendChild(fontLabel);
+    container.appendChild(fontSelect);
   }
 
   function init() {
@@ -107,6 +159,14 @@
     } catch (e) {}
     var idToApply = paramId !== null ? (paramId === 'default' ? '' : paramId) : (saved || '');
     applyOverlay(idToApply);
+
+    // Apply saved font scale even if selector UI isn't present.
+    try {
+      var savedScale = localStorage.getItem(FONT_SCALE_STORAGE_KEY);
+      applyFontScale(savedScale ? savedScale : 1);
+    } catch (e) {
+      applyFontScale(1);
+    }
 
     var container = document.getElementById('style-switcher-container');
     if (container) {
