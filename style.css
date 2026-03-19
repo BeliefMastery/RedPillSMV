@@ -684,19 +684,20 @@ header.site-header {
 .assessment-choice-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
-    margin-top: 0.4rem;
+    gap: 0.8rem;
+    margin-top: 0.35rem;
+    padding: 0.45rem;
 }
 .assessment-choice-card {
     position: relative;
-    padding: 1.3rem 1.2rem;
-    border-radius: calc(var(--radius) * 0.85);
+    padding: 0.95rem 0.95rem;
+    border-radius: 14px;
     border: 1px solid var(--border-medium);
     background: var(--glass);
     cursor: pointer;
     transition: var(--transition);
     overflow: hidden;
-    min-height: 232px;
+    min-height: 186px;
     display: flex;
     align-items: stretch;
 }
@@ -734,15 +735,15 @@ header.site-header {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 0.8rem;
+    gap: 0.55rem;
 }
 .assessment-choice-card.selected::before {
     opacity: 1;
     height: 4px;
 }
 .assessment-card-title {
-    margin: 0 0 0.5rem;
-    font-size: 1.02rem;
+    margin: 0 0 0.35rem;
+    font-size: 0.96rem;
     color: var(--accent);
     font-weight: 600;
 }
@@ -751,9 +752,9 @@ header.site-header {
 }
 .assessment-card-desc {
     margin: 0;
-    font-size: 0.86rem;
+    font-size: 0.83rem;
     color: var(--muted);
-    line-height: 1.45;
+    line-height: 1.36;
 }
 .assessment-card-check {
     position: absolute;
@@ -771,9 +772,12 @@ header.site-header {
     margin-top: 1rem;
 }
 @media (max-width: 768px) {
+    .assessment-choice-cards {
+        padding: 0.35rem;
+    }
     .assessment-choice-card {
-        min-height: 206px;
-        padding: 1.15rem 1rem;
+        min-height: 170px;
+        padding: 0.88rem 0.85rem;
     }
 }
 /* Relationship report: collapsible strain point accordions */
