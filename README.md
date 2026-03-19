@@ -1,4 +1,4 @@
-# Red-Pill Archetype and SMV
+# Unplugged Dynamics: Red-Pill Relational Suite
 
 Map where you fit in the modern relationship marketplace. A self-contained app of **four assessment tools**: modern archetype identification, attraction/SMV, polarity (temperament), and relationship viability. Offline, no account, no tracking. Built for web and Capacitor Android.
 

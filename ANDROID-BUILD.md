@@ -1,4 +1,4 @@
-# Red Pill Relationships — Android App Build Guide
+# Unplugged Dynamics — Android App Build Guide
 
 ## Prerequisites
 

@@ -2236,8 +2236,59 @@ showGenderSelection() {
       if (!trimmed) return '';
       return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
     };
+    const getBaseBrutalNarrative = (archetype) => {
+      if (!archetype) return '';
+      return String(BRUTAL_TRUTHS?.[archetype.id]?.narrative || archetype.archetypalNarrative || '').trim();
+    };
+    const softenNarrativeTone = (text) => {
+      if (!text) return '';
+      return String(text)
+        .replace(/\byou are\b/gi, 'you can be')
+        .replace(/\byou will\b/gi, 'you may')
+        .replace(/\byou do not\b/gi, 'you may not')
+        .replace(/\byou don't\b/gi, 'you may not')
+        .replace(/\byou never\b/gi, 'you can rarely')
+        .replace(/\balways\b/gi, 'often')
+        .replace(/\bnever\b/gi, 'rarely')
+        .replace(/\bthe truth:\s*/gi, '');
+    };
+    const summarizeBehavioralAccent = (text, maxSentences = 2) => {
+      if (!text) return '';
+      const clean = String(text).trim();
+      if (!clean) return '';
+      const sentences = clean.match(/[^.!?]+[.!?]*/g) || [];
+      const selected = (sentences.length ? sentences : [clean])
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .slice(0, maxSentences)
+        .join(' ');
+      return ensurePeriod(selected);
+    };
+    const getRoleAwareBrutalNarrative = (archetype, role) => {
+      const baseNarrative = getBaseBrutalNarrative(archetype);
+      if (!baseNarrative) return '';
+      if (role === 'primary') return baseNarrative;
+
+      const softened = summarizeBehavioralAccent(softenNarrativeTone(baseNarrative), 2);
+      if (!softened) return '';
+
+      if (role === 'secondary') {
+        return [
+          'This secondary archetype influences you in specific contexts or situations, complementing your primary archetype.',
+          `Behavioral accent: ${softened}`
+        ].join(' ');
+      }
+
+      return [
+        'This tertiary archetype may emerge under stress, represent aspirational qualities, or appear in specific life domains.',
+        `Behavioral accent: ${softened}`
+      ].join(' ');
+    };
     const primaryTraitsSummary = summarizeArchetype(primary);
     const optimizationCopy = (primary?.id && ARCHETYPE_OPTIMIZATION?.[primary.id]) || null;
+    const primaryNarrative = getRoleAwareBrutalNarrative(primary, 'primary');
+    const secondaryNarrative = getRoleAwareBrutalNarrative(secondary, 'secondary');
+    const tertiaryNarrative = getRoleAwareBrutalNarrative(tertiary, 'tertiary');
     const primaryBlindSpot = optimizationCopy?.likelyBlindSpot
       ? `Likely blind spot: ${ensurePeriod(optimizationCopy.likelyBlindSpot)}`
       : primary?.stressResponse
@@ -2281,11 +2332,11 @@ showGenderSelection() {
             <p style="color: var(--muted); line-height: 1.7;">${primary.stressResponse}</p>
           </div>
 
-          ${(BRUTAL_TRUTHS?.[primary.id]?.narrative || primary.archetypalNarrative) ? `
+          ${primaryNarrative ? `
           <div class="archetype-report-card" style="margin-top: 1.5rem; background: rgba(100, 0, 0, 0.15); border-left: 4px solid #cc0000; border-radius: var(--radius); padding: 1.5rem;">
             <h4 style="color: #cc0000; margin-top: 0; margin-bottom: 1rem;">Archetypal Narrative: The Brutal Truth</h4>
             <p style="color: var(--muted); line-height: 1.8; font-size: 1rem; margin: 0; font-style: italic;">
-              ${SecurityUtils.sanitizeHTML(BRUTAL_TRUTHS?.[primary.id]?.narrative || primary.archetypalNarrative)}
+              ${SecurityUtils.sanitizeHTML(primaryNarrative)}
             </p>
             <p style="color: var(--muted); font-size: 0.85rem; margin-top: 1rem; margin-bottom: 0; line-height: 1.6; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1rem;">
               <em>Note: This is an archetypal narrative - a generic but honest representation of the typical life pattern for this classification. It reflects common trajectories, not personal destiny. Archetypes describe patterns, not fixed fate. Understanding your pattern is the first step toward conscious change if you choose it.</em>
@@ -2342,9 +2393,9 @@ showGenderSelection() {
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;"><strong>Social Role:</strong> ${SecurityUtils.sanitizeHTML(secondary.socialRole || '')}</p>
           ${secondaryParent ? `<p style="color: var(--muted); margin: 0.5rem 0 1rem; line-height: 1.7;"><strong>Subtype of:</strong> ${SecurityUtils.sanitizeHTML(secondaryParent.name || '')}${secondaryParentSummary ? `: ${SecurityUtils.sanitizeHTML(secondaryParentSummary)}` : ''}</p>` : ''}
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;">${SecurityUtils.sanitizeHTML(secondary.description || '')}</p>
-          ${(BRUTAL_TRUTHS?.[secondary.id]?.narrative || secondary.archetypalNarrative) ? `
+          ${secondaryNarrative ? `
           <div style="margin-top: 1rem; background: rgba(80, 0, 0, 0.12); border-left: 3px solid rgba(180, 40, 40, 0.6); border-radius: var(--radius); padding: 1rem;">
-            <p style="color: var(--muted); line-height: 1.7; font-size: 0.92rem; margin: 0; font-style: italic;">${SecurityUtils.sanitizeHTML(BRUTAL_TRUTHS?.[secondary.id]?.narrative || secondary.archetypalNarrative)}</p>
+            <p style="color: var(--muted); line-height: 1.7; font-size: 0.92rem; margin: 0; font-style: italic;">${SecurityUtils.sanitizeHTML(secondaryNarrative)}</p>
           </div>` : ''}
           <p style="color: var(--muted); margin-top: 1rem; font-style: italic; font-size: 0.9rem;">
             This archetype influences you in specific contexts or situations, complementing your primary archetype.
@@ -2361,9 +2412,9 @@ showGenderSelection() {
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;"><strong>Social Role:</strong> ${SecurityUtils.sanitizeHTML(tertiary.socialRole || '')}</p>
           ${tertiaryParent ? `<p style="color: var(--muted); margin: 0.5rem 0 1rem; line-height: 1.7;"><strong>Subtype of:</strong> ${SecurityUtils.sanitizeHTML(tertiaryParent.name || '')}${tertiaryParentSummary ? `: ${SecurityUtils.sanitizeHTML(tertiaryParentSummary)}` : ''}</p>` : ''}
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;">${SecurityUtils.sanitizeHTML(tertiary.description || '')}</p>
-          ${(BRUTAL_TRUTHS?.[tertiary.id]?.narrative || tertiary.archetypalNarrative) ? `
+          ${tertiaryNarrative ? `
           <div style="margin-top: 1rem; background: rgba(80, 0, 0, 0.08); border-left: 3px solid rgba(160, 40, 40, 0.4); border-radius: var(--radius); padding: 1rem;">
-            <p style="color: var(--muted); line-height: 1.7; font-size: 0.92rem; margin: 0; font-style: italic;">${SecurityUtils.sanitizeHTML(BRUTAL_TRUTHS?.[tertiary.id]?.narrative || tertiary.archetypalNarrative)}</p>
+            <p style="color: var(--muted); line-height: 1.7; font-size: 0.92rem; margin: 0; font-style: italic;">${SecurityUtils.sanitizeHTML(tertiaryNarrative)}</p>
           </div>` : ''}
           <p style="color: var(--muted); margin-top: 1rem; font-style: italic; font-size: 0.9rem;">
             This archetype may emerge under stress, represent aspirational qualities, or appear in specific life domains.
