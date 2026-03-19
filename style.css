@@ -666,10 +666,6 @@ header.site-header {
 }
 
 /* Relationship assessment choice (two cards + Begin) */
-#actionButtonsSection {
-    padding-left: clamp(0.85rem, 1.4vw, 1.35rem);
-    padding-right: clamp(0.85rem, 1.4vw, 1.35rem);
-}
 #actionButtonsSection .assessment-choice-intro {
     color: var(--brand);
     font-size: 0.98rem;
@@ -783,10 +779,6 @@ header.site-header {
     white-space: nowrap;
 }
 @media (max-width: 768px) {
-    #actionButtonsSection {
-        padding-left: 0.8rem;
-        padding-right: 0.8rem;
-    }
     .assessment-choice-card {
         min-height: 206px;
         padding: 1.15rem 1rem;
@@ -858,11 +850,6 @@ header.site-header {
 .bottom-nav-item[href*="attraction"].active,
 .bottom-nav-item[href*="temperament"].active,
 .bottom-nav-item[href*="relationship"].active { color: var(--accent); }
-
-#actionButtonsSection.content-section {
-    padding-top: 1rem;
-    padding-bottom: 1.5rem;
-}
 
 /* Questionnaire & Tool Wrappers */
 .questionnaire-container,
