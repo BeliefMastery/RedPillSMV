@@ -522,11 +522,6 @@ export class RelationshipEngine {
     if (abandonBtn) {
       abandonBtn.addEventListener('click', () => this.abandonAssessment());
     }
-
-    const abandonResultsBtn = document.getElementById('abandonAssessmentResults');
-    if (abandonResultsBtn) {
-      abandonResultsBtn.addEventListener('click', () => this.abandonAssessment());
-    }
   }
 
   shouldAutoGenerateSample() {
@@ -1581,10 +1576,6 @@ export class RelationshipEngine {
       });
     }
 
-    const abandonResultsBtn = document.getElementById('abandonAssessmentResults');
-    if (abandonResultsBtn) {
-      abandonResultsBtn.addEventListener('click', () => this.abandonAssessment());
-    }
   }
 
   renderAnalysisModules() {
