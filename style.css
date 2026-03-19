@@ -768,21 +768,7 @@ header.site-header {
     opacity: 1;
 }
 #actionButtonsSection .action-buttons {
-    flex-wrap: wrap;
     margin-top: 1rem;
-    justify-content: center;
-    align-items: center;
-    gap: 0.7rem;
-}
-#actionButtonsSection #startAssessment {
-    min-width: 220px;
-}
-.assessment-sample-action {
-    display: flex;
-    align-items: center;
-}
-.assessment-sample-action .btn {
-    white-space: nowrap;
 }
 @media (max-width: 768px) {
     .assessment-choice-card {
