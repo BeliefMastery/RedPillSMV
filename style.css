@@ -1741,11 +1741,15 @@ h3[style*="text-align:center"][style*="border-bottom"] {
     object-fit: contain;
     display: block;
 }
-/* Mobile: constrain grid height to viewport */
+/* Mobile: constrain grid height to viewport, tight edge padding */
 @media (max-width: 768px) {
     .home-image-grid {
         aspect-ratio: unset;
         height: min(100vw, calc(100vh - 6rem));
+    }
+    .home-grid-section .section-inner,
+    .home-grid-section .minimal-section {
+        padding: 0.25rem 4px;
     }
     #tools .section-subtitle {
         display: none;
@@ -3726,32 +3730,32 @@ img[data-src].loaded {
         padding: 0.75rem 1rem;
     }
 
-    /* Minimal buffers for maximum screen real-estate */
+    /* Tight buffers for cellphone: section to edge */
     .question-card,
     .card {
-        padding: 0.75rem;
+        padding: 0.5rem 0.35rem;
         margin: 0.5rem 0;
     }
     
     section {
-        padding: 8px 6px;
-        margin: 6px 0;
+        padding: 6px 4px;
+        margin: 4px 0;
     }
 
     .container {
-        padding: 0 6px;
+        padding: 0 4px;
     }
 
     .minimal-section {
-        padding: 0.75rem 6px;
+        padding: 0.5rem 4px;
     }
 
     .section-inner-padded {
-        padding: 0.5rem;
+        padding: 0.35rem;
     }
     
     .question-block {
-        padding: 0.75rem;
+        padding: 0.5rem 0.35rem;
         margin-bottom: 0.75rem;
     }
     
@@ -3762,7 +3766,7 @@ img[data-src].loaded {
     .relationship-container,
     .attraction-container,
     .needs-dependency-container {
-        padding: 0.75rem;
+        padding: 0.5rem 4px;
         margin: 0.5rem 0;
     }
 
@@ -3799,17 +3803,17 @@ img[data-src].loaded {
     }
 
     .main-content {
-        padding: 0.75rem;
+        padding: 0.5rem 4px;
     }
 
     .intro-section,
     .questionnaire-section,
     .results-section {
-        padding: 0.75rem;
+        padding: 0.5rem 4px;
     }
 
     .content-section {
-        padding: 1rem 0;
+        padding: 0.75rem 0;
     }
 
     .analysis-modules-grid .card {
@@ -3838,7 +3842,7 @@ img[data-src].loaded {
 /* Cellphone: minimal left/right buffer so cards use full width (all engines) */
 @media (max-width: 640px) {
     :root {
-        --mobile-gutter: 0.25rem;
+        --mobile-gutter: 0.2rem;
         --muted: #a8b8d0; /* Slightly brighter for legibility on small screens in bright environments */
     }
 
@@ -3868,6 +3872,12 @@ img[data-src].loaded {
     section,
     .minimal-section,
     .section-inner-padded {
+        padding-left: var(--mobile-gutter);
+        padding-right: var(--mobile-gutter);
+    }
+
+    .home-grid-section .section-inner,
+    .home-grid-section .minimal-section {
         padding-left: var(--mobile-gutter);
         padding-right: var(--mobile-gutter);
     }
@@ -3932,8 +3942,8 @@ img[data-src].loaded {
     .section-card,
     .choice-box,
     .assessment-card {
-        padding-left: max(var(--mobile-gutter), 0.5rem);
-        padding-right: max(var(--mobile-gutter), 0.5rem);
+        padding-left: max(var(--mobile-gutter), 0.35rem);
+        padding-right: max(var(--mobile-gutter), 0.35rem);
     }
 
     .options-container,
@@ -3953,7 +3963,7 @@ img[data-src].loaded {
 
 @media (max-width: 480px) {
     :root {
-        --mobile-gutter: 6px;
+        --mobile-gutter: 4px;
         --muted: #a8b8d0; /* Slightly brighter for legibility on small screens */
     }
 
@@ -3962,9 +3972,8 @@ img[data-src].loaded {
         grid-template-columns: 1fr;
     }
 
-    /* Slightly increased from 4px to 6px for usability while keeping screen real estate */
     section {
-        padding: 6px var(--mobile-gutter);
+        padding: 4px var(--mobile-gutter);
         margin: 4px 0;
     }
 
@@ -3973,15 +3982,15 @@ img[data-src].loaded {
     }
 
     .minimal-section {
-        padding: 0.5rem var(--mobile-gutter);
+        padding: 0.4rem var(--mobile-gutter);
     }
 
     .question-card,
     .card {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-        padding-left: max(var(--mobile-gutter), 0.5rem);
-        padding-right: max(var(--mobile-gutter), 0.5rem);
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
+        padding-left: max(var(--mobile-gutter), 0.35rem);
+        padding-right: max(var(--mobile-gutter), 0.35rem);
         margin: 0.4rem 0;
     }
 
@@ -3997,8 +4006,8 @@ img[data-src].loaded {
     .assessment-card,
     .category-card,
     .pathology-card {
-        padding-left: max(var(--mobile-gutter), 0.5rem);
-        padding-right: max(var(--mobile-gutter), 0.5rem);
+        padding-left: max(var(--mobile-gutter), 0.35rem);
+        padding-right: max(var(--mobile-gutter), 0.35rem);
     }
 
     .options-container,
@@ -4041,17 +4050,17 @@ img[data-src].loaded {
     }
 
     .archetype-card {
-        padding-left: max(var(--mobile-gutter), 0.5rem) !important;
-        padding-right: max(var(--mobile-gutter), 0.5rem) !important;
+        padding-left: max(var(--mobile-gutter), 0.35rem) !important;
+        padding-right: max(var(--mobile-gutter), 0.35rem) !important;
     }
 
     .archetype-report-card {
-        padding-left: max(var(--mobile-gutter), 0.5rem) !important;
-        padding-right: max(var(--mobile-gutter), 0.5rem) !important;
+        padding-left: max(var(--mobile-gutter), 0.35rem) !important;
+        padding-right: max(var(--mobile-gutter), 0.35rem) !important;
     }
 
     .question-block {
-        padding: 0.5rem var(--mobile-gutter);
+        padding: 0.4rem var(--mobile-gutter);
         margin-bottom: 0.5rem;
     }
 
@@ -4063,25 +4072,25 @@ img[data-src].loaded {
     }
 }
 
-/* Tablet: reduced buffers for more screen real-estate */
+/* Tablet: tight buffers for more screen real-estate */
 @media (max-width: 1024px) {
     .container {
         width: 100%;
         max-width: 100%;
-        padding: 0 0.75rem;
+        padding: 0 0.5rem;
     }
 
     section {
-        padding: 12px 10px;
-        margin: 12px 0;
+        padding: 8px 6px;
+        margin: 8px 0;
     }
 
     .minimal-section {
-        padding: 1rem 0.75rem;
+        padding: 0.75rem 0.5rem;
     }
 
     .section-inner-padded {
-        padding: 1rem;
+        padding: 0.75rem;
     }
 
     .tool-container,
@@ -4091,13 +4100,13 @@ img[data-src].loaded {
     .relationship-container,
     .attraction-container,
     .needs-dependency-container {
-        padding: 1rem;
-        margin: 1rem 0;
+        padding: 0.75rem 0.5rem;
+        margin: 0.75rem 0;
     }
 
     .card,
     .question-card {
-        padding: 1rem;
+        padding: 0.75rem 0.5rem;
         margin: 0.75rem 0;
     }
 }
@@ -4106,12 +4115,12 @@ img[data-src].loaded {
     .container {
         width: 100%;
         max-width: 100%;
-        padding: 0 0.75rem;
+        padding: 0 0.5rem;
     }
 
     .main-content {
         max-width: 100%;
-        padding: 1.5rem 0.75rem;
+        padding: 1rem 0.5rem;
     }
 
     .section-inner,
@@ -4122,8 +4131,8 @@ img[data-src].loaded {
 
     section {
         border-radius: 0;
-        margin: 1rem 0;
-        padding: 1.5rem 1rem;
+        margin: 0.75rem 0;
+        padding: 1rem 0.5rem;
     }
 
     .section-inner {
