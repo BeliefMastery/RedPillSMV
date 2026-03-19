@@ -104,12 +104,16 @@
     fontSelect.className = 'font-scale-select';
 
     var options = [
-      { value: '1', label: '100%' },
-      { value: '0.95', label: '95%' },
-      { value: '0.9', label: '90%' },
-      { value: '0.85', label: '85%' },
+      { value: '0.7', label: '70%' },
       { value: '0.8', label: '80%' },
-      { value: '0.7', label: '70%' }
+      { value: '0.85', label: '85%' },
+      { value: '0.9', label: '90%' },
+      { value: '0.95', label: '95%' },
+      { value: '1', label: '100%' },
+      { value: '1.05', label: '105%' },
+      { value: '1.1', label: '110%' },
+      { value: '1.15', label: '115%' },
+      { value: '1.2', label: '120%' }
     ];
 
     options.forEach(function(o) {

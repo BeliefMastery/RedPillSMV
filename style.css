@@ -65,6 +65,10 @@
     padding: 0;
 }
 
+/* Root font-size scaled so all rem-based text site-wide responds to Font selector */
+html {
+    font-size: calc(var(--font-size-base) * var(--font-scale));
+}
 html, body {
     height: 100%;
     font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -73,8 +77,10 @@ html, body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
-    font-size: calc(var(--font-size-base) * var(--font-scale));
     line-height: 1.6;
+}
+body {
+    font-size: 1rem;
 }
 
 a {
@@ -635,7 +641,7 @@ header.site-header {
     margin-top: 2.5rem;
     margin-bottom: 1rem;
     text-shadow: 0 2px 10px rgba(100, 160, 255, 0.2); /* Subtle cosmic lift */
-    font-size: calc((var(--font-size-heading, var(--font-size-subheading))) * var(--font-scale));
+    font-size: var(--font-size-heading, var(--font-size-subheading));
 }
 
 .content-section p,
@@ -1690,7 +1696,7 @@ h3[style*="text-align:center"][style*="border-bottom"] {
     }
 }
 
-/* Home landing: 2x2 image grid — fits viewport with minimal buffer */
+/* Home landing: 2x2 image grid (desktop + mobile), minimal buffer, images shrunk-to-fit */
 .home-grid-section .section-inner,
 .home-grid-section .minimal-section {
     padding: 0.25rem;
@@ -1699,19 +1705,24 @@ h3[style*="text-align:center"][style*="border-bottom"] {
 .home-image-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
     gap: 2px;
     margin: 0.25rem 0;
     width: 100%;
     max-width: 100%;
+    aspect-ratio: 1;
     box-sizing: border-box;
 }
 .home-image-grid-link {
-    display: block;
-    line-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
     border-radius: 2px;
     overflow: hidden;
     box-shadow: var(--shadow-md);
     transition: var(--transition);
+    background: var(--glass);
 }
 .home-image-grid-link:hover {
     box-shadow: var(--shadow-lg);
@@ -1719,27 +1730,17 @@ h3[style*="text-align:center"][style*="border-bottom"] {
 }
 .home-image-grid-link img {
     width: 100%;
-    height: auto;
-    aspect-ratio: 1;
-    object-fit: cover;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
     display: block;
-    vertical-align: middle;
 }
-/* Fit 2x2 grid in viewport on small screens: grid height = min(width, available height) */
+/* Mobile: constrain grid height to viewport */
 @media (max-width: 768px) {
     .home-image-grid {
-        height: min(100vw, calc(100vh - 6rem));
-        grid-template-rows: repeat(2, 1fr);
-    }
-    .home-image-grid-link {
-        height: 100%;
-        min-height: 0;
-    }
-    .home-image-grid-link img {
-        width: 100%;
-        height: 100%;
         aspect-ratio: unset;
-        object-fit: cover;
+        height: min(100vw, calc(100vh - 6rem));
     }
     #tools .section-subtitle {
         display: none;
