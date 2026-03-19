@@ -1236,6 +1236,11 @@ button:disabled,
     margin-top: 0.5rem;
 }
 
+.intro-section .assessment-subheading {
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+}
+
 /* Assessment page lead line (invitation copy from landing) */
 .assessment-lead {
     font-size: 1.15rem;
