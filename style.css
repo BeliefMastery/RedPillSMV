@@ -2613,6 +2613,11 @@ main > .section-inner.minimal-section > .section-title-btn {
     justify-content: space-between;
 }
 
+/* Keep consistent breathing room before extended explanation on all tool pages */
+.extended-explanation-toggle {
+    margin-top: 1rem;
+}
+
 @media (hover: hover) {
 .instructions-toggle:hover,
 .extended-explanation-toggle:hover,
