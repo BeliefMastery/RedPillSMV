@@ -32,7 +32,6 @@
   <!-- Performance: Preload critical resources -->
   <link rel="modulepreload" href="./relationship-engine.js">
   <link rel="modulepreload" href="./shared/data-loader.js">
-  <link rel="modulepreload" href="./shared/debug-reporter.js">
   <link rel="modulepreload" href="./shared/utils.js">
   <link rel="modulepreload" href="./shared/performance-monitor.js">
 
@@ -216,12 +215,6 @@
   <script type="module">
     import { RelationshipEngine } from './relationship-engine.js';
     import { initializePerformanceMonitoring } from './shared/performance-monitor.js';
-    import { createDebugReporter } from './shared/debug-reporter.js';
-    import { setDebugReporter } from './shared/data-loader.js';
-    
-    // Initialize debug reporter
-    const debugReporter = createDebugReporter('RelationshipEngine');
-    setDebugReporter(debugReporter);
     
     // Initialize performance monitoring
     if (document.readyState === 'loading') {
@@ -243,16 +236,6 @@
       initEngine();
     }
     
-    // Show debug report if requested
-    if (window.location.search.includes('debug=true')) {
-      if (window.relationshipEngine && window.relationshipEngine.debugReporter) {
-        window.relationshipEngine.debugReporter.displayReport();
-        const debugContainer = document.getElementById('debug-report-container');
-        if (debugContainer) {
-          debugContainer.style.display = 'block';
-        }
-      }
-    }
   </script>
 
   <script>
@@ -314,67 +297,8 @@
         });
       }
       
-      // Debug panel functionality
-      const debugToggle = document.getElementById('debugToggle');
-      const debugPanel = document.getElementById('debugPanel');
-      const debugClose = document.getElementById('debugClose');
-      const debugClear = document.getElementById('debugClear');
-      const debugLog = document.getElementById('debugLog');
-      
-      if (debugToggle && debugPanel) {
-        debugToggle.addEventListener('click', function() {
-          debugPanel.classList.toggle('active');
-        });
-        
-        if (debugClose) {
-          debugClose.addEventListener('click', function() {
-            debugPanel.classList.remove('active');
-          });
-        }
-        
-        if (debugClear && debugLog) {
-          debugClear.addEventListener('click', function() {
-            debugLog.innerHTML = '';
-            if (window.relationshipEngine) {
-              window.relationshipEngine.debugLog = [];
-            }
-          });
-        }
-      }
-      
-      // Debug mode keyboard shortcut
-      document.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-          e.preventDefault();
-          if (window.relationshipEngine) {
-            window.relationshipEngine.debugMode = !window.relationshipEngine.debugMode;
-            console.log('Debug mode:', window.relationshipEngine.debugMode ? 'ENABLED' : 'DISABLED');
-            if (window.relationshipEngine.debugMode) {
-              debugPanel.classList.add('active');
-            }
-          }
-        }
-      });
     });
   </script>
-
-  <!-- Debug Panel -->
-  <button class="debug-toggle" id="debugToggle" title="Toggle Debug Panel (Ctrl+D to enable debug mode)">🐛</button>
-  <div class="debug-panel" id="debugPanel">
-    <div class="debug-header">
-      <h3>Debug Log</h3>
-      <div>
-        <button class="debug-toggle" id="debugClear">Clear</button>
-        <button class="debug-toggle" id="debugClose">×</button>
-      </div>
-    </div>
-    <div class="debug-log" id="debugLog">
-      <!-- Debug entries populated here -->
-    </div>
-    <div class="debug-footer">
-      Press Ctrl+D (Cmd+D on Mac) to toggle debug mode
-    </div>
-  </div>
 
 </body>
 </html>
