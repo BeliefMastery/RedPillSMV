@@ -2353,6 +2353,11 @@ figure.image-card {
     padding: 2rem 1rem;
 }
 
+/* Assessment pages: keep the heading badge close to the top (match index feel) */
+main > .section-inner.minimal-section {
+    padding: 0.25rem;
+}
+
 .minimal-section .image-row {
     background: transparent;
 }
