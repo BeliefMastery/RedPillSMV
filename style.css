@@ -2394,7 +2394,7 @@ main > .section-inner.minimal-section {
 
 /* Reduce wasted top buffer on assessment-page badges */
 main > .section-inner.minimal-section > .section-title-btn {
-    margin: 0.75rem auto 0.45rem !important;
+    margin: 0.5rem auto 0.45rem !important;
 }
 
 .minimal-section .image-row {
@@ -3934,7 +3934,7 @@ img[data-src].loaded {
     }
 
     main > .section-inner.minimal-section > .section-title-btn {
-        margin: 0.65rem auto 0.4rem !important;
+        margin: 0.45rem auto 0.4rem !important;
     }
 
     .questionnaire-section.active,
