@@ -3491,7 +3491,7 @@ footer a {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 18px;
+    font-size: calc(18px * var(--font-scale));
     color: #4a9eff;
     z-index: 1000;
     background: var(--glass);
@@ -3530,7 +3530,7 @@ footer a {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     z-index: 9999;
     animation: slideIn 0.3s ease-out;
-    font-size: 14px;
+    font-size: calc(14px * var(--font-scale));
     line-height: 1.4;
 }
 
@@ -3538,7 +3538,7 @@ footer a {
     background: none;
     border: none;
     color: white;
-    font-size: 20px;
+    font-size: calc(20px * var(--font-scale));
     cursor: pointer;
     padding: 0;
     margin-left: auto;
@@ -3773,7 +3773,7 @@ img[data-src].loaded {
     input[type="number"],
     textarea,
     select {
-        font-size: 16px; /* Prevents zoom on iOS */
+        font-size: calc(16px * var(--font-scale)); /* Scaled with Font selector */
         padding: 0.75rem;
         min-height: 44px;
     }
