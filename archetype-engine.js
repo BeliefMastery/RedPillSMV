@@ -2480,6 +2480,9 @@ showGenderSelection() {
 
       // PRIORITY: If we have completed results, show report immediately on revisit
       if (this.analysisData.primaryArchetype) {
+        // We still must load the archetype data modules before rendering results.
+        // Stored progress can contain phase3/4 results, but ARCHETYPES/BRUTAL_TRUTHS are lazy-loaded.
+        await this.loadArchetypeData();
         this.renderResults();
         this.showResultsContainer();
         return;
