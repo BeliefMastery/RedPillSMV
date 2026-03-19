@@ -2408,6 +2408,13 @@ main > .section-inner.minimal-section > .section-title-btn {
     gap: 2rem;
 }
 
+/* Archetype report width: archetype-engine hard-codes max-width:900px inline.
+   Increase it so the report feels as full-width as other tool pages. */
+#resultsContent .results-container {
+    max-width: 1100px !important;
+    width: 100%;
+}
+
 .primary-loop-section,
 .secondary-loops-section,
 .need-chain-section,
