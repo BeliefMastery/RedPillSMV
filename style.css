@@ -3904,6 +3904,20 @@ img[data-src].loaded {
         padding-right: var(--mobile-gutter) !important;
     }
 
+    /* Temperament report tight gutters:
+       base theme padding rules appear later in the file, so we force left/right here. */
+    .temperament-container .question-block,
+    .temperament-profile-card,
+    .temperament-profile-inner,
+    .temperament-spectrum-container,
+    .temperament-variation-note,
+    .polarity-failure-alert,
+    .dimension-breakdown,
+    .dimension-item {
+        padding-left: var(--mobile-gutter) !important;
+        padding-right: var(--mobile-gutter) !important;
+    }
+
     .questionnaire-container,
     #questionnaire-form,
     .tool-wrapper {
@@ -4048,6 +4062,19 @@ img[data-src].loaded {
     .question-block {
         padding: 0.4rem var(--mobile-gutter);
         margin-bottom: 0.5rem;
+    }
+
+    /* Temperament report tight gutters on the smallest screens */
+    .temperament-container .question-block,
+    .temperament-profile-card,
+    .temperament-profile-inner,
+    .temperament-spectrum-container,
+    .temperament-variation-note,
+    .polarity-failure-alert,
+    .dimension-breakdown,
+    .dimension-item {
+        padding-left: var(--mobile-gutter) !important;
+        padding-right: var(--mobile-gutter) !important;
     }
 
 }
