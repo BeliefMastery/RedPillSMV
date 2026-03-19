@@ -668,22 +668,24 @@ header.site-header {
 /* Relationship assessment choice (two cards + Begin) */
 #actionButtonsSection .assessment-choice-intro {
     color: var(--brand);
-    font-size: 1rem;
-    line-height: 1.6;
+    font-size: 0.98rem;
+    line-height: 1.55;
     letter-spacing: normal;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.6rem;
     margin-top: 0;
+    text-align: center;
 }
 .assessment-choice-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.25rem;
+    gap: 1rem;
+    margin-top: 0.4rem;
 }
 .assessment-choice-card {
     position: relative;
-    padding: 1.5rem;
-    border-radius: var(--radius);
-    border: 2px solid var(--border-medium);
+    padding: 1.2rem 1.1rem;
+    border-radius: calc(var(--radius) * 0.85);
+    border: 1px solid var(--border-medium);
     background: var(--glass);
     cursor: pointer;
     transition: var(--transition);
@@ -703,7 +705,7 @@ header.site-header {
 @media (hover: hover) {
 .assessment-choice-card:hover {
     border-color: var(--border-bright);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 24px var(--glow-accent);
+    box-shadow: var(--shadow-md);
 }
 .assessment-choice-card:hover::before {
     opacity: 0.9;
@@ -711,7 +713,7 @@ header.site-header {
 }
 .assessment-choice-card.selected {
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 0 28px var(--glow-accent);
+    box-shadow: 0 0 0 1px var(--accent), var(--shadow-sm);
 }
 .assessment-choice-card.selected::before {
     opacity: 1;
@@ -719,7 +721,7 @@ header.site-header {
 }
 .assessment-card-title {
     margin: 0 0 0.5rem;
-    font-size: 1.1rem;
+    font-size: 1.02rem;
     color: var(--accent);
     font-weight: 600;
 }
@@ -728,9 +730,9 @@ header.site-header {
 }
 .assessment-card-desc {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.86rem;
     color: var(--muted);
-    line-height: 1.5;
+    line-height: 1.45;
 }
 .assessment-card-check {
     position: absolute;
@@ -749,6 +751,17 @@ header.site-header {
     margin-top: 1rem;
     justify-content: center;
     align-items: center;
+    gap: 0.7rem;
+}
+#actionButtonsSection #startAssessment {
+    min-width: 220px;
+}
+.assessment-sample-action {
+    display: flex;
+    align-items: center;
+}
+.assessment-sample-action .btn {
+    white-space: nowrap;
 }
 /* Relationship report: collapsible strain point accordions */
 .strain-accordion {
@@ -3270,12 +3283,19 @@ footer a {
     color: var(--accent);
 }
 
-/* Style overlay switcher (index.html footer) */
+/* Footer theme/font controls (all pages) */
+.footer-controls {
+    margin-top: 0.85rem;
+    margin-bottom: 0;
+}
+
 .style-switcher-wrap {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 0.75rem;
-    margin-right: 1rem;
+    margin-right: 0;
     font-size: 0.9rem;
 }
 
@@ -3312,6 +3332,13 @@ footer a {
 .style-overlay-select:focus {
     outline: none;
     border-color: var(--accent);
+}
+
+@media (max-width: 768px) {
+    .style-switcher-wrap {
+        gap: 0.45rem;
+        font-size: 0.85rem;
+    }
 }
 
 /* ========== PROGRESS & LOADERS ========== */
