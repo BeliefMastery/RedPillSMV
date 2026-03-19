@@ -110,7 +110,7 @@ img:hover {
 main {
     position: relative;
     z-index: 2;
-    padding-top: 64px;
+    padding-top: 58px;
     background: rgba(0, 0, 0, 0.0);
 }
 
@@ -1280,7 +1280,7 @@ button:disabled,
 .section-title-btn {
     display: block;
     text-align: center;
-    margin: 3rem auto 1rem;
+    margin: 2.4rem auto 0.75rem;
     padding: 1rem 2.5rem;
     font-size: 1.8rem;
     font-weight: 700;
@@ -2389,12 +2389,12 @@ figure.image-card {
 main > .section-inner.minimal-section {
     /* Tight left/right, but keep enough top offset so the badge
        doesn't visually touch the fixed sticky header. */
-    padding: 0.5rem 0.25rem 0.25rem;
+    padding: 0.35rem 0.25rem 0.2rem;
 }
 
 /* Reduce wasted top buffer on assessment-page badges */
 main > .section-inner.minimal-section > .section-title-btn {
-    margin: 1.25rem auto 0.75rem !important;
+    margin: 0.95rem auto 0.55rem !important;
 }
 
 .minimal-section .image-row {
@@ -3930,11 +3930,11 @@ img[data-src].loaded {
 
     /* Mobile: tighter badge margins for assessment pages */
     main > .section-inner.minimal-section {
-        padding: 0.7rem var(--mobile-gutter) 0.25rem;
+        padding: 0.5rem var(--mobile-gutter) 0.2rem;
     }
 
     main > .section-inner.minimal-section > .section-title-btn {
-        margin: 1.1rem auto 0.65rem !important;
+        margin: 0.85rem auto 0.5rem !important;
     }
 
     .questionnaire-section.active,
