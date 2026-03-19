@@ -2355,12 +2355,14 @@ figure.image-card {
 
 /* Assessment pages: keep the heading badge close to the top (match index feel) */
 main > .section-inner.minimal-section {
-    padding: 0.25rem;
+    /* Tight left/right, but keep enough top offset so the badge
+       doesn't visually touch the fixed sticky header. */
+    padding: 0.75rem 0.25rem 0.25rem;
 }
 
 /* Reduce wasted top buffer on assessment-page badges */
 main > .section-inner.minimal-section > .section-title-btn {
-    margin: 1.5rem auto 1.25rem !important;
+    margin: 1.75rem auto 1.25rem !important;
 }
 
 .minimal-section .image-row {
@@ -3874,8 +3876,12 @@ img[data-src].loaded {
     }
 
     /* Mobile: tighter badge margins for assessment pages */
+    main > .section-inner.minimal-section {
+        padding: 1rem var(--mobile-gutter) 0.25rem;
+    }
+
     main > .section-inner.minimal-section > .section-title-btn {
-        margin: 1.25rem auto 1rem !important;
+        margin: 1.5rem auto 1rem !important;
     }
 
     .questionnaire-section.active,
