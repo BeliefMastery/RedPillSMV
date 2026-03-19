@@ -29,6 +29,7 @@ export class ArchetypeEngine {
     this.archetypeScores = {};
     this.shuffledOptions = {};
     this.shuffledVignettes = {};
+    this.baseSectionTitleText = null;
     this.shuffledOptions = {};
     this.shuffledVignettes = {};
     this.analysisData = {
@@ -2480,13 +2481,37 @@ showGenderSelection() {
   showQuestionContainer() {
     const questionContainer = document.getElementById('questionContainer');
     if (questionContainer) questionContainer.classList.remove('hidden');
+    this.setReportHeaderState(false);
     this.ui.transition('assessment');
   }
 
   showResultsContainer() {
     const questionContainer = document.getElementById('questionContainer');
     if (questionContainer) questionContainer.classList.add('hidden');
+    this.setReportHeaderState(true);
     this.ui.transition('results');
+  }
+
+  setReportHeaderState(isReport) {
+    const heading = document.querySelector('.section-title-btn');
+    const lead = document.querySelector('.assessment-lead');
+
+    if (heading) {
+      if (!this.baseSectionTitleText) {
+        this.baseSectionTitleText = heading.textContent.trim().replace(/\s*: REPORT$/, '');
+      }
+      if (isReport) {
+        if (!heading.textContent.trim().endsWith(': REPORT')) {
+          heading.textContent = `${this.baseSectionTitleText}: REPORT`;
+        }
+      } else {
+        heading.textContent = this.baseSectionTitleText;
+      }
+    }
+
+    if (lead) {
+      lead.classList.toggle('hidden', Boolean(isReport));
+    }
   }
 
   saveProgress() {
@@ -2638,6 +2663,7 @@ showGenderSelection() {
     }
     if (introSection) introSection.classList.remove('hidden');
     if (actionButtonsSection) actionButtonsSection.classList.remove('hidden');
+    this.setReportHeaderState(false);
     this.ui.transition('idle');
   }
 

@@ -35,6 +35,7 @@ export class AttractionEngine {
     this.responses = {};
     this.preferences = {};
     this.smv = {};
+    this.baseSectionTitleText = null;
 
     this.debugReporter = createDebugReporter('AttractionEngine');
     this.debugReporter.markInitialized();
@@ -62,6 +63,7 @@ export class AttractionEngine {
       this.responses = d.responses || {};
       this.preferences = d.preferences || {};
       this.currentGender = d.currentGender;
+      this.setReportHeaderState(true);
       this.ui.transition('results');
       this.renderResults();
       window.scrollTo(0, 0);
@@ -121,6 +123,7 @@ export class AttractionEngine {
     this.currentPhase = -1;
     this.responses = {};
     this.preferences = {};
+    this.setReportHeaderState(false);
     this.ui.transition('assessment');
     this.showGenderSelection();
   }
@@ -375,6 +378,7 @@ export class AttractionEngine {
   calculateAndShowResults() {
     this.smv = this.calculateSMV();
     this.saveResults();
+    this.setReportHeaderState(true);
     this.ui.transition('results');
     this.renderResults();
     window.scrollTo(0, 0);
@@ -895,8 +899,31 @@ export class AttractionEngine {
     this.responses = {};
     this.preferences = {};
     this.smv = {};
+    this.setReportHeaderState(false);
     this.ui.transition('idle');
     window.scrollTo(0, 0);
+  }
+
+  setReportHeaderState(isReport) {
+    const heading = document.querySelector('.section-title-btn');
+    const lead = document.querySelector('.assessment-lead');
+
+    if (heading) {
+      if (!this.baseSectionTitleText) {
+        this.baseSectionTitleText = heading.textContent.trim().replace(/\s*: REPORT$/, '');
+      }
+      if (isReport) {
+        if (!heading.textContent.trim().endsWith(': REPORT')) {
+          heading.textContent = `${this.baseSectionTitleText}: REPORT`;
+        }
+      } else {
+        heading.textContent = this.baseSectionTitleText;
+      }
+    }
+
+    if (lead) {
+      lead.classList.toggle('hidden', Boolean(isReport));
+    }
   }
 
   /**

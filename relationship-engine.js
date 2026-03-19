@@ -48,6 +48,7 @@ export class RelationshipEngine {
       archetypalInsights: {},
       crossDomainSpillover: {}
     };
+    this.baseSectionTitleText = null;
     
     // Initialize debug reporter
     this.debugReporter = createDebugReporter('RelationshipEngine');
@@ -661,6 +662,7 @@ export class RelationshipEngine {
       }
 
       this.setLandingVisibility(false);
+      this.setReportHeaderState(false);
 
       const questionnaireSection = document.getElementById('questionnaireSection');
       const resultsSection = document.getElementById('resultsSection');
@@ -1367,6 +1369,7 @@ export class RelationshipEngine {
   }
 
   renderResults() {
+    this.setReportHeaderState(true);
     this.ui.transition('results');
 
     const resultsContainer = document.getElementById('resultsContainer');
@@ -1937,6 +1940,29 @@ export class RelationshipEngine {
     if (cardConflict) cardConflict.setAttribute('aria-pressed', 'false');
     if (cardViability) cardViability.setAttribute('aria-pressed', 'false');
     if (startBtn) startBtn.disabled = true;
+    this.setReportHeaderState(false);
+  }
+
+  setReportHeaderState(isReport) {
+    const heading = document.querySelector('.section-title-btn');
+    const lead = document.querySelector('.assessment-lead');
+
+    if (heading) {
+      if (!this.baseSectionTitleText) {
+        this.baseSectionTitleText = heading.textContent.trim().replace(/\s*: REPORT$/, '');
+      }
+      if (isReport) {
+        if (!heading.textContent.trim().endsWith(': REPORT')) {
+          heading.textContent = `${this.baseSectionTitleText}: REPORT`;
+        }
+      } else {
+        heading.textContent = this.baseSectionTitleText;
+      }
+    }
+
+    if (lead) {
+      lead.classList.toggle('hidden', Boolean(isReport));
+    }
   }
 }
 

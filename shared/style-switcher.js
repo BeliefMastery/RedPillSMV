@@ -11,8 +11,7 @@
     { id: 'obsidian', label: 'Obsidian Oracle' },
     { id: 'forge', label: 'Forge' },
     { id: 'predatory-luxury', label: 'Predatory Luxury' },
-    { id: 'clinical-dominance', label: 'Clinical Dominance' },
-    { id: 'sovereign-gold', label: 'Sovereign Gold' },
+    { id: 'sand', label: 'Sand' },
     { id: 'brutal-neomorphism', label: 'Brutal Neomorphism' },
     { id: 'clinical-obsidian', label: 'Clinical Obsidian' },
     { id: 'style-sovereign-vault', label: 'Sovereign Vault' },
@@ -31,6 +30,7 @@
   function applyOverlay(id) {
     var link = getOverlayLink();
     if (!link) return;
+    if (id === 'clinical-dominance' || id === 'sovereign-gold') id = 'sand';
     if (!id || id === 'default') {
       link.href = '';
       return;

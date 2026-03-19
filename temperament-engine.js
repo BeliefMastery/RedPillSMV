@@ -55,6 +55,7 @@ export class TemperamentEngine {
       allAnswers: {},
       questionSequence: []
     };
+    this.baseSectionTitleText = null;
     
     // Initialize debug reporter
     this.debugReporter = createDebugReporter('TemperamentEngine');
@@ -403,6 +404,7 @@ export class TemperamentEngine {
 
     if (introSection) introSection.classList.add('hidden');
     if (actionButtonsSection) actionButtonsSection.classList.add('hidden');
+    this.setReportHeaderState(false);
     this.ui.transition('assessment');
 
     this.currentPhase = 1;
@@ -1188,6 +1190,7 @@ export class TemperamentEngine {
       
       const questionnaireSection = document.getElementById('questionnaireSection');
       const resultsSection = document.getElementById('resultsSection');
+      this.setReportHeaderState(true);
       this.ui.transition('results');
 
       const container = document.getElementById('temperamentResults');
@@ -1505,9 +1508,32 @@ export class TemperamentEngine {
 
     if (introSection) introSection.classList.remove('hidden');
     if (actionButtonsSection) actionButtonsSection.classList.remove('hidden');
+    this.setReportHeaderState(false);
     this.ui.transition('idle');
     
     this.buildPhase1Sequence();
+  }
+
+  setReportHeaderState(isReport) {
+    const heading = document.querySelector('.section-title-btn');
+    const lead = document.querySelector('.assessment-lead');
+
+    if (heading) {
+      if (!this.baseSectionTitleText) {
+        this.baseSectionTitleText = heading.textContent.trim().replace(/\s*: REPORT$/, '');
+      }
+      if (isReport) {
+        if (!heading.textContent.trim().endsWith(': REPORT')) {
+          heading.textContent = `${this.baseSectionTitleText}: REPORT`;
+        }
+      } else {
+        heading.textContent = this.baseSectionTitleText;
+      }
+    }
+
+    if (lead) {
+      lead.classList.toggle('hidden', Boolean(isReport));
+    }
   }
 }
 
