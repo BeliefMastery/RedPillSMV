@@ -2358,6 +2358,11 @@ main > .section-inner.minimal-section {
     padding: 0.25rem;
 }
 
+/* Reduce wasted top buffer on assessment-page badges */
+main > .section-inner.minimal-section > .section-title-btn {
+    margin: 1.5rem auto 1.25rem;
+}
+
 .minimal-section .image-row {
     background: transparent;
 }
@@ -3866,6 +3871,11 @@ img[data-src].loaded {
     .home-grid-section .minimal-section {
         padding-left: var(--mobile-gutter);
         padding-right: var(--mobile-gutter);
+    }
+
+    /* Mobile: tighter badge margins for assessment pages */
+    main > .section-inner.minimal-section > .section-title-btn {
+        margin: 1.25rem auto 1rem;
     }
 
     .questionnaire-section.active,
