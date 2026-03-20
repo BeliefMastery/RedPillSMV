@@ -24,6 +24,25 @@ export const FEMALE_CLUSTER_WEIGHTS = {
   axisOfAttraction: 0.50
 };
 
+/**
+ * Axis of Attraction subcategory blend weights.
+ * This prevents raw question-count dominance from silently overweighting longer subcategories.
+ */
+export const AXIS_SUBCATEGORY_WEIGHTS = {
+  male: {
+    radActivity: 0.30,
+    performanceStatus: 0.30,
+    physicalGenetic: 0.25,
+    humour: 0.15
+  },
+  female: {
+    fertility: 0.30,
+    riskCost: 0.30,
+    personality: 0.20,
+    factorsHidden: 0.20
+  }
+};
+
 /** Market Preference Configuration — Male */
 export const MALE_PREFERENCE_QUESTIONS = [
   { id: 'age', text: 'What is your current age?', type: 'number', min: 18, max: 80, required: true },
@@ -191,9 +210,13 @@ const FEMALE_AXIS_QUESTIONS = [
   { id: 'risk_1', subcategory: 'riskCost', text: 'How emotionally stable and predictable are you?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Very volatile; unpredictable', 'Often unstable', 'Moderately stable', 'Generally stable', 'Very stable; highly predictable'] },
   { id: 'risk_2', subcategory: 'riskCost', text: 'How present are red flags (substance abuse, mental health issues, destructive patterns)?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Multiple severe', 'Several moderate', 'A few minor', 'Very few', 'None significant'] },
   { id: 'risk_3', subcategory: 'riskCost', text: 'How much drama or chaos do you bring into relationships?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Very high; constant drama', 'High; frequent', 'Moderate; some', 'Low; minimal', 'Very low; calm presence'] },
-  // Personality & factors hidden (2)
+  // Personality & factors hidden (expanded to improve reliability of thin subscales)
   { id: 'personality_1', subcategory: 'personality', text: 'How would you describe your personality — easy to get along with or high conflict?', weight: 1.0, options: OPTS, optionLabels: ['High conflict; difficult', 'Below average; some friction', 'Average', 'Easy-going; pleasant', 'Very easy; highly compatible'] },
-  { id: 'hidden_1', subcategory: 'factorsHidden', text: 'Are there significant things about you (past, habits, beliefs) that you tend to hide from partners?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Major secrets; would shock', 'Several significant', 'A few minor', 'Very little', 'Nothing significant; transparent'] }
+  { id: 'personality_2', subcategory: 'personality', text: 'How well do you handle disagreement without escalating into contempt, punishment, or silent warfare?', weight: 1.0, options: OPTS, optionLabels: ['Very poorly; escalation is common', 'Poorly; conflict lingers', 'Moderately; mixed outcomes', 'Well; usually de-escalate', 'Exceptionally; calm and constructive'] },
+  { id: 'personality_3', subcategory: 'personality', text: 'How consistently do partners describe you as emotionally safe, cooperative, and low-drama over time?', weight: 1.0, options: OPTS, optionLabels: ['Rarely; often unstable', 'Inconsistent', 'Sometimes', 'Usually', 'Consistently'] },
+  { id: 'hidden_1', subcategory: 'factorsHidden', text: 'Are there significant things about you (past, habits, beliefs) that you tend to hide from partners?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Major secrets; would shock', 'Several significant', 'A few minor', 'Very little', 'Nothing significant; transparent'] },
+  { id: 'hidden_2', subcategory: 'factorsHidden', text: 'How transparent are you about relationship history, unresolved ties, and current boundaries with ex-partners?', weight: 1.0, options: OPTS, optionLabels: ['Not transparent; frequent ambiguity', 'Limited transparency', 'Moderately transparent', 'Mostly transparent', 'Fully transparent and clear'] },
+  { id: 'hidden_3', subcategory: 'factorsHidden', text: 'How likely is a partner to discover major information later that materially changes trust?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Very likely', 'Likely', 'Possible', 'Unlikely', 'Very unlikely'] }
 ];
 
 /** Male clusters — assembled */

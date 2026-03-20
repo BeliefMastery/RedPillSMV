@@ -88,7 +88,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel safe expressing difficult emotions or concerns?',
       'How often do conversations escalate into conflict or misunderstanding?'
     ],
-    weight: 0.9
+    weight: 0.96
   },
   'emotional-intelligence': {
     id: 'emotional-intelligence',
@@ -105,7 +105,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel emotionally validated and supported?',
       'How often do emotional issues go unaddressed or misunderstood?'
     ],
-    weight: 0.9
+    weight: 0.96
   },
   'life-goals': {
     id: 'life-goals',
@@ -122,7 +122,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you share a vision for your future together?',
       'How often do you feel uncertain about the direction of the relationship or who is initiating next steps?'
     ],
-    weight: 0.9
+    weight: 0.96
   },
   'conflict-resolution': {
     id: 'conflict-resolution',
@@ -139,7 +139,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel safe expressing disagreements?',
       'When conflict appears, does one of you pursue resolution while the other withdraws or avoids it?'
     ],
-    weight: 0.9
+    weight: 0.96
   },
   'energy-dynamics': {
     id: 'energy-dynamics',
@@ -156,7 +156,7 @@ export const COMPATIBILITY_POINTS = {
       'Do energy mismatches reduce closeness or make it harder to stay connected?',
       'Does the lead/follow or initiate/receive dynamic create tension or confusion when it shifts?'
     ],
-    weight: 0.9
+    weight: 0.96
   },
   'transactional-compatibility': {
     id: 'transactional-compatibility',
@@ -173,7 +173,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel your contributions are recognized and appreciated?',
       'Does the relationship drift into one partner managing everything while the other defaults to passivity?'
     ],
-    weight: 0.9
+    weight: 0.96
   },
   'parenting-compatibility': {
     id: 'parenting-compatibility',
@@ -190,7 +190,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel your parenting approach is respected?',
       'How often do parenting differences create conflict?'
     ],
-    weight: 0.9
+    weight: 0.96
   },
   'relationship-efficiency': {
     id: 'relationship-efficiency',
@@ -207,7 +207,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel the relationship has energy for growth and shared projects?',
       'When uncertainty appears, does one of you take direction while the other stalls or disengages?'
     ],
-    weight: 0.9
+    weight: 0.96
   },
   
   // Moderate to High Impact (4 points)
@@ -226,7 +226,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel safe and respected in your sexual relationship?',
       'How balanced is initiation and receptivity between you (and does it shift comfortably by context)?'
     ],
-    weight: 0.8
+    weight: 0.92
   },
   'financial-compatibility': {
     id: 'financial-compatibility',
@@ -243,7 +243,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel your financial contributions are balanced and fair?',
       'How often do financial issues create conflict or stress?'
     ],
-    weight: 0.8
+    weight: 0.92
   },
   'intellectual-compatibility': {
     id: 'intellectual-compatibility',
@@ -260,7 +260,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel intellectually understood and respected?',
       'How often do you feel bored or unstimulated intellectually?'
     ],
-    weight: 0.8
+    weight: 0.92
   },
   'spiritual-compatibility': {
     id: 'spiritual-compatibility',
@@ -277,7 +277,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel spiritually connected or isolated?',
       'How often do spiritual differences create conflict or distance?'
     ],
-    weight: 0.8
+    weight: 0.92
   },
   
   // Moderate Impact (4 points)
@@ -296,7 +296,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel your partner prioritizes the relationship appropriately?',
       'How well do you both respect each other\'s need for work and personal space?'
     ],
-    weight: 0.7
+    weight: 0.88
   },
   'time-management': {
     id: 'time-management',
@@ -313,7 +313,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel your partner prioritizes you appropriately?',
       'How often do time management differences create conflict?'
     ],
-    weight: 0.7
+    weight: 0.88
   },
   'social-compatibility': {
     id: 'social-compatibility',
@@ -330,7 +330,7 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel your social needs are respected and met?',
       'How often do social differences create conflict or distance?'
     ],
-    weight: 0.7
+    weight: 0.88
   },
   'lifestyle-compatibility': {
     id: 'lifestyle-compatibility',
@@ -347,16 +347,18 @@ export const COMPATIBILITY_POINTS = {
       'Do you feel your health and well-being practices are compatible?',
       'How often do lifestyle differences create daily friction?'
     ],
-    weight: 0.7
+    weight: 0.88
   }
 };
 
 // Impact tier weights for scoring
+// Calibrated (5D/C3): gentler slope than legacy 1.0/0.9/0.8/0.7 while preserving tier ordering.
+// Effective multipliers with point weights now ~ 1.00 / 0.902 / 0.810 / 0.722.
 export const IMPACT_TIER_WEIGHTS = {
   'very-high': 1.0,
-  'high': 0.9,
-  'moderate-high': 0.8,
-  'moderate': 0.7
+  'high': 0.94,
+  'moderate-high': 0.88,
+  'moderate': 0.82
 };
 
 // Scoring thresholds (for Priority: Critical/High/Moderate/Low)

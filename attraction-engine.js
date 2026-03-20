@@ -22,7 +22,8 @@ import {
   BAD_BOY_GOOD_GUY_GRID,
   KEEPER_SWEEPER_CHART,
   RAD_ACTIVITY_TYPE_MODIFIER,
-  PARTNER_COUNT_DOWNGRADE
+  PARTNER_COUNT_DOWNGRADE,
+  AXIS_SUBCATEGORY_WEIGHTS
 } from './attraction-data.js';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
@@ -413,7 +414,7 @@ export class AttractionEngine {
     const clusters = this.getClusters();
     const weights = this.getClusterWeights();
     const rawScores = { clusters: {}, subcategories: {} };
-    const smv = { overall: 0, clusters: {}, subcategories: {}, marketPosition: '', delusionIndex: 0, levelClassification: '', targetMarket: {}, recommendation: {} };
+    const smv = { overall: 0, clusters: {}, subcategories: {}, marketPosition: '', delusionIndex: 0, delusionBand: 'low', levelClassification: '', targetMarket: {}, recommendation: {} };
 
     Object.keys(clusters).forEach(clusterId => {
       const cluster = clusters[clusterId];
@@ -439,6 +440,17 @@ export class AttractionEngine {
       if (this.currentGender === 'male' && clusterId === 'axisOfAttraction' && smv.subcategories[clusterId].radActivity != null) {
         smv.subcategories[clusterId].radActivity = this.calculateRadActivityScore();
       }
+
+      if (clusterId === 'axisOfAttraction') {
+        const subScores = smv.subcategories[clusterId];
+        const config = this.currentGender === 'male' ? AXIS_SUBCATEGORY_WEIGHTS.male : AXIS_SUBCATEGORY_WEIGHTS.female;
+        const weightedEntries = Object.entries(config).filter(([k]) => subScores[k] != null);
+        const totalWeight = weightedEntries.reduce((sum, [, w]) => sum + w, 0);
+        if (totalWeight > 0) {
+          const weightedSum = weightedEntries.reduce((sum, [k, w]) => sum + (subScores[k] * w), 0);
+          smv.clusters[clusterId] = weightedSum / totalWeight;
+        }
+      }
     });
 
     smv.overall = Object.keys(weights).reduce((sum, k) => sum + (smv.clusters[k] || 0) * (weights[k] || 0), 0);
@@ -446,6 +458,7 @@ export class AttractionEngine {
     smv.weakestSubcategories = this.identifyWeakestSubcategories(smv);
     smv.levelClassification = this.classifyDevelopmentalLevel(smv);
     smv.delusionIndex = this.calculateDelusionIndex(smv);
+    smv.delusionBand = this.calculateDelusionBand(smv.delusionIndex);
     smv.targetMarket = this.analyzeTargetMarket(smv);
     smv.recommendation = this.generateRecommendation(smv);
     if (this.currentGender === 'male') smv.badBoyGoodGuy = this.placeBadBoyGoodGuy(smv);
@@ -483,8 +496,17 @@ export class AttractionEngine {
   }
 
   placeBadBoyGoodGuy(smv) {
-    const goodGuy = smv.clusters?.reproductiveConfidence ?? 50;
+    const coalition = smv.clusters?.coalitionRank ?? 50;
+    const repro = smv.clusters?.reproductiveConfidence ?? 50;
+    const goodGuy = (repro * 0.85) + (coalition * 0.15);
     const badBoy = smv.clusters?.axisOfAttraction ?? 50;
+  calculateDelusionBand(score) {
+    if (score >= 70) return 'severe';
+    if (score >= 50) return 'high';
+    if (score >= 30) return 'moderate';
+    return 'low';
+  }
+
     const gLevel = goodGuy >= 70 ? 'hi' : goodGuy >= 55 ? 'upper-mid' : goodGuy >= 40 ? 'mid' : goodGuy >= 25 ? 'lower-mid' : 'lo';
     const bLevel = badBoy >= 70 ? 'hi' : badBoy >= 40 ? 'mid' : 'lo';
     const labels = {
@@ -629,7 +651,7 @@ export class AttractionEngine {
         const guid = this.getWeakestSubcategoryGuidance(weakest.axisOfAttraction.id, 'axisOfAttraction');
         r.weakestGuidance.push({ cluster: 'Axis of Attraction', label: weakest.axisOfAttraction.label, ...guid });
       }
-      if (smv.delusionIndex > 50) r.warning = 'WARNING: Your standards significantly exceed your market value. Adjust expectations or commit to major self-improvement.';
+      if (smv.delusionBand === 'high' || smv.delusionBand === 'severe') r.warning = 'WARNING: Your standards significantly exceed your market value. Adjust expectations or commit to major self-improvement.';
     } else {
       if (smv.overall < 40) { r.priority = 'CRITICAL DEVELOPMENT NEEDED'; r.strategic = 'Sexual Market Value below average. Without improvement, high-value men will not commit long-term.'; }
       else if (smv.overall < 60) { r.priority = 'Optimization Phase'; r.strategic = 'Average Sexual Market Value. Improvements can access above-average men.'; }
@@ -646,7 +668,7 @@ export class AttractionEngine {
         const guid = this.getWeakestSubcategoryGuidance(weakest.axisOfAttraction.id, 'axisOfAttraction');
         r.weakestGuidance.push({ cluster: 'Axis of Attraction', label: weakest.axisOfAttraction.label, ...guid });
       }
-      if (smv.delusionIndex > 50) r.warning = 'WARNING: Your standards (height/income/status) significantly exceed your market value. Adjust standards or dramatically improve Sexual Market Value.';
+      if (smv.delusionBand === 'high' || smv.delusionBand === 'severe') r.warning = 'WARNING: Your standards (height/income/status) significantly exceed your market value. Adjust standards or dramatically improve Sexual Market Value.';
     }
     r.tactical = r.weakestGuidance.flatMap(w => w.actions);
     if (r.tactical.length === 0) r.tactical = this.currentGender === 'male' ? ['Maintain current trajectory', 'Continue refining highest-leverage areas'] : ['Maintain Sexual Market Value through health and presentation', 'Continue vetting for commitment-capable men'];
@@ -730,7 +752,7 @@ export class AttractionEngine {
 
         ${radBlock}
         <section class="report-section"><h2 class="report-section-title">Market Position</h2>
-        ${s.delusionIndex > 30 ? `<div class="delusion-warning"><h3>⚠️ Delusion Index: ${Math.round(s.delusionIndex)}%</h3><p>${this.getDelusionWarning(s.delusionIndex)}</p></div>` : ''}
+        ${s.delusionBand !== 'low' ? `<div class="delusion-warning"><h3>⚠️ Standards-Market Mismatch: ${SecurityUtils.sanitizeHTML(s.delusionBand.toUpperCase())}</h3><p>${this.getDelusionWarning(s.delusionBand)}</p></div>` : ''}
         <div class="market-analysis"><div class="market-grid"><div class="market-card"><h4>Realistic Target</h4><p>${s.targetMarket?.realistic || ''}</p></div><div class="market-card"><h4>Aspirational</h4><p>${s.targetMarket?.aspirational || ''}</p></div></div></div></section>
 
         <section class="report-section"><h2 class="report-section-title">Strategic Recommendations</h2>
@@ -862,9 +884,9 @@ export class AttractionEngine {
     if (smv >= 40) return `Average range. Focused improvement will expand options.`;
     return `Below average. Significant development needed.`;
   }
-  getDelusionWarning(i) {
-    if (i >= 70) return 'SEVERE MISMATCH: Expectations dramatically out of alignment with market value.';
-    if (i >= 50) return 'SIGNIFICANT MISMATCH: Standards exceed market position. Adjust or improve.';
+  getDelusionWarning(band) {
+    if (band === 'severe') return 'SEVERE MISMATCH: Expectations dramatically out of alignment with market value.';
+    if (band === 'high') return 'SIGNIFICANT MISMATCH: Standards exceed market position. Adjust or improve.';
     return 'MODERATE MISMATCH: Some recalibration needed.';
   }
 

@@ -12,17 +12,17 @@
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://beliefmastery.github.io/site/temperament.html">
+  <meta property="og:url" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/temperament.html">
   <meta property="og:title" content="Polarity Position Mapping">
   <meta property="og:description" content="Masculine/feminine polarity mapping with temperament dynamics and trend markers—rapid temperament profile.">
-  <meta property="og:image" content="https://beliefmastery.github.io/site/images/temperament-analysis-cover.jpg">
+  <meta property="og:image" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/images/temperament-analysis-cover.jpg">
   
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://beliefmastery.github.io/site/temperament.html">
+  <meta name="twitter:url" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/temperament.html">
   <meta name="twitter:title" content="Polarity Position Mapping">
   <meta name="twitter:description" content="Masculine/feminine polarity mapping with temperament dynamics and trend markers—rapid temperament profile.">
-  <meta name="twitter:image" content="https://beliefmastery.github.io/site/images/temperament-analysis-cover.jpg">
+  <meta name="twitter:image" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/images/temperament-analysis-cover.jpg">
   
   <!-- CRITICAL: Universal styles MUST load first -->
   <link rel="stylesheet" href="style.css">
@@ -87,7 +87,7 @@
               <li>Analysis of behavioral patterns, intimate dynamics, and attraction responsiveness</li>
               <li>Relationship polarity implications and, when relevant, cross-polarity or partner-fit considerations</li>
               <li>Links to archetype, attraction, and relationship assessments for a fuller picture</li>
-              <li>Export in JSON or CSV for AI integration</li>
+              <li>Save a readable HTML report for AI-assisted review, printing, or PDF export</li>
             </ul>
 
             <h3>Theory: Polarity and chemistry</h3>
@@ -171,10 +171,10 @@
   </main>
 
   <nav class="bottom-nav" aria-label="App navigation">
-    <a href="archetype.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◇</span><span>Identity</span></a>
+    <a href="archetype.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◇</span><span>Archetype</span></a>
     <a href="attraction.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
     <a href="temperament.html" class="bottom-nav-item active"><span class="bottom-nav-icon" aria-hidden="true">◈</span><span>Polarity</span></a>
-    <a href="relationship.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⬡</span><span>Relations</span></a>
+    <a href="relationship.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⬡</span><span>Relationships</span></a>
   </nav>
 
   <footer>
@@ -205,16 +205,6 @@
       // Setup toggles
       setupToggle('disclaimerToggle', 'disclaimerSection');
       setupToggle('extendedExplanationToggle', 'extendedExplanationPanel');
-      // Disclaimer toggle
-      const disclaimerToggle = document.getElementById('disclaimerToggle');
-      const disclaimerSection = document.getElementById('disclaimerSection');
-      
-      if (disclaimerToggle && disclaimerSection) {
-        disclaimerToggle.addEventListener('click', function() {
-          disclaimerToggle.classList.toggle('expanded');
-          disclaimerSection.classList.toggle('expanded');
-        });
-      }
 
       // Hamburger menu
       const hamburger = document.querySelector('.hamburger');

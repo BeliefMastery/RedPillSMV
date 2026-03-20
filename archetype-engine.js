@@ -1420,6 +1420,7 @@ showGenderSelection() {
         const mult = adj[baseId] ?? adj[archId] ?? 1;
         this.archetypeScores[archId].phase1 *= mult;
         this.archetypeScores[archId].phase2 *= mult;
+        this.archetypeScores[archId].phase3 *= (1 + ((mult - 1) * 0.5)); // damped carryover into phase 3
       });
     }
 
@@ -1431,6 +1432,7 @@ showGenderSelection() {
         const mult = adj[baseId] ?? adj[archId] ?? 1;
         this.archetypeScores[archId].phase1 *= mult;
         this.archetypeScores[archId].phase2 *= mult;
+        this.archetypeScores[archId].phase3 *= (1 + ((mult - 1) * 0.5)); // damped carryover into phase 3
       });
     }
 
@@ -1444,6 +1446,7 @@ showGenderSelection() {
         const mult = adj[baseId] ?? adj[archId] ?? 1;
         this.archetypeScores[archId].phase1 *= mult;
         this.archetypeScores[archId].phase2 *= mult;
+        this.archetypeScores[archId].phase3 *= (1 + ((mult - 1) * 0.5)); // damped carryover into phase 3
       });
     }
 
