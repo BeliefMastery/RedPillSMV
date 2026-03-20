@@ -1790,7 +1790,7 @@ h3[style*="text-align:center"][style*="border-bottom"] {
 /* Desktop: cap image-grid growth so cards don't become oversized */
 @media (min-width: 769px) {
     .home-image-grid {
-        max-width: 860px;
+        max-width: 430px;
         margin: 0.5rem auto;
     }
 }
