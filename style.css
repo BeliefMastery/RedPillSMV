@@ -121,6 +121,11 @@ main {
     background: rgba(0, 0, 0, 0.0);
 }
 
+/* Keep index tighter, but give all non-home pages slightly more header clearance */
+body:not(.home-page) main {
+    padding-top: 30px;
+}
+
 /* Background layer hidden for testing: desktop matches cellphone (no nebula/gradient) */
 .bg-gradient,
 #nebula-canvas {
