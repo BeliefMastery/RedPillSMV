@@ -295,7 +295,7 @@ header.site-header::before {
     padding: .45rem .8rem;
     border-radius: var(--radius);
     font-weight: 700;
-    font-size: 0.68rem;
+    font-size: 0.8rem;
     white-space: nowrap;
     position: relative;
     transition: var(--transition);
@@ -342,7 +342,7 @@ header.site-header::before {
 
 @media (max-width: 768px) {
     .nav-list { display: flex; flex-wrap: wrap; gap: 0.2rem; justify-content: center; }
-    .nav-list a { padding: 0.3rem 0.45rem; font-size: 0.6rem; }
+    .nav-list a { padding: 0.3rem 0.45rem; font-size: 0.65rem; }
     .hamburger { display: none; }
     header.site-header { height: auto; min-height: 56px; padding: 0.4rem; }
     .nav { padding: 0; }
