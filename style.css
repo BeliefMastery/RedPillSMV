@@ -117,7 +117,7 @@ img:hover {
 main {
     position: relative;
     z-index: 2;
-    padding-top: 54px;
+    padding-top: 20px;
     background: rgba(0, 0, 0, 0.0);
 }
 

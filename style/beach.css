@@ -147,7 +147,7 @@ main {
     position: relative;
     z-index: 2;
     /* Match base style.css / other overlays so sticky header offset is consistent */
-    padding-top: 54px;
+    padding-top: 20px;
     background: transparent;
 }
 
