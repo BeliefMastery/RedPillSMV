@@ -138,12 +138,8 @@ img:hover {
 main {
     position: relative;
     z-index: 2;
-    padding-top: 20px;
+    padding-top: 54px;
     background: transparent;
-}
-
-body:not(.home-page) main {
-    padding-top: 50px;
 }
 
 /* ========== UTILITY CLASSES ========== */

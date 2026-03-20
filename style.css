@@ -117,13 +117,8 @@ img:hover {
 main {
     position: relative;
     z-index: 2;
-    padding-top: 20px;
+    padding-top: 54px;
     background: rgba(0, 0, 0, 0.0);
-}
-
-/* Keep index tighter, but give all non-home pages slightly more header clearance */
-body:not(.home-page) main {
-    padding-top: 50px;
 }
 
 /* Background layer hidden for testing: desktop matches cellphone (no nebula/gradient) */
