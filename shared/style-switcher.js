@@ -9,10 +9,8 @@
   var THEMES = [
     { id: 'beach', label: 'Beach' },
     { id: 'cloud', label: 'Cloud' },
-    { id: 'matrix-forge', label: 'Matrix Forge' },
+    { id: 'forge', label: 'Forge' },
     { id: 'neomorphism', label: 'Neomorphism' },
-    { id: 'obsidian', label: 'Obsidian' },
-    { id: 'raw-truth', label: 'Raw Truth' },
     { id: 'signal', label: 'Signal' },
     { id: 'sovereign-vault', label: 'Sovereign Vault' }
   ];
@@ -21,18 +19,20 @@
     'predatory-luxury': 'luxury',
     'sand': 'beach',
     'brutal-neomorphism': 'neomorphism',
-    'clinical-obsidian': 'obsidian',
+    'clinical-obsidian': 'forge',
     'style-sovereign-vault': 'sovereign-vault',
-    'style-matrix-forge': 'matrix-forge',
+    'style-matrix-forge': 'forge',
     'clinical-dominance': 'beach',
     'sovereign-gold': 'beach',
-    'clinical-dark': 'obsidian',
+    'clinical-dark': 'forge',
     'luxury': 'signal',
-    'forge': 'signal',
     'clouded': 'cloud',
     'beached': 'beach',
     'minimal': 'signal',
-    'neutral-intelligence': 'signal'
+    'neutral-intelligence': 'signal',
+    'obsidian': 'forge',
+    'raw-truth': 'signal',
+    'matrix-forge': 'forge'
   };
 
   function getOverlayLink() {

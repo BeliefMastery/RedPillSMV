@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap');
+
 /* Variation 2: Brutal Neomorphism */
 :root {
     --brand: #e2e8f0;
@@ -40,6 +42,18 @@
     --link-color: #ff5f1f;
     --focus-color: #ff5f1f;
     --brand-dark: #ff5f1f;
+}
+
+/* Typography aligned to Signal theme */
+html, body {
+    font-family: 'Space Mono', 'Courier New', monospace;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
 }
 
 section, .panel, .tool-card {
