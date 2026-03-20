@@ -151,6 +151,10 @@ main {
     background: transparent;
 }
 
+body.home-page main {
+    padding-top: 30px;
+}
+
 /* ========== UTILITY CLASSES ========== */
 .text-center { text-align: center; }
 .text-accent { color: var(--accent); }
