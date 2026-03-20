@@ -56,6 +56,13 @@
 
     /* Global font scaling (controlled by UI in style-switcher.js) */
     --font-scale: 1;
+
+    /* Unified spacing tokens (reports + text fields) */
+    --text-field-pad-y: 0.75rem;
+    --text-field-pad-x: 0.85rem;
+    --report-block-pad-y: 1rem;
+    --report-block-pad-x: 1rem;
+    --report-text-gap: 0.75rem;
 }
 
 /* ========== BASE STYLES ========== */
@@ -646,7 +653,7 @@ header.site-header {
 
 .content-section p,
 .content-section li { /* Added li to fix list contrast */
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     line-height: 1.7;
     color: var(--brand);
 }
@@ -857,9 +864,9 @@ header.site-header {
 
 .question-block {
     background: var(--glass);
-    padding: 2rem;
+    padding: max(var(--report-block-pad-y), 0.95rem) max(var(--report-block-pad-x), 0.95rem);
     border-radius: var(--radius);
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
     border: 1px solid var(--border-subtle);
 }
 
@@ -1335,7 +1342,7 @@ button:disabled,
     z-index: 1;
     isolation: isolate;
     background: var(--glass-light); /* Lighter glass for better distinction */
-    padding: 1.1rem;
+    padding: max(var(--report-block-pad-y), 0.95rem) max(var(--report-block-pad-x), 0.95rem);
     border-radius: 10px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-medium); /* More visible border */
@@ -1345,6 +1352,31 @@ button:disabled,
     display: flex;
     flex-direction: column;
     gap: .6rem;
+}
+
+/* Keep report text away from edges without over-expanding cards */
+.results-container p,
+.results-content p,
+.archetype-card p,
+.archetype-report-card p,
+.temperament-profile-card p,
+.temperament-spectrum-container p,
+.question-card p,
+.question-block p,
+.card p {
+    margin: 0 0 var(--report-text-gap);
+}
+
+.results-container p:last-child,
+.results-content p:last-child,
+.archetype-card p:last-child,
+.archetype-report-card p:last-child,
+.temperament-profile-card p:last-child,
+.temperament-spectrum-container p:last-child,
+.question-card p:last-child,
+.question-block p:last-child,
+.card p:last-child {
+    margin-bottom: 0;
 }
 
 .card p,
@@ -3138,7 +3170,7 @@ main > .section-inner.minimal-section > .section-title-btn {
 .form-group input[type="number"],
 .form-group select {
     width: 100%;
-    padding: 0.75rem;
+    padding: var(--text-field-pad-y) var(--text-field-pad-x);
     border: 2px solid var(--border-subtle);
     border-radius: var(--radius);
     background: rgba(15, 25, 40, 0.5);
@@ -3146,6 +3178,16 @@ main > .section-inner.minimal-section > .section-title-btn {
     font-size: 1rem;
     font-family: inherit;
     transition: var(--transition);
+}
+
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+select {
+    padding: var(--text-field-pad-y) var(--text-field-pad-x);
 }
 
 .form-group input:focus,
@@ -3895,6 +3937,11 @@ img[data-src].loaded {
     :root {
         --mobile-gutter: 0.2rem;
         --muted: #a8b8d0; /* Slightly brighter for legibility on small screens in bright environments */
+        --text-field-pad-y: 0.68rem;
+        --text-field-pad-x: 0.72rem;
+        --report-block-pad-y: 0.82rem;
+        --report-block-pad-x: 0.72rem;
+        --report-text-gap: 0.65rem;
     }
 
     .container {
@@ -4039,6 +4086,11 @@ img[data-src].loaded {
     :root {
         --mobile-gutter: 4px;
         --muted: #a8b8d0; /* Slightly brighter for legibility on small screens */
+        --text-field-pad-y: 0.64rem;
+        --text-field-pad-x: 0.66rem;
+        --report-block-pad-y: 0.76rem;
+        --report-block-pad-x: 0.66rem;
+        --report-text-gap: 0.6rem;
     }
 
     .image-row.books-grid,

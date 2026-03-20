@@ -8,15 +8,30 @@
 
   var THEMES = [
     { id: 'signal', label: 'Signal' },
-    { id: 'obsidian', label: 'Obsidian Oracle' },
+    { id: 'obsidian', label: 'Obsidian' },
     { id: 'forge', label: 'Forge' },
-    { id: 'predatory-luxury', label: 'Predatory Luxury' },
-    { id: 'sand', label: 'Sand' },
-    { id: 'brutal-neomorphism', label: 'Brutal Neomorphism' },
-    { id: 'clinical-obsidian', label: 'Clinical Obsidian' },
-    { id: 'style-sovereign-vault', label: 'Sovereign Vault' },
-    { id: 'style-matrix-forge', label: 'Matrix Forge' }
+    { id: 'cloud', label: 'Cloud' },
+    { id: 'matrix-forge', label: 'Matrix Forge' },
+    { id: 'sovereign-vault', label: 'Sovereign Vault' },
+    { id: 'luxury', label: 'Luxury' },
+    { id: 'beach', label: 'Beach' },
+    { id: 'neomorphism', label: 'Neomorphism' },
+    { id: 'minimal', label: 'Minimal' },
+    { id: 'clinical-dark', label: 'Clinical Dark' },
+    { id: 'neutral-intelligence', label: 'Neutral Intelligence' },
+    { id: 'raw-truth', label: 'Raw Truth' }
   ];
+
+  var LEGACY_THEME_MAP = {
+    'predatory-luxury': 'luxury',
+    'sand': 'beach',
+    'brutal-neomorphism': 'neomorphism',
+    'clinical-obsidian': 'clinical-dark',
+    'style-sovereign-vault': 'sovereign-vault',
+    'style-matrix-forge': 'matrix-forge',
+    'clinical-dominance': 'beach',
+    'sovereign-gold': 'beach'
+  };
 
   function getOverlayLink() {
     return document.getElementById('style-overlay');
@@ -30,7 +45,7 @@
   function applyOverlay(id) {
     var link = getOverlayLink();
     if (!link) return;
-    if (id === 'clinical-dominance' || id === 'sovereign-gold') id = 'sand';
+    if (id && LEGACY_THEME_MAP[id]) id = LEGACY_THEME_MAP[id];
     if (!id || id === 'default') {
       link.href = '';
       return;

@@ -1,0 +1,113 @@
+/* ============================================================
+   STYLE VARIATION — "BEACH"
+   Aesthetic: Sun-bleached Coastal / Warm Minimal
+   Mood: Relaxed, optimistic, golden-hour energy
+   Fonts: Inter + slight humanist touch
+   Palette: Warm off-white, sand beige, coral, teal
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ========== VARIABLES ========== */
+:root {
+    /* Core colors */
+    --brand: #1e293b;              /* Deep ocean slate text */
+    --muted: #64748b;              /* Warm grey-blue */
+    --accent: #f472b6;             /* Coral / sunset pink-orange */
+    --accent-hover: #fb7185;       /* Brighter coral */
+
+    /* Backgrounds */
+    --bg: #fdfaf7;                 /* Warm off-white / sun-bleached paper */
+    --glass: rgba(255,250,245,0.82);
+    --glass-light: rgba(255,251,247,0.94);
+    --card-bg: #fffefb;
+    --card-hover: #fff7f0;
+    --accent-panel: rgba(244,114,182,0.09);
+    --accent-panel-strong: rgba(244,114,182,0.16);
+    --brand-panel: rgba(30,41,59,0.04);
+
+    /* Borders */
+    --border-subtle: #fde68a60;    /* Very faint warm sand border */
+    --border-medium: #fcd34d80;
+    --border-bright: #fb923c;
+
+    /* Glows — golden / sunset feel */
+    --glow-blue: rgba(251,191,36,0.14);   /* golden */
+    --glow-bright: rgba(251,191,36,0.24);
+    --glow-accent: rgba(244,114,182,0.20);
+
+    /* Shadows — soft & diffused */
+    --shadow-sm: 0 2px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-md: 0 6px 16px rgba(0,0,0,0.07), 0 3px 6px rgba(0,0,0,0.05);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.09), 0 6px 12px rgba(0,0,0,0.07);
+    --shadow: var(--shadow-md);
+
+    /* Functional */
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+
+    /* Layout */
+    --radius: 14px;                /* Slightly softer corners */
+    --transition: all 0.20s ease;
+
+    /* Text */
+    --text-primary: var(--brand);
+    --text-secondary: var(--muted);
+    --link-color: var(--accent);
+    --focus-color: var(--accent);
+    --font-size-base: clamp(0.96rem, 0.92rem + 0.4vw, 1.08rem);
+}
+
+/* Base light-mode overrides */
+html, body {
+    background: var(--bg);
+    color: var(--brand);
+}
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-hover); }
+
+header.site-header {
+    background: rgba(255,251,245,0.90);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-medium);
+    box-shadow: 0 3px 14px rgba(0,0,0,0.05);
+}
+
+.panel, .card, section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-md);
+}
+
+.panel-accent-left {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-panel);
+}
+
+.btn-primary {
+    background: linear-gradient(145deg, var(--accent), #f472b680);
+    color: white;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+/* Spectrum bars — sandy gradient */
+.temperament-spectrum-large,
+.dimension-spectrum {
+    background: linear-gradient(to right, #fef3c780, #fed7aa60);
+    border-color: #fcd34d80;
+}
+
+.temperament-trend-dot,
+.dimension-marker {
+    background: var(--accent);
+    border-color: white;
+}
+
+/* Most other classes remain structurally identical — just colors changed */

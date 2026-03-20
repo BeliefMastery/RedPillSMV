@@ -1,0 +1,53 @@
+/* ============================================================
+   STYLE VARIATION — "CLOUD"
+   Aesthetic: Soft Light / Elevated Minimal
+   Mood: Clarity, calm cognition, neutral authority
+   ============================================================ */
+
+:root {
+    /* Primary Colors */
+    --brand: #1e2a38;          /* Deep slate text */
+    --muted: #5f6f82;          /* Soft blue-gray */
+    --accent: #4da3ff;         /* Sky blue */
+    --accent-hover: #2f8cff;
+
+    /* Backgrounds */
+    --bg: #f4f8fc;             /* Cloud white */
+    --glass: rgba(255, 255, 255, 0.75);
+    --glass-light: rgba(255, 255, 255, 0.9);
+    --card-bg: #ffffff;
+    --card-hover: #f1f6fb;
+
+    --accent-panel: rgba(77, 163, 255, 0.12);
+    --accent-panel-strong: rgba(77, 163, 255, 0.2);
+    --brand-panel: rgba(30, 42, 56, 0.05);
+
+    /* Borders */
+    --border-subtle: rgba(100, 140, 180, 0.2);
+    --border-medium: rgba(100, 140, 180, 0.35);
+    --border-bright: rgba(100, 140, 180, 0.5);
+
+    /* Glows */
+    --glow-blue: rgba(77, 163, 255, 0.15);
+    --glow-bright: rgba(77, 163, 255, 0.25);
+    --glow-accent: rgba(77, 163, 255, 0.2);
+
+    /* Shadows (lighter + diffused) */
+    --shadow-sm: 0 4px 12px rgba(30, 42, 56, 0.08);
+    --shadow-md: 0 8px 24px rgba(30, 42, 56, 0.12);
+    --shadow-lg: 0 12px 40px rgba(30, 42, 56, 0.16);
+    --shadow: 0 8px 24px rgba(30, 42, 56, 0.12);
+
+    /* Functional */
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+
+    /* Accessibility */
+    --text-primary: #1e2a38;
+    --text-secondary: #5f6f82;
+    --link-color: #2f8cff;
+    --focus-color: #2f8cff;
+
+    --brand-dark: #1e2a38;
+}
