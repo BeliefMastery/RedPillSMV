@@ -7,19 +7,16 @@
   var FONT_SCALE_STORAGE_KEY = 'redpill-font-scale';
 
   var THEMES = [
-    { id: 'signal', label: 'Signal' },
-    { id: 'obsidian', label: 'Obsidian' },
-    { id: 'forge', label: 'Forge' },
-    { id: 'cloud', label: 'Cloud' },
-    { id: 'clouded', label: 'Clouded' },
-    { id: 'matrix-forge', label: 'Matrix Forge' },
-    { id: 'sovereign-vault', label: 'Sovereign Vault' },
-    { id: 'luxury', label: 'Luxury' },
     { id: 'beach', label: 'Beach' },
-    { id: 'beached', label: 'Beached' },
-    { id: 'neomorphism', label: 'Neomorphism' },
     { id: 'clinical-dark', label: 'Clinical Dark' },
-    { id: 'raw-truth', label: 'Raw Truth' }
+    { id: 'cloud', label: 'Cloud' },
+    { id: 'luxury', label: 'Luxury' },
+    { id: 'matrix-forge', label: 'Matrix Forge' },
+    { id: 'neomorphism', label: 'Neomorphism' },
+    { id: 'obsidian', label: 'Obsidian' },
+    { id: 'raw-truth', label: 'Raw Truth' },
+    { id: 'signal', label: 'Signal' },
+    { id: 'sovereign-vault', label: 'Sovereign Vault' }
   ];
 
   var LEGACY_THEME_MAP = {
@@ -30,7 +27,12 @@
     'style-sovereign-vault': 'sovereign-vault',
     'style-matrix-forge': 'matrix-forge',
     'clinical-dominance': 'beach',
-    'sovereign-gold': 'beach'
+    'sovereign-gold': 'beach',
+    'forge': 'signal',
+    'clouded': 'cloud',
+    'beached': 'beach',
+    'minimal': 'signal',
+    'neutral-intelligence': 'signal'
   };
 
   function getOverlayLink() {
