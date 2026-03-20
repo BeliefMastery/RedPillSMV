@@ -978,7 +978,7 @@ section:hover {
 /* Hero Image (Diagnosis Cover) */
 .hero-image {
     text-align: center;
-    margin: 2rem 0;
+    margin: calc(2rem / 3) 0;
 }
 
 .hero-img {

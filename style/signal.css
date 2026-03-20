@@ -522,7 +522,7 @@ section:hover {
 
 .action-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
-.hero-image { text-align: center; margin-bottom: 2rem; }
+.hero-image { text-align: center; margin: calc(2rem / 3) 0; }
 
 .hero-img {
     max-width: 260px;
