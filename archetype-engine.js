@@ -15,6 +15,7 @@ let PHASE_1_QUESTIONS, PHASE_2_QUESTIONS, PHASE_3_QUESTIONS, PHASE_4_QUESTIONS, 
 let SUBTYPE_REFINEMENT_QUESTIONS;
 let ARCHETYPE_SPREAD_MAP;
 let BRUTAL_TRUTHS;
+let ARCHETYPE_ROLE_ACCENTS;
 
 export class ArchetypeEngine {
   constructor() {
@@ -523,6 +524,12 @@ showGenderSelection() {
         'Brutal Truths'
       );
       BRUTAL_TRUTHS = brutalTruthsModule.default || {};
+
+      const roleAccentsModule = await loadDataModule(
+        './archetype-data/archetype-role-accents.js',
+        'Archetype role accents'
+      );
+      ARCHETYPE_ROLE_ACCENTS = roleAccentsModule.default || roleAccentsModule.ARCHETYPE_ROLE_ACCENTS || {};
 
       this.debugReporter.recordSection('Phase 1', PHASE_1_QUESTIONS?.length || 0);
       this.debugReporter.recordSection('Phase 2', PHASE_2_QUESTIONS?.length || 0);
@@ -2270,20 +2277,22 @@ showGenderSelection() {
       if (!baseNarrative) return '';
       if (role === 'primary') return baseNarrative;
 
-      const softened = summarizeBehavioralAccent(softenNarrativeTone(baseNarrative), 2);
-      if (!softened) return '';
-
-      if (role === 'secondary') {
-        return [
-          'This secondary archetype influences you in specific contexts or situations, complementing your primary archetype.',
-          `Behavioral accent: ${softened}`
-        ].join(' ');
+      const id = archetype?.id;
+      const precomposed = id && ARCHETYPE_ROLE_ACCENTS?.[id];
+      if (role === 'secondary' && precomposed?.secondaryAccent) {
+        return String(precomposed.secondaryAccent).trim();
+      }
+      if (role === 'tertiary' && precomposed?.tertiaryAccent) {
+        return String(precomposed.tertiaryAccent).trim();
       }
 
-      return [
-        'This tertiary archetype may emerge under stress, represent aspirational qualities, or appear in specific life domains.',
-        `Behavioral accent: ${softened}`
-      ].join(' ');
+      // Fallback if an id is missing from the precomposed map (keep report usable).
+      const maxAccentSentences = role === 'secondary' ? 5 : 4;
+      const softened = summarizeBehavioralAccent(
+        softenNarrativeTone(baseNarrative),
+        maxAccentSentences
+      );
+      return softened || '';
     };
     const primaryTraitsSummary = summarizeArchetype(primary);
     const optimizationCopy = (primary?.id && ARCHETYPE_OPTIMIZATION?.[primary.id]) || null;
@@ -2396,6 +2405,7 @@ showGenderSelection() {
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;">${SecurityUtils.sanitizeHTML(secondary.description || '')}</p>
           ${secondaryNarrative ? `
           <div style="margin-top: 1rem; background: rgba(80, 0, 0, 0.12); border-left: 3px solid rgba(180, 40, 40, 0.6); border-radius: var(--radius); padding: 1rem;">
+            <h4 style="color: #cc6666; margin: 0 0 0.5rem; font-size: 0.95rem;">Behavioral accent</h4>
             <p style="color: var(--muted); line-height: 1.7; font-size: 0.92rem; margin: 0; font-style: italic;">${SecurityUtils.sanitizeHTML(secondaryNarrative)}</p>
           </div>` : ''}
           <p style="color: var(--muted); margin-top: 1rem; font-style: italic; font-size: 0.9rem;">
@@ -2415,6 +2425,7 @@ showGenderSelection() {
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;">${SecurityUtils.sanitizeHTML(tertiary.description || '')}</p>
           ${tertiaryNarrative ? `
           <div style="margin-top: 1rem; background: rgba(80, 0, 0, 0.08); border-left: 3px solid rgba(160, 40, 40, 0.4); border-radius: var(--radius); padding: 1rem;">
+            <h4 style="color: #b85c5c; margin: 0 0 0.5rem; font-size: 0.95rem;">Behavioral accent</h4>
             <p style="color: var(--muted); line-height: 1.7; font-size: 0.92rem; margin: 0; font-style: italic;">${SecurityUtils.sanitizeHTML(tertiaryNarrative)}</p>
           </div>` : ''}
           <p style="color: var(--muted); margin-top: 1rem; font-style: italic; font-size: 0.9rem;">
