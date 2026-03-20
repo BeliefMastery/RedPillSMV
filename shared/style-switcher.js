@@ -18,9 +18,7 @@
     { id: 'beach', label: 'Beach' },
     { id: 'beached', label: 'Beached' },
     { id: 'neomorphism', label: 'Neomorphism' },
-    { id: 'minimal', label: 'Minimal' },
     { id: 'clinical-dark', label: 'Clinical Dark' },
-    { id: 'neutral-intelligence', label: 'Neutral Intelligence' },
     { id: 'raw-truth', label: 'Raw Truth' }
   ];
 
