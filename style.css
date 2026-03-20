@@ -123,7 +123,7 @@ main {
 
 /* Keep index tighter, but give all non-home pages slightly more header clearance */
 body:not(.home-page) main {
-    padding-top: 40px;
+    padding-top: 50px;
 }
 
 /* Background layer hidden for testing: desktop matches cellphone (no nebula/gradient) */

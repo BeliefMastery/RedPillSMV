@@ -143,7 +143,7 @@ main {
 }
 
 body:not(.home-page) main {
-    padding-top: 40px;
+    padding-top: 50px;
 }
 
 /* ========== UTILITY CLASSES ========== */
