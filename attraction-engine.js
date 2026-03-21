@@ -500,13 +500,6 @@ export class AttractionEngine {
     const repro = smv.clusters?.reproductiveConfidence ?? 50;
     const goodGuy = (repro * 0.85) + (coalition * 0.15);
     const badBoy = smv.clusters?.axisOfAttraction ?? 50;
-  calculateDelusionBand(score) {
-    if (score >= 70) return 'severe';
-    if (score >= 50) return 'high';
-    if (score >= 30) return 'moderate';
-    return 'low';
-  }
-
     const gLevel = goodGuy >= 70 ? 'hi' : goodGuy >= 55 ? 'upper-mid' : goodGuy >= 40 ? 'mid' : goodGuy >= 25 ? 'lower-mid' : 'lo';
     const bLevel = badBoy >= 70 ? 'hi' : badBoy >= 40 ? 'mid' : 'lo';
     const labels = {
@@ -517,6 +510,13 @@ export class AttractionEngine {
       lo_hi: 'Bad Boy Fun Time (Short Term)', lo_mid: '... Mistake', lo_lo: 'Invisible/Ghost or Creep'
     };
     return { goodGuyPercentile: Math.round(goodGuy), badBoyPercentile: Math.round(badBoy), label: labels[`${gLevel}_${bLevel}`] || 'Settling', goodGuyLevel: gLevel, badBoyLevel: bLevel };
+  }
+
+  calculateDelusionBand(score) {
+    if (score >= 70) return 'severe';
+    if (score >= 50) return 'high';
+    if (score >= 30) return 'moderate';
+    return 'low';
   }
 
   placeKeeperSweeper(smv) {
