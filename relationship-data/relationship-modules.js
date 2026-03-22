@@ -1,8 +1,11 @@
 export const RELATIONSHIP_ANALYSIS_MODULES = [
   {
     id: 'relationship-viability',
-    title: 'Relationship Viability Evaluation',
-    summary: 'A combined assessment of core principles, conflict repair, and termination considerations.',
+    /** Shown in Part 2 (both) to avoid repeating the section title */
+    part2CardTitle: 'Strain-area average',
+    part2CardSummary: 'One number averaged from your Part 1 compatibility scores—sanity-check against the six dimensions above, not a second conclusion.',
+    title: 'Compatibility strain summary',
+    summary: 'A single average across your compatibility scores (principles, repair dynamics, many strain areas). Use as a cross-check with the rest of the report.',
     materialKey: 'relationshipViability',
     pointKeys: [
       'core-values',

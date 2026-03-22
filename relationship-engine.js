@@ -1329,7 +1329,11 @@ export class RelationshipEngine {
     return insights;
   }
 
-  renderViabilityResults() {
+  /**
+   * @param {{ embedInPart2?: boolean }} opts - When true (both-mode Part 2), omit bridge copy that repeats the conclusion/reflection.
+   */
+  renderViabilityResults(opts = {}) {
+    const embedInPart2 = Boolean(opts.embedInPart2);
     const scores = this.viabilityScoresByDimension || {};
     const band = typeof getViabilityBand === 'function' ? getViabilityBand(scores) : null;
     const conclusionData = band && VIABILITY_BAND_CONCLUSIONS ? VIABILITY_BAND_CONCLUSIONS[band] : null;
@@ -1340,7 +1344,9 @@ export class RelationshipEngine {
         <p style="margin: 0.75rem 0 0; line-height: 1.7; color: var(--muted);">${SecurityUtils.sanitizeHTML(conclusionData.conclusion)}</p>
       </div>`;
     }
-    html += '<p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">The six dimensions below support this conclusion.</p>';
+    if (!embedInPart2) {
+      html += '<p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">The six dimensions below support this conclusion.</p>';
+    }
     html += '<div style="padding: 1.25rem; background: var(--glass); border-radius: var(--radius); border-left: 4px solid var(--brand); margin-bottom: 1.5rem;">';
     html += '<h4 style="margin-top: 0; margin-bottom: 1rem; font-size: 1rem;">Your responses by dimension</h4>';
     html += '<ul style="margin: 0; padding-left: 1.25rem; list-style: none;">';
@@ -1352,7 +1358,9 @@ export class RelationshipEngine {
       html += `<li style="margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.08);"><strong>${SecurityUtils.sanitizeHTML(dim.name || '')}</strong> — <span style="color: ${levelColor};">${SecurityUtils.sanitizeHTML(level)}</span>${scoreText}</li>`;
     });
     html += '</ul></div>';
-    html += '<p style="color: var(--muted); line-height: 1.7; margin-top: 1.5rem;">If your answers point to disconnection or one-sided investment, stepping away may be the clear choice. If there is potential for shared growth and mutual commitment, investing in resolution may be worthwhile. Use the reflection prompts below (or in Closure &amp; Next Steps) to align your decision with your goals and values.</p>';
+    if (!embedInPart2) {
+      html += '<p style="color: var(--muted); line-height: 1.7; margin-top: 1.5rem;">If your answers point to disconnection or one-sided investment, stepping away may be the clear choice. If there is potential for shared growth and mutual commitment, investing in resolution may be worthwhile. Use the reflection prompts below (or in Closure &amp; Next Steps) to align your decision with your goals and values.</p>';
+    }
     html += '</div>';
     return html;
   }
@@ -1517,7 +1525,7 @@ export class RelationshipEngine {
 
     if (this.assessmentMode === 'both') {
       html += '<h2 style="margin-top: 2.5rem; padding-top: 2rem; border-top: 2px solid rgba(255,255,255,0.12);">Part 2: Relationship Viability Evaluation</h2>';
-      html += this.renderViabilityResults();
+      html += this.renderViabilityResults({ embedInPart2: true });
       html += this.renderAnalysisModules({ part2: true });
       html += this.getViabilityReflectionBlock();
     } else {
@@ -1569,9 +1577,7 @@ export class RelationshipEngine {
           Summaries from compatibility scores across related strain areas (principles, repair, termination considerations).
         </p>`;
     } else {
-      html += `<p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.95rem;">
-        The following modules aggregate related compatibility areas for a quick cross-check alongside your viability responses above.
-      </p>`;
+      html += `<p style="color: var(--muted); margin-bottom: 0.75rem; font-size: 0.95rem;"><strong>Cross-check:</strong> one aggregate from Part 1 scores—compare directionally to the dimension list; it does not replace the six-dimension verdict.</p>`;
     }
     html += '<div class="analysis-modules-grid">';
 
@@ -1579,13 +1585,16 @@ export class RelationshipEngine {
       const score = this.getModuleScore(module.pointKeys);
       const status = this.getModuleStatus(score);
       const conclusion = module.conclusions?.[status.toLowerCase()] || '';
+      const cardTitle = part2 && module.part2CardTitle ? module.part2CardTitle : module.title;
+      const cardSummary = part2 && module.part2CardSummary ? module.part2CardSummary : module.summary;
+      const showNarrativeConclusion = Boolean(conclusion) && !part2;
 
       html += `
         <div class="analysis-module-card card">
-          <h4>${SecurityUtils.sanitizeHTML(module.title || '')}</h4>
-          <p>${SecurityUtils.sanitizeHTML(module.summary || '')}</p>
-          ${score !== null ? `<p><strong>Module Score:</strong> ${score.toFixed(1)}/10 <span class="module-status">${SecurityUtils.sanitizeHTML(status)}</span></p>` : ''}
-          ${conclusion ? `<p class="module-conclusion">${SecurityUtils.sanitizeHTML(conclusion)}</p>` : ''}
+          <h4>${SecurityUtils.sanitizeHTML(cardTitle || '')}</h4>
+          <p>${SecurityUtils.sanitizeHTML(cardSummary || '')}</p>
+          ${score !== null ? `<p><strong>Aggregate score:</strong> ${score.toFixed(1)}/10 <span class="module-status">${SecurityUtils.sanitizeHTML(status)}</span></p>` : ''}
+          ${showNarrativeConclusion ? `<p class="module-conclusion">${SecurityUtils.sanitizeHTML(conclusion)}</p>` : ''}
         </div>
       `;
     });
@@ -1648,21 +1657,19 @@ export class RelationshipEngine {
     return strategies.acceptanceStrategies.filter(Boolean);
   }
   
-  /** Prompts merged into Part 2 when assessmentMode is both */
+  /** Compact prompts for Part 2 (both)—avoids repeating the band conclusion and module narrative */
   getViabilityReflectionBlock() {
     return `
       <div style="margin-top: 2rem; padding: 1.25rem 1.5rem; background: var(--glass); border-radius: var(--radius); border-left: 4px solid var(--brand);">
-        <h4 style="color: var(--brand); margin-top: 0; margin-bottom: 0.5rem;">Relationship Viability Reflection</h4>
-        <p style="color: var(--muted); margin: 0 0 0.75rem;">Relationships shape the trajectory of our lives. The key is discernment: does this relationship support your vision for growth, or has it become a drain on your energy and aspirations? Conflicts do not always signal the end—what matters is whether investing in resolution brings long-term value and whether you share fundamental values, goals, and a compatible vision for the future.</p>
-        <p style="color: var(--muted); margin: 0 0 0.5rem; font-size: 0.95rem;">Consider:</p>
-        <ul style="color: var(--muted); margin: 0 0 0 1.25rem; padding-left: 0.5rem;">
+        <h4 style="color: var(--brand); margin-top: 0; margin-bottom: 0.5rem;">Reflection prompts</h4>
+        <p style="color: var(--muted); margin: 0 0 0.5rem; font-size: 0.95rem;">Use with the Part 2 conclusion and dimension scores above (and Part 1 strain detail)—not a separate verdict.</p>
+        <ul style="color: var(--muted); margin: 0; padding-left: 1.25rem;">
           <li style="margin-bottom: 0.35rem;">Does this relationship support the future you envision? Is there a shared vision that makes the effort worthwhile?</li>
           <li style="margin-bottom: 0.35rem;">Is the discomfort temporary or a pattern that undermines your goals? Can resolving these challenges lead to a deeper connection?</li>
           <li style="margin-bottom: 0.35rem;">Does the energy spent on resolution bring long-term value, or does it drain your emotional and mental health? Are you both committed to solutions that foster mutual growth?</li>
           <li style="margin-bottom: 0.35rem;">Do you align on values, goals, and growth trajectories, or are they diverging?</li>
           <li style="margin-bottom: 0.35rem;">In conflict, do you reflect and grow, or does the relationship become reactive and stagnant?</li>
         </ul>
-        <p style="color: var(--muted); margin: 0.75rem 0 0; font-size: 0.95rem;">If your answers point to disconnection, lack of shared vision, or one-sided investment, stepping away may be the clear choice. If there is potential for shared growth, depth, and mutual understanding, investing in resolution may lead to a rewarding connection. Use Part 2 and your strain analysis together as a basis for your decision.</p>
       </div>
     `;
   }
