@@ -1526,12 +1526,12 @@ export class RelationshipEngine {
     if (this.assessmentMode === 'both') {
       html += '<h2 style="margin-top: 2.5rem; padding-top: 2rem; border-top: 2px solid rgba(255,255,255,0.12);">Part 2: Relationship Viability Evaluation</h2>';
       html += this.renderViabilityResults({ embedInPart2: true });
-      html += this.renderAnalysisModules({ part2: true });
+      html += this.renderPart2CrossCheck();
       html += this.getViabilityReflectionBlock();
     } else {
       html += `<details style="margin-top: 2rem;">
       <summary><strong>Supplemental Analysis Modules</strong></summary>
-      ${this.renderAnalysisModules({ part2: false })}
+      ${this.renderAnalysisModules()}
     </details>`;
     }
 
@@ -1562,39 +1562,72 @@ export class RelationshipEngine {
   }
 
   /**
-   * @param {{ part2?: boolean }} opts - part2: inline under Part 2 (no duplicate section title; no framework dropdowns)
+   * Part 2 (both mode): explain verdict basis vs Part 1 mean—no second status line (Watch/Urgent) that can contradict the headline.
+   * Headline uses getViabilityBand(six dimensions); Part 1 number is mean of many compatibility areas and often regresses toward mid-range.
    */
-  renderAnalysisModules(opts = {}) {
+  renderPart2CrossCheck() {
+    const scores = this.viabilityScoresByDimension || {};
+    const band = typeof getViabilityBand === 'function' ? getViabilityBand(scores) : null;
+    const vals = Object.values(scores).filter(n => typeof n === 'number');
+    if (!vals.length) return '';
+
+    const sixDimAvg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    const bandLabel = band && VIABILITY_BAND_LABELS ? VIABILITY_BAND_LABELS[band] : '';
+
+    const part1Keys = [];
+    if (Array.isArray(RELATIONSHIP_ANALYSIS_MODULES)) {
+      RELATIONSHIP_ANALYSIS_MODULES.forEach(m => {
+        if (Array.isArray(m.pointKeys)) part1Keys.push(...m.pointKeys);
+      });
+    }
+    const part1Avg = part1Keys.length ? this.getModuleScore([...new Set(part1Keys)]) : null;
+
+    let html = `<div class="analysis-modules-section part2-cross-check" style="margin-top: 1.5rem; padding: 1.1rem 1.25rem; background: var(--glass); border-radius: var(--radius); border-left: 3px solid rgba(255,255,255,0.15);">
+      <h4 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--brand);">How the numbers relate</h4>
+      <p style="margin: 0 0 0.85rem; color: var(--muted); font-size: 0.95rem; line-height: 1.65;">
+        <strong>Verdict basis (same as headline):</strong> average of your six viability dimensions is <strong>${sixDimAvg.toFixed(1)}/10</strong>`;
+    if (bandLabel) {
+      html += ` — that supports <strong>${SecurityUtils.sanitizeHTML(bandLabel)}</strong>`;
+    }
+    html += `.</p>`;
+
+    if (part1Avg != null) {
+      html += `<p style="margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.65;">
+        <strong>Part 1 context (not a second verdict):</strong> mean across your compatibility strain areas (many topics blended) is <strong>${part1Avg.toFixed(1)}/10</strong>.
+        That blend often lands in the middle even when specific viability answers are very low—strong areas pull the average up.
+        If this differs from the conclusion above, <strong>trust the six dimensions and the headline</strong>; use the Part 1 mean only as background texture.
+      </p>`;
+    }
+    html += '</div>';
+    return html;
+  }
+
+  /**
+   * Supplemental module cards (Part 1 report details only — not Part 2, to avoid conflicting Watch/Urgent vs viability band).
+   */
+  renderAnalysisModules() {
     if (!Array.isArray(RELATIONSHIP_ANALYSIS_MODULES) || RELATIONSHIP_ANALYSIS_MODULES.length === 0) {
       return '';
     }
-    const part2 = Boolean(opts.part2);
 
-    let html = `<div class="analysis-modules-section" style="margin-top: ${part2 ? '1.5' : '3'}rem;">`;
-    if (!part2) {
-      html += `<h4 style="color: var(--brand); margin-bottom: 0.75rem;">Cross-cutting module readouts</h4>
+    let html = `<div class="analysis-modules-section" style="margin-top: 3rem;">
+      <h4 style="color: var(--brand); margin-bottom: 0.75rem;">Cross-cutting module readouts</h4>
         <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.95rem;">
           Summaries from compatibility scores across related strain areas (principles, repair, termination considerations).
-        </p>`;
-    } else {
-      html += `<p style="color: var(--muted); margin-bottom: 0.75rem; font-size: 0.95rem;"><strong>Cross-check:</strong> one aggregate from Part 1 scores—compare directionally to the dimension list; it does not replace the six-dimension verdict.</p>`;
-    }
-    html += '<div class="analysis-modules-grid">';
+        </p>
+      <div class="analysis-modules-grid">`;
 
     RELATIONSHIP_ANALYSIS_MODULES.forEach(module => {
       const score = this.getModuleScore(module.pointKeys);
       const status = this.getModuleStatus(score);
       const conclusion = module.conclusions?.[status.toLowerCase()] || '';
-      const cardTitle = part2 && module.part2CardTitle ? module.part2CardTitle : module.title;
-      const cardSummary = part2 && module.part2CardSummary ? module.part2CardSummary : module.summary;
-      const showNarrativeConclusion = Boolean(conclusion) && !part2;
 
       html += `
         <div class="analysis-module-card card">
-          <h4>${SecurityUtils.sanitizeHTML(cardTitle || '')}</h4>
-          <p>${SecurityUtils.sanitizeHTML(cardSummary || '')}</p>
+          <h4>${SecurityUtils.sanitizeHTML(module.title || '')}</h4>
+          <p>${SecurityUtils.sanitizeHTML(module.summary || '')}</p>
           ${score !== null ? `<p><strong>Aggregate score:</strong> ${score.toFixed(1)}/10 <span class="module-status">${SecurityUtils.sanitizeHTML(status)}</span></p>` : ''}
-          ${showNarrativeConclusion ? `<p class="module-conclusion">${SecurityUtils.sanitizeHTML(conclusion)}</p>` : ''}
+          ${conclusion ? `<p class="module-conclusion">${SecurityUtils.sanitizeHTML(conclusion)}</p>` : ''}
         </div>
       `;
     });

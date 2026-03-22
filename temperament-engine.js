@@ -102,8 +102,18 @@ export class TemperamentEngine {
    * @returns {Promise<void>}
    */
   async loadTemperamentData() {
-    if (PHASE_1_ORIENTATION_QUESTIONS && TEMPERAMENT_DIMENSIONS) {
-      return; // Already loaded
+    // Require every module — a partial failed load can leave orientation+dims set while
+    // attraction/scoring stay undefined; early-returning then breaks Phase 2 and scoring.
+    if (
+      PHASE_1_ORIENTATION_QUESTIONS &&
+      TEMPERAMENT_DIMENSIONS &&
+      INTIMATE_DYNAMICS &&
+      ATTRACTION_RESPONSIVENESS &&
+      TEMPERAMENT_SCORING?.dimensionWeights &&
+      TEMPERAMENT_SCORING?.thresholds &&
+      TEMPERAMENT_SCORING?.interpretation
+    ) {
+      return;
     }
 
     try {
@@ -141,6 +151,16 @@ export class TemperamentEngine {
         'Temperament Scoring'
       );
       TEMPERAMENT_SCORING = scoringModule.TEMPERAMENT_SCORING;
+
+      if (!INTIMATE_DYNAMICS || typeof INTIMATE_DYNAMICS !== 'object') {
+        throw new Error('Intimate dynamics module did not export INTIMATE_DYNAMICS');
+      }
+      if (!ATTRACTION_RESPONSIVENESS || typeof ATTRACTION_RESPONSIVENESS !== 'object') {
+        throw new Error('Attraction responsiveness module did not export ATTRACTION_RESPONSIVENESS');
+      }
+      if (!TEMPERAMENT_SCORING?.dimensionWeights || !TEMPERAMENT_SCORING?.thresholds) {
+        throw new Error('Temperament scoring module missing dimensionWeights or thresholds');
+      }
 
       const phase1Count = (PHASE_1_ORIENTATION_QUESTIONS?.length || 0) + 1;
       this.debugReporter.recordSection('Phase 1', phase1Count);
@@ -224,8 +244,9 @@ export class TemperamentEngine {
       this.questionSequence = [];
       
       // Add questions from all dimension categories
-      Object.keys(TEMPERAMENT_DIMENSIONS).forEach(dimKey => {
+      Object.keys(TEMPERAMENT_DIMENSIONS || {}).forEach(dimKey => {
       const dimension = TEMPERAMENT_DIMENSIONS[dimKey];
+      if (!dimension?.questions) return;
       dimension.questions.forEach(q => {
         this.questionSequence.push({
           id: q.id,
@@ -243,8 +264,9 @@ export class TemperamentEngine {
     });
 
     // Add intimate dynamics questions
-    Object.keys(INTIMATE_DYNAMICS).forEach(catKey => {
+    Object.keys(INTIMATE_DYNAMICS || {}).forEach(catKey => {
       const category = INTIMATE_DYNAMICS[catKey];
+      if (!category?.questions) return;
       category.questions.forEach(q => {
         this.questionSequence.push({
           id: q.id,
@@ -262,8 +284,9 @@ export class TemperamentEngine {
     });
 
     // Add attraction responsiveness questions
-    Object.keys(ATTRACTION_RESPONSIVENESS).forEach(catKey => {
+    Object.keys(ATTRACTION_RESPONSIVENESS || {}).forEach(catKey => {
       const category = ATTRACTION_RESPONSIVENESS[catKey];
+      if (!category?.questions) return;
       category.questions.forEach(q => {
         this.questionSequence.push({
           id: q.id,
@@ -390,7 +413,7 @@ export class TemperamentEngine {
       this.questionSequence.forEach(q => this.answerQuestionForSample(q));
       this.calculateResults();
       this.ui.transition('results');
-      this.renderResults();
+      await this.renderResults();
     } catch (error) {
       this.debugReporter.logError(error, 'generateSampleReport');
       ErrorHandler.showUserError('Failed to generate sample report. Please try again.');
@@ -440,7 +463,10 @@ export class TemperamentEngine {
           return;
         } else {
           this.calculateResults();
-          this.renderResults();
+          void this.renderResults().catch(err => {
+            this.debugReporter.logError(err, 'renderCurrentQuestion → renderResults');
+            ErrorHandler.showUserError('Failed to display results. Try refreshing the page.');
+          });
           return;
         }
       }
@@ -702,9 +728,9 @@ export class TemperamentEngine {
       // Calculate total progress across both phases
       const phase1Total = PHASE_1_ORIENTATION_QUESTIONS.length + 1;
       const phase2Total = this.currentPhase === 2 ? this.questionSequence.length : 
-                         (Object.keys(TEMPERAMENT_DIMENSIONS).reduce((sum, k) => sum + TEMPERAMENT_DIMENSIONS[k].questions.length, 0) +
-                          Object.keys(INTIMATE_DYNAMICS).reduce((sum, k) => sum + INTIMATE_DYNAMICS[k].questions.length, 0) +
-                          Object.keys(ATTRACTION_RESPONSIVENESS).reduce((sum, k) => sum + ATTRACTION_RESPONSIVENESS[k].questions.length, 0));
+                         (Object.keys(TEMPERAMENT_DIMENSIONS || {}).reduce((sum, k) => sum + (TEMPERAMENT_DIMENSIONS[k]?.questions?.length || 0), 0) +
+                          Object.keys(INTIMATE_DYNAMICS || {}).reduce((sum, k) => sum + (INTIMATE_DYNAMICS[k]?.questions?.length || 0), 0) +
+                          Object.keys(ATTRACTION_RESPONSIVENESS || {}).reduce((sum, k) => sum + (ATTRACTION_RESPONSIVENESS[k]?.questions?.length || 0), 0));
       const totalQuestions = phase1Total + phase2Total;
       
       let currentProgress = 0;
@@ -776,7 +802,10 @@ export class TemperamentEngine {
         });
       } else {
         this.calculateResults();
-        this.renderResults();
+        void this.renderResults().catch(err => {
+          this.debugReporter.logError(err, 'nextQuestion → renderResults');
+          ErrorHandler.showUserError('Failed to display results. Try refreshing the page.');
+        });
       }
     }
   }
@@ -796,6 +825,15 @@ export class TemperamentEngine {
   }
 
   calculateResults() {
+    if (!TEMPERAMENT_SCORING?.dimensionWeights || !TEMPERAMENT_SCORING?.thresholds) {
+      this.debugReporter.logError(
+        new Error('TEMPERAMENT_SCORING not loaded — refresh the page or complete data load.'),
+        'calculateResults'
+      );
+      ErrorHandler.showUserError('Assessment data did not load completely. Please refresh the page.');
+      return;
+    }
+
     // Calculate dimension scores (only from Phase 2 questions)
     this.analysisData.dimensionScores = {};
     
@@ -829,9 +867,10 @@ export class TemperamentEngine {
     }
     const reportedGender = this.analysisData.gender;
 
+    const dimensionWeights = TEMPERAMENT_SCORING.dimensionWeights;
     Object.keys(dimensionGroups).forEach(groupKey => {
       const group = dimensionGroups[groupKey];
-      const dimWeight = TEMPERAMENT_SCORING.dimensionWeights[groupKey] || 1.0;
+      const dimWeight = dimensionWeights[groupKey] || 1.0;
       let groupMasculine = 0;
       let groupFeminine = 0;
       let groupWeight = 0;
@@ -967,7 +1006,7 @@ export class TemperamentEngine {
         });
       }
 
-      if (TEMPERAMENT_SCORING.expectedVariation.includes(dimKey)) {
+      if (TEMPERAMENT_SCORING.expectedVariation?.includes(dimKey)) {
         this.analysisData.variationAnalysis.expectedVariations.push({
           dimension: dimKey,
           scores: score
@@ -1200,7 +1239,15 @@ export class TemperamentEngine {
       }
 
       const temperament = this.analysisData.overallTemperament;
-      const interpretation = TEMPERAMENT_SCORING.interpretation[temperament.category];
+      if (!temperament?.category) {
+        ErrorHandler.showUserError('Results are incomplete. Finish the assessment or clear saved progress and try again.');
+        return;
+      }
+      const interpretation = TEMPERAMENT_SCORING?.interpretation?.[temperament.category];
+      if (!interpretation) {
+        ErrorHandler.showUserError('Could not load profile interpretation. Please refresh the page.');
+        return;
+      }
       const genderAnswer = this.answers[GENDER_QUESTION.id];
       const genderValue = typeof genderAnswer === 'string' ? genderAnswer : genderAnswer?.value;
       if (!this.analysisData.gender && genderValue) {
@@ -1214,7 +1261,7 @@ export class TemperamentEngine {
     const reportedGender = this.analysisData.gender;
     const maleTrend = EXPECTED_GENDER_TRENDS.man;
     const femaleTrend = EXPECTED_GENDER_TRENDS.woman;
-    const score = temperament.normalizedScore;
+    const score = typeof temperament.normalizedScore === 'number' ? temperament.normalizedScore : 0.5;
 
     let html = '';
     // Context sensitivity flag
@@ -1240,7 +1287,7 @@ export class TemperamentEngine {
           <div class="temperament-patterns">
             <h4>Expression Patterns:</h4>
             <ul>
-              ${interpretation.characteristics.map(char => `<li>${SecurityUtils.sanitizeHTML(char || '')}</li>`).join('')}
+              ${(interpretation.characteristics || []).map(char => `<li>${SecurityUtils.sanitizeHTML(char || '')}</li>`).join('')}
             </ul>
           </div>
           
