@@ -988,10 +988,9 @@ export class TemperamentEngine {
   }
 
   analyzeVariation() {
-    // Identify dimensions with significant variation (expected and common)
+    // Identify dimensions with high internal spread (used for context-sensitivity flag)
     this.analysisData.variationAnalysis = {
-      highVariationDimensions: [],
-      expectedVariations: []
+      highVariationDimensions: []
     };
 
     Object.keys(this.analysisData.dimensionScores).forEach(dimKey => {
@@ -1002,13 +1001,6 @@ export class TemperamentEngine {
         this.analysisData.variationAnalysis.highVariationDimensions.push({
           dimension: dimKey,
           variation: variation,
-          scores: score
-        });
-      }
-
-      if (TEMPERAMENT_SCORING.expectedVariation?.includes(dimKey)) {
-        this.analysisData.variationAnalysis.expectedVariations.push({
-          dimension: dimKey,
           scores: score
         });
       }
@@ -1280,6 +1272,7 @@ export class TemperamentEngine {
       <div class="temperament-profile-card${crossPolarityClass}">
         <h2>Temperament Expression Profile</h2>
         <p class="temperament-assessment-context"><strong>Assessment context:</strong> Taken as ${SecurityUtils.sanitizeHTML(genderLabel)}.</p>
+        <p class="temperament-variation-opening" style="color: var(--muted); font-size: 0.95rem; line-height: 1.65; margin: 0.75rem 0 0;">Variation across situations and life phases is normal; noticing where you tend to lean can help you interpret points of friction, contention, and polarity dynamics more clearly—especially with a partner.</p>
         <div class="temperament-profile-inner">
           <h3>${SecurityUtils.sanitizeHTML(interpretation.label || '')}</h3>
           <p>${SecurityUtils.sanitizeHTML(interpretation.description || '')}</p>
@@ -1415,19 +1408,6 @@ export class TemperamentEngine {
     
     html += '</div>';
     html += polarityFailureAlertHtml;
-
-    // Variation analysis
-    if (this.analysisData.variationAnalysis.expectedVariations.length > 0) {
-      html += '<div class="variations-box">';
-      html += '<h4>Expected Variations</h4>';
-      html += '<p>The following dimensions commonly show variation across themes and dynamics. This is normal and expected:</p>';
-      html += '<ul>';
-      this.analysisData.variationAnalysis.expectedVariations.forEach(variation => {
-        const dimName = this.getDimensionDisplayName(variation.dimension);
-        html += `<li>${SecurityUtils.sanitizeHTML(dimName || '')}</li>`;
-      });
-      html += '</ul></div>';
-    }
 
     html += `
       <div class="panel-brand-left" style="background: var(--glass); border-radius: var(--radius); padding: 1.25rem; margin-top: 2rem; border-left: 4px solid var(--accent);">
