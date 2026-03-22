@@ -8,7 +8,8 @@
     "cap:sync": "npm run copy:www && npx cap sync android",
     "serve": "serve . -p 3000",
     "serve:www": "npm run copy:www && serve www -p 3000",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "smv:sensitivity": "node scripts/smv-sensitivity-check.mjs"
   },
   "keywords": [],
   "author": "",

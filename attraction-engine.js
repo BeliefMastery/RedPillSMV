@@ -25,6 +25,11 @@ import {
   PARTNER_COUNT_DOWNGRADE,
   AXIS_SUBCATEGORY_WEIGHTS
 } from './attraction-data.js';
+import {
+  calculateRadActivityPercentile,
+  computeSmvClustersAndSubs,
+  computeOverallSmv
+} from './shared/attraction-smv-core.mjs';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 
@@ -289,11 +294,14 @@ export class AttractionEngine {
       const opts = q.options || [1, 3, 5, 7, 10];
       let pairs = opts.map(v => ({ value: v, label: this.buildOptionLabel(q, v) }));
       if (q.shuffleOptions) pairs = this.shuffleArray(pairs);
-      const optsHtml = pairs.map(p => `<label class="option-label"><input type="radio" name="${SecurityUtils.sanitizeHTML(q.id)}" value="${p.value}" required><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(p.label)}</span></span></label>`).join('');
+      const req = q.optional ? '' : ' required';
+      const optsHtml = pairs.map(p => `<label class="option-label"><input type="radio" name="${SecurityUtils.sanitizeHTML(q.id)}" value="${p.value}"${req}><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(p.label)}</span></span></label>`).join('');
       const subcat = phase.subcategories?.[q.subcategory]?.label || q.subcategory;
+      const optHint = q.optional ? '<p class="question-optional-hint" style="color:var(--muted);font-size:0.88rem;margin:0 0 0.75rem;line-height:1.5;">Optional: press <strong>Next</strong> without choosing if you prefer not to answer—this item is omitted from scoring; your other answers still count.</p>' : '';
       html += `<div class="question-block" data-question-index="${idx}" data-phase="${phaseName}" style="${idx === 0 ? '' : 'display:none'}">
         <div class="question-header"><span class="question-number">Question ${idx + 1} of ${questions.length}</span><span class="question-category">${SecurityUtils.sanitizeHTML(subcat)}</span></div>
         <p class="question-text">${SecurityUtils.sanitizeHTML(q.text)}</p>
+        ${optHint}
         <div class="options-container">${optsHtml}</div>
       </div>`;
     });
@@ -319,9 +327,18 @@ export class AttractionEngine {
     const phase = clusters[phaseName];
     const questions = phase?.questions || [];
     const block = document.querySelector(`[data-question-index="${this.currentQuestionIndex}"][data-phase="${phaseName}"]`);
+    const qCurrent = questions[this.currentQuestionIndex];
     const input = block?.querySelector('input[type="radio"]:checked');
-    if (!input) { showAlert('Please select an answer.'); return; }
-    this.responses[input.name] = parseInt(input.value, 10);
+    if (!input) {
+      if (qCurrent?.optional) {
+        delete this.responses[qCurrent.id];
+      } else {
+        showAlert('Please select an answer.');
+        return;
+      }
+    } else {
+      this.responses[input.name] = parseInt(input.value, 10);
+    }
 
     if (this.currentQuestionIndex >= questions.length - 1) {
       this.completePhase();
@@ -364,9 +381,18 @@ export class AttractionEngine {
     const phase = clusters[phaseName];
     const questions = phase?.questions || [];
     const block = document.querySelector(`[data-question-index="${this.currentQuestionIndex}"][data-phase="${phaseName}"]`);
+    const qLast = questions[this.currentQuestionIndex];
     const input = block?.querySelector('input[type="radio"]:checked');
-    if (!input) { showAlert('Please select an answer.'); return; }
-    this.responses[input.name] = parseInt(input.value, 10);
+    if (!input) {
+      if (qLast?.optional) {
+        delete this.responses[qLast.id];
+      } else {
+        showAlert('Please select an answer.');
+        return;
+      }
+    } else {
+      this.responses[input.name] = parseInt(input.value, 10);
+    }
 
     this.currentPhase++;
     if (this.currentPhase < phaseNames.length) {
@@ -385,75 +411,38 @@ export class AttractionEngine {
     window.scrollTo(0, 0);
   }
 
-  scoreToPercentile(score) {
-    const normalized = (score - 1) / 9;
-    const sigmoid = 1 / (1 + Math.exp(-6 * (normalized - 0.5)));
-    return sigmoid * 100;
-  }
-
   /**
    * Rad Activity: weighted scoring (activity type 40%, consumption 30%, competition 20%, visibility 10%).
    * Anti-rad floor: porn/drugs or gaming/TV tanks the score to max 25th percentile.
-   * Justification: activity type and consumption-vs-creation dominate because they directly signal direction;
-   * competition and visibility amplify but cannot override a fundamentally anti-rad base.
+   * Implementation: shared/attraction-smv-core.mjs (keep in sync).
    */
   calculateRadActivityScore() {
-    const r = this.responses;
-    const rad1 = r.rad_1 ?? 1, rad2 = r.rad_2 ?? 1, rad3 = r.rad_3 ?? 1, rad4 = r.rad_4 ?? 1;
-    const norm = v => Math.max(0, Math.min(1, (v - 1) / 9));
-    const weighted = 0.40 * norm(rad1) + 0.30 * norm(rad2) + 0.20 * norm(rad3) + 0.10 * norm(rad4);
-    const rawScore = weighted * 9 + 1;
-    let percentile = this.scoreToPercentile(rawScore);
-    if (rad1 <= RAD_ACTIVITY_TYPE_MODIFIER.ANTI_RAD_THRESHOLD) {
-      percentile = Math.min(percentile, RAD_ACTIVITY_TYPE_MODIFIER.ANTI_RAD_FLOOR);
-    }
-    return percentile;
+    return calculateRadActivityPercentile(this.responses, RAD_ACTIVITY_TYPE_MODIFIER);
   }
 
   calculateSMV() {
     const clusters = this.getClusters();
     const weights = this.getClusterWeights();
-    const rawScores = { clusters: {}, subcategories: {} };
-    const smv = { overall: 0, clusters: {}, subcategories: {}, marketPosition: '', delusionIndex: 0, delusionBand: 'low', levelClassification: '', targetMarket: {}, recommendation: {} };
-
-    Object.keys(clusters).forEach(clusterId => {
-      const cluster = clusters[clusterId];
-      rawScores.clusters[clusterId] = [];
-      rawScores.subcategories[clusterId] = {};
-      (cluster.questions || []).forEach(q => {
-        let v = this.responses[q.id];
-        if (v == null) return;
-        if (q.reverseScore) v = 11 - v;
-        rawScores.clusters[clusterId].push(v);
-        if (!rawScores.subcategories[clusterId][q.subcategory]) rawScores.subcategories[clusterId][q.subcategory] = [];
-        rawScores.subcategories[clusterId][q.subcategory].push(v);
-      });
-      const avg = rawScores.clusters[clusterId].length ? rawScores.clusters[clusterId].reduce((a, b) => a + b, 0) / rawScores.clusters[clusterId].length : 0;
-      smv.clusters[clusterId] = this.scoreToPercentile(avg);
-      smv.subcategories[clusterId] = {};
-      Object.keys(rawScores.subcategories[clusterId]).forEach(sub => {
-        const arr = rawScores.subcategories[clusterId][sub];
-        const subAvg = arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-        smv.subcategories[clusterId][sub] = this.scoreToPercentile(subAvg);
-      });
-      // Override radActivity for males: weighted scoring + anti-rad floor
-      if (this.currentGender === 'male' && clusterId === 'axisOfAttraction' && smv.subcategories[clusterId].radActivity != null) {
-        smv.subcategories[clusterId].radActivity = this.calculateRadActivityScore();
-      }
-
-      if (clusterId === 'axisOfAttraction') {
-        const subScores = smv.subcategories[clusterId];
-        const config = this.currentGender === 'male' ? AXIS_SUBCATEGORY_WEIGHTS.male : AXIS_SUBCATEGORY_WEIGHTS.female;
-        const weightedEntries = Object.entries(config).filter(([k]) => subScores[k] != null);
-        const totalWeight = weightedEntries.reduce((sum, [, w]) => sum + w, 0);
-        if (totalWeight > 0) {
-          const weightedSum = weightedEntries.reduce((sum, [k, w]) => sum + (subScores[k] * w), 0);
-          smv.clusters[clusterId] = weightedSum / totalWeight;
-        }
-      }
+    const partial = computeSmvClustersAndSubs({
+      gender: this.currentGender,
+      responses: this.responses,
+      clusters,
+      axisSubWeights: AXIS_SUBCATEGORY_WEIGHTS,
+      radModifier: RAD_ACTIVITY_TYPE_MODIFIER
     });
+    const smv = {
+      overall: 0,
+      clusters: partial.clusters,
+      subcategories: partial.subcategories,
+      marketPosition: '',
+      delusionIndex: 0,
+      delusionBand: 'low',
+      levelClassification: '',
+      targetMarket: {},
+      recommendation: {}
+    };
 
-    smv.overall = Object.keys(weights).reduce((sum, k) => sum + (smv.clusters[k] || 0) * (weights[k] || 0), 0);
+    smv.overall = computeOverallSmv(smv.clusters, weights);
     smv.marketPosition = this.classifyMarketPosition(smv.overall);
     smv.weakestSubcategories = this.identifyWeakestSubcategories(smv);
     smv.levelClassification = this.classifyDevelopmentalLevel(smv);
@@ -572,6 +561,10 @@ export class AttractionEngine {
       const phys = p.physical_standards || 0;
       if (phys >= 5 && (smv.clusters?.axisOfAttraction || 0) < 60) score += 25;
       if (phys >= 7 && (smv.clusters?.axisOfAttraction || 0) < 70) score += 35;
+      const fp = p.fertility_priority || 0;
+      const repro = smv.clusters?.reproductiveConfidence || 0;
+      if (fp >= 5 && repro < 60) score += 20;
+      if (fp >= 7 && repro < 70) score += 30;
     } else {
       const h = p.height_requirement || 0;
       const inc = p.income_requirement || 0;
@@ -615,7 +608,7 @@ export class AttractionEngine {
       provider: { meaning: 'Provider capacity is stable resource generation. It predicts whether offspring will be supported to maturity.', actions: ['Increase income or build a second stream — show upward trajectory', 'Create visible proof of provisioning: savings, assets, or documented support history', 'Reduce debt and instability; men who can’t provide are filtered out early'] },
       parentalInvestor: { meaning: 'Parental Investor signals willingness and competence in offspring rearing. Women filter for men who will stay and invest.', actions: ['Spend time with children (nieces, nephews, friends’ kids) and document it', 'Articulate a clear vision of fatherhood and how you’d structure family life', 'Demonstrate consistency and follow-through in other domains as a proxy for parental reliability'] },
       performanceStatus: { meaning: 'Performance/Status (wealth = productivity, sharing, social popularity, unique talent) drives initiation attraction and time-to-intimacy. Unique talent (music, sport, craft) signals potential windfall or novelty.', actions: ['Raise visible status: certifications, titles, audience, or social proof', 'Develop or showcase one outstanding talent — music, sport, craft, or expertise', 'Increase generosity: time, introductions, sharing; produce and publish content others can point to'] },
-      physicalGenetic: { meaning: 'Physical/Genetic signals (aesthetics, fitness, grooming, vitality) drive immediate attraction and mating access.', actions: ['Optimise fitness: strength 2–3x/week, conditioning 2x, body composition target', 'Upgrade grooming: skin, hair, teeth, wardrobe — invest in presentation', 'Increase energy and presence: sleep, nutrition, posture, eye contact'] },
+      physicalGenetic: { meaning: 'Physical/Genetic combines face, body shape, symmetry, skin/hair/teeth, voice and first-impression presence, height, grooming, vitality, plus a calibration item. Mismatches (e.g. strong body vs weaker face) show up across multiple items; one item is an honest market read on visible difference—not a verdict on your worth.', actions: ['Prioritise the lowest-weighted sub-areas in your report bars (face, composition, or presentation as indicated)', 'Train strength and body composition; align grooming and skin/hair/teeth with the standard you are targeting', 'Posture, voice, and sleep sharply affect first-30-second presence'] },
       humour: { meaning: 'Humour is an intelligence signal and drives approachability and attraction. Women are drawn to men who can make them laugh and show quick wit.', actions: ['Study comedic timing and delivery — watch stand-up, practice in low-stakes settings', 'Read widely; humour relies on pattern recognition and surprise', 'Use self-deprecation sparingly; aim for playful observation over put-downs'] },
       radActivity: { meaning: 'Rad Activity is an external interest that signals direction; she competes with it. Anti-rad (gaming, TV, porn, drugs) = consumption/escape, no direction, attraction-killing. Low-rad (badminton, casual hobbies) = weak signal. Rad (snowboarding, martial arts, kitesurfing) = risk, skill, lifestyle. High-rad (business, mission) = "fucking the world with your passion."', actions: ['Replace consumption (gaming, TV, porn, scrolling) with building or mastery—output, not input', 'Develop one serious passion: sport, business, craft, or mission—make it visible', 'Choose activities that require risk, skill, or creation over passive hobbies'] },
       socialInfluence: { meaning: 'Social Influence is control over perceptions and alliances. It determines resource flow and protection in the female network.', actions: ['Identify key nodes in your social graph and deepen those alliances', 'Speak up in group settings; practice shaping narratives and opinions', 'Avoid burning bridges; repair one strained relationship and document the pattern'] },
@@ -624,7 +617,7 @@ export class AttractionEngine {
       paternityCertainty: { meaning: 'Paternity Certainty: men filter for signals of loyalty and exclusivity. High partner count, infidelity history, or opacity about the past raise paternity risk and reduce commitment willingness.', actions: ['Be fully transparent about relationship history when appropriate — no hidden bombs', 'Demonstrate exclusivity through behaviour, not just words', 'Reduce or reframe factors that signal volatility or infidelity risk'] },
       nurturingStandard: { meaning: 'Nurturing Standard aligns with the male’s early maternal care baseline. Men commit when they see warmth, care, and domestic potential.', actions: ['Practice active listening and emotional attunement in low-stakes settings', 'Demonstrate care through acts of service (food, comfort, support) without overgiving', 'Share examples of nurturing behaviour (family, pets, friends) in conversation'] },
       collaborativeTrust: { meaning: 'Collaborative Trust Efficiency is the ability to work with a male partner without waste, sabotage, or chronic conflict.', actions: ['Identify one recurring conflict pattern and change your response', 'Reduce drama: pause before escalating, avoid triangulation, address issues directly', 'Demonstrate reliability — follow through on commitments and show up consistently'] },
-      fertility: { meaning: 'Fertility & Health cues (youth, waist–hip ratio, skin, hair, symmetry) drive male initial approach and short-term attraction.', actions: ['Optimise body composition and posture for fertility signalling', 'Invest in skin, hair, and grooming; treat them as non-negotiable', 'Dress to emphasise favourable ratios and health cues'] },
+      fertility: { meaning: 'Fertility & Health cues combine face, waist–hip ratio, age bracket, skin/hair/teeth, symmetry, overall shape, and a net calibration. Items are weighted; face and WHR pull harder than the “visible difference / early filter” item, which measures typical market friction, not value.', actions: ['Address the weakest bars first—often face, WHR line, or vitality presentation', 'Skin, hair, teeth, and posture compound; invest where you are thinnest', 'If the early-filter item is low, pair presentation work with realistic venue and pacing—initial impression is not the whole story'] },
       riskCost: { meaning: 'Risk Cost indicators (volatility, infidelity risk, sabotage potential) filter men out of long-term investment.', actions: ['Reduce visible red flags: substance use, instability, destructive patterns', 'Increase predictability — stable routine, consistent mood, clear communication', 'Address mental health or trauma if it shows up as volatility or conflict'] },
       personality: { meaning: 'Personality affects ease of partnership. Men invest when they enjoy your company and feel low friction.', actions: ['Audit one friction point (negativity, criticism, neediness) and reduce it', 'Increase positive interactions: humour, gratitude, shared interests', 'Be easy to be around — low maintenance, flexible, agreeable when it matters'] },
       factorsHidden: { meaning: 'Hidden factors (secrets, undisclosed past, concealed habits) undermine trust and commitment once discovered.', actions: ['Surface significant secrets before commitment deepens; control the narrative', 'Work through shame or guilt so you’re not carrying hidden weight', 'If disclosure is risky, get support (therapy, trusted friend) to plan timing and framing'] }
@@ -753,6 +746,7 @@ export class AttractionEngine {
         ${radBlock}
         <section class="report-section"><h2 class="report-section-title">Market Position</h2>
         ${s.delusionBand !== 'low' ? `<div class="delusion-warning"><h3>⚠️ Standards-Market Mismatch: ${SecurityUtils.sanitizeHTML(s.delusionBand.toUpperCase())}</h3><p>${this.getDelusionWarning(s.delusionBand)}</p></div>` : ''}
+        ${this.currentGender === 'male' ? this.getMaleStandardsContextNote(s) : ''}
         <div class="market-analysis"><div class="market-grid"><div class="market-card"><h4>Realistic Target</h4><p>${s.targetMarket?.realistic || ''}</p></div><div class="market-card"><h4>Aspirational</h4><p>${s.targetMarket?.aspirational || ''}</p></div></div></div></section>
 
         <section class="report-section"><h2 class="report-section-title">Strategic Recommendations</h2>
@@ -888,6 +882,30 @@ export class AttractionEngine {
     if (band === 'severe') return 'SEVERE MISMATCH: Expectations dramatically out of alignment with market value.';
     if (band === 'high') return 'SIGNIFICANT MISMATCH: Standards exceed market position. Adjust or improve.';
     return 'MODERATE MISMATCH: Some recalibration needed.';
+  }
+
+  /**
+   * Male-only: tie stated preferences to narrower scored constructs (physical vs full axis; fertility priority vs repro cluster).
+   */
+  getMaleStandardsContextNote(smv) {
+    const p = this.preferences || {};
+    const parts = [];
+    const axisSubs = smv.subcategories?.axisOfAttraction || {};
+    const pg = axisSubs.physicalGenetic;
+    if ((p.physical_standards || 0) >= 5 && pg != null && pg < 58) {
+      parts.push(
+        `You rated physical attractiveness standards as important, but your Physical/Genetic subscore (~${Math.round(pg)}th percentile) is only part of the full Attraction Opportunity score. Delusion checks use the whole axis; closing the gap means fitness, grooming, height presentation, and vitality — not only face.`
+      );
+    }
+    const fp = p.fertility_priority || 0;
+    const repro = smv.clusters?.reproductiveConfidence ?? 50;
+    if (fp >= 5 && repro < 58) {
+      parts.push(
+        `You indicated strong priority on a partner’s fertility / having children; your Reproductive Confidence cluster (~${Math.round(repro)}th percentile) is what signals nesting and paternal intent to women screening for long-term fathers.`
+      );
+    }
+    if (!parts.length) return '';
+    return `<div class="standards-context-note" style="margin-top:1rem;padding:0.75rem 1rem;background:var(--glass);border-radius:var(--radius);font-size:0.9rem;line-height:1.5;border-left:3px solid var(--accent);"><strong>Preferences vs scored pillars:</strong><ul style="margin:0.5rem 0 0 1rem;">${parts.map(t => `<li>${SecurityUtils.sanitizeHTML(t)}</li>`).join('')}</ul></div>`;
   }
 
   generateSampleReport() {

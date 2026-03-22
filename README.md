@@ -9,7 +9,7 @@ Map where you fit in the modern relationship marketplace. A self-contained app o
 | Tool | Page | Description |
 |------|------|-------------|
 | **Modern Archetype Identification** | `archetype.html` | Identifies primary, secondary, and tertiary archetypes with subtype refinement and behavioral traits. |
-| **Attraction, Status and Selection** | `attraction.html` | Gender-specific Sexual Market Value (SMV) assessment: coalition rank, reproductive confidence, axis of attraction, market position, and recommendations. |
+| **Attraction, Status and Selection** | `attraction.html` | Gender-specific SMV: coalition rank, reproductive confidence, axis of attraction (weighted subcategory scoring for physical/fertility signifiers; optional skip on one sensitive item), market position, recommendations. |
 | **Polarity Position Mapping** | `temperament.html` | Masculine–feminine temperament mapping, dimension scores, cross-polarity detection, and context sensitivity. |
 | **Relationships** | `relationship.html` | Compatibility and strain across multiple points; viability evaluation; action strategies per strain point. |
 

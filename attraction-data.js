@@ -1,7 +1,7 @@
 /**
  * STATUS, SELECTION, ATTRACTION — Quick Reference Map
  * Male and female evolutionary clusters from Belief Mastery.
- * Structure: 3 questions per subcategory, averaged; weakest identified.
+ * Coalition/repro: 3 questions per subcategory (unweighted cluster mean). Axis uses subcategory weighted means then blend; weakest identified.
  *
  * @author Warwick Marshall
  */
@@ -10,14 +10,21 @@ const OPTS = [1, 3, 5, 7, 10];
 /** 6-point scale for rad activity type (anti-rad → low-rad → rad → high-rad spectrum) */
 const OPTS_6 = [1, 2, 4, 6, 8, 10];
 
-/** Male cluster weights (Hoe_math: Axis = 40% for males) */
+/**
+ * Male cluster weights (Hoe_math: Axis = 40% for males).
+ * Effective share of overall SMV for any subcategory = axisWeight * subBlend * (1/nItems in bucket) approximately.
+ * See docs/SMV_WEIGHTING_NOTE.md for worked examples and audit trail.
+ */
 export const MALE_CLUSTER_WEIGHTS = {
   coalitionRank: 0.25,
   reproductiveConfidence: 0.35,
   axisOfAttraction: 0.40
 };
 
-/** Female cluster weights (Axis = 50% for females) */
+/**
+ * Female cluster weights (Axis = 50% for females).
+ * Female axis gets a larger cluster share than male; fertility sub-blend slot ≈ 0.50 * 0.30 = 15% of overall SMV.
+ */
 export const FEMALE_CLUSTER_WEIGHTS = {
   coalitionRank: 0.20,
   reproductiveConfidence: 0.30,
@@ -25,8 +32,14 @@ export const FEMALE_CLUSTER_WEIGHTS = {
 };
 
 /**
- * Axis of Attraction subcategory blend weights.
- * This prevents raw question-count dominance from silently overweighting longer subcategories.
+ * Axis of Attraction subcategory blend weights (percentiles blended with fixed weights; missing subs renormalized).
+ * Prevents raw question-count dominance from silently overweighting longer subcategories.
+ *
+ * Approx. contribution to overall SMV (all subs present, male): axis 40% × sub weight
+ *   e.g. physicalGenetic 0.25 → 40% × 25% = 10% of overall composite from that pillar alone.
+ * Female: multiply by 50% cluster weight (e.g. fertility 0.30 → 15% overall slot).
+ *
+ * Item→construct map: see docs/SMV_WEIGHTING_NOTE.md. physicalGenetic / fertility use per-question `weight` in weighted subcategory means (see shared/attraction-smv-core.mjs).
  */
 export const AXIS_SUBCATEGORY_WEIGHTS = {
   male: {
@@ -156,12 +169,18 @@ const MALE_AXIS_QUESTIONS = [
   { id: 'perf_4', subcategory: 'performanceStatus', text: 'How productive and output-oriented are you in your work or projects?', weight: 1.0, options: OPTS, optionLabels: ['Low; struggle to produce', 'Below average', 'Average', 'Above average; reliable output', 'High; consistent high output'] },
   { id: 'perf_5', subcategory: 'performanceStatus', text: 'How popular or well-regarded are you in your social and professional circles?', weight: 1.0, options: OPTS, optionLabels: ['Not popular; overlooked', 'Below average', 'Average', 'Well-liked; respected', 'Very popular; sought after'] },
   { id: 'perf_6', subcategory: 'performanceStatus', text: 'Do you have a unique or outstanding talent (music, sport, craft, invention, expertise) that signals potential windfall or novelty?', weight: 1.0, options: OPTS, optionLabels: ['None; no standout skill', 'One hobby; not notable', 'Moderate; some recognition', 'Strong; admired in niche', 'Outstanding; widely recognised'] },
-  // Physical/Genetic (Aesthetics, genetics, virility, fitness, cleanliness — produce and protect healthy offspring)
-  { id: 'phys_1', subcategory: 'physicalGenetic', text: 'How would you honestly rate your physical attractiveness (face, build, aesthetics)?', weight: 1.0, options: OPTS, optionLabels: ['Below average', 'Slightly below average', 'Average', 'Above average', 'Top tier'] },
-  { id: 'phys_2', subcategory: 'physicalGenetic', text: 'How would you rate your fitness, strength, and physical capability?', weight: 1.0, options: OPTS, optionLabels: ['Poor; sedentary', 'Below average', 'Average', 'Above average; fit', 'Elite; very strong'] },
+  // Physical/Genetic — ordered: face → body → strength → detail cues → optional market-read → frame → polish → net
+  { id: 'phys_1', subcategory: 'physicalGenetic', text: 'How would you honestly rate your facial attractiveness (face, features—separate from body below)?', weight: 1.2, options: OPTS, optionLabels: ['Below average', 'Slightly below average', 'Average', 'Above average', 'Top tier'] },
+  { id: 'phys_6', subcategory: 'physicalGenetic', text: 'How would you rate your body composition and shape as seen by others (muscle, leanness, proportions—not the same as strength alone)?', weight: 1.1, options: OPTS, optionLabels: ['Poor shape for my goals', 'Below average', 'Average', 'Above average; clear shape', 'Standout physique'] },
+  { id: 'phys_2', subcategory: 'physicalGenetic', text: 'How would you rate your fitness, strength, and physical capability (training and performance—not only how you look)?', weight: 1.0, options: OPTS, optionLabels: ['Poor; sedentary', 'Below average', 'Average', 'Above average; fit', 'Elite; very strong'] },
+  { id: 'phys_7', subcategory: 'physicalGenetic', text: 'How favorable are your facial and body symmetry and proportions in the mirror of typical dating-market taste (honest self-view)?', weight: 0.9, options: OPTS, optionLabels: ['Clearly uneven / awkward proportions', 'Below average', 'Average', 'Above average', 'Very balanced'] },
+  { id: 'phys_8', subcategory: 'physicalGenetic', text: 'How strong is your skin, hair, and teeth presentation (health and grooming visible at conversation distance)?', weight: 1.0, options: OPTS, optionLabels: ['Poor; often a distraction', 'Below average', 'Average', 'Above average; well kept', 'Excellent; standout'] },
+  { id: 'phys_9', subcategory: 'physicalGenetic', text: 'How would you rate your voice, posture, and first-30-seconds presence (before you have said much)?', weight: 0.85, options: OPTS, optionLabels: ['Weak; easily overlooked', 'Below average', 'Average', 'Above average; solid presence', 'Strong; memorable immediately'] },
+  { id: 'phys_10', subcategory: 'physicalGenetic', text: 'Honest read: visible disability, difference, or chronic visible health factor—how much does it typically filter stranger or early dating first impressions? (Not your worth; typical market friction.)', weight: 0.8, optional: true, options: OPTS, optionLabels: ['Major; often a strong early filter', 'Noticeable; frequently shapes first glance', 'Moderate; sometimes matters early', 'Minor; rarely the main signal', 'Not a factor in typical first impressions'] },
   { id: 'phys_3', subcategory: 'physicalGenetic', text: 'What is your height bracket?', weight: 1.0, options: OPTS, optionLabels: ['Under 5\'6"', '5\'6"-5\'8"', '5\'9"-5\'11"', '6\'0"-6\'2"', 'Over 6\'2"'] },
   { id: 'phys_4', subcategory: 'physicalGenetic', text: 'How well do you maintain grooming, hygiene, and physical presentation?', weight: 1.0, options: OPTS, optionLabels: ['Poor; inconsistent', 'Below average', 'Average', 'Above average; polished', 'Excellent; always put-together'] },
   { id: 'phys_5', subcategory: 'physicalGenetic', text: 'How would others describe your energy and vitality?', weight: 1.0, options: OPTS, optionLabels: ['Low; tired or sluggish', 'Below average', 'Average', 'Above average; energetic', 'High; vibrant and vital'] },
+  { id: 'phys_11', subcategory: 'physicalGenetic', text: 'Net calibration: how strong is your overall physical first-impression signal in dating-relevant settings (face + body + presence together)?', weight: 0.65, options: OPTS, optionLabels: ['Weak overall signal', 'Below average', 'Average', 'Above average', 'Strong overall signal'] },
   // Humour (intelligence indicator; drives attraction and approachability)
   { id: 'humour_1', subcategory: 'humour', text: 'How easily do you make others laugh in social settings?', weight: 1.0, options: OPTS, optionLabels: ['Rarely; humour doesn\'t come naturally', 'Sometimes; hit and miss', 'Moderately; decent delivery', 'Often; people enjoy my timing', 'Consistently; known for wit'] },
   { id: 'humour_2', subcategory: 'humour', text: 'How quick are you to spot absurdity, irony, or playful angles in conversation?', weight: 1.0, options: OPTS, optionLabels: ['Slow; often miss it', 'Below average', 'Average; catch some', 'Quick; usually first', 'Very quick; sharp and clever'] },
@@ -202,10 +221,15 @@ const FEMALE_REPRODUCTIVE_QUESTIONS = [
 
 /** FEMALE Axis of Attraction — Fertility & Health, Risk Cost. Personality, promiscuity, factors hidden. Maps to Keeper-Sweeper chart. */
 const FEMALE_AXIS_QUESTIONS = [
-  // Fertility & Health Cues (Hot) (3)
-  { id: 'fert_1', subcategory: 'fertility', text: 'How would you honestly rate your physical attractiveness and feminine beauty?', weight: 1.0, options: OPTS, optionLabels: ['Below average', 'Slightly below average', 'Average', 'Above average', 'Top tier'] },
-  { id: 'fert_2', subcategory: 'fertility', text: 'How favorable is your waist-hip ratio and overall body composition?', weight: 1.0, options: OPTS, optionLabels: ['Unfavorable', 'Below average', 'Average', 'Favorable', 'Highly favorable'] },
-  { id: 'fert_3', subcategory: 'fertility', text: 'What is your age bracket?', weight: 1.0, options: OPTS, optionLabels: ['45+', '35-44', '30-34', '25-29', '18-24'] },
+  // Fertility & Health Cues — ordered: face → WHR → shape → skin/symmetry → optional market-read → age → net
+  { id: 'fert_1', subcategory: 'fertility', text: 'How would you honestly rate your facial attractiveness and feminine features (face—separate from waist/hips below)?', weight: 1.2, options: OPTS, optionLabels: ['Below average', 'Slightly below average', 'Average', 'Above average', 'Top tier'] },
+  { id: 'fert_2', subcategory: 'fertility', text: 'How favorable is your waist–hip ratio and midsection shape (classic fertility cue)?', weight: 1.15, options: OPTS, optionLabels: ['Unfavorable', 'Below average', 'Average', 'Favorable', 'Highly favorable'] },
+  { id: 'fert_6', subcategory: 'fertility', text: 'Aside from waist–hips, how would you rate your overall body leanness and shape as seen by others?', weight: 1.0, options: OPTS, optionLabels: ['Poor for my goals', 'Below average', 'Average', 'Above average', 'Standout shape'] },
+  { id: 'fert_4', subcategory: 'fertility', text: 'How strong is your skin, hair, and teeth vitality (visible health at conversation distance)?', weight: 1.0, options: OPTS, optionLabels: ['Poor; often a distraction', 'Below average', 'Average', 'Above average; glowing', 'Excellent; standout'] },
+  { id: 'fert_5', subcategory: 'fertility', text: 'How favorable are your symmetry and overall body proportions in the mirror of typical dating-market taste (honest self-view)?', weight: 0.9, options: OPTS, optionLabels: ['Clearly uneven / awkward proportions', 'Below average', 'Average', 'Above average', 'Very balanced'] },
+  { id: 'fert_7', subcategory: 'fertility', text: 'Honest read: visible disability, difference, or chronic visible health factor—how much does it typically filter stranger or early dating first impressions? (Not your worth; typical market friction.)', weight: 0.8, optional: true, options: OPTS, optionLabels: ['Major; often a strong early filter', 'Noticeable; frequently shapes first glance', 'Moderate; sometimes matters early', 'Minor; rarely the main signal', 'Not a factor in typical first impressions'] },
+  { id: 'fert_3', subcategory: 'fertility', text: 'What is your age bracket?', weight: 1.2, options: OPTS, optionLabels: ['45+', '35-44', '30-34', '25-29', '18-24'] },
+  { id: 'fert_8', subcategory: 'fertility', text: 'Net calibration: how strong is your overall physical first-impression signal in dating-relevant settings (face + body + vitality together)?', weight: 0.65, options: OPTS, optionLabels: ['Weak overall signal', 'Below average', 'Average', 'Above average', 'Strong overall signal'] },
   // Risk Cost (Crazy) (3) — volatility, infidelity risk, sabotage
   { id: 'risk_1', subcategory: 'riskCost', text: 'How emotionally stable and predictable are you?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Very volatile; unpredictable', 'Often unstable', 'Moderately stable', 'Generally stable', 'Very stable; highly predictable'] },
   { id: 'risk_2', subcategory: 'riskCost', text: 'How present are red flags (substance abuse, mental health issues, destructive patterns)?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Multiple severe', 'Several moderate', 'A few minor', 'Very few', 'None significant'] },
@@ -250,11 +274,11 @@ export const MALE_CLUSTERS = {
     id: 'axisOfAttraction',
     title: 'Axis of Attraction',
     subtitle: 'Performance/Status + Physical/Genetic + Humour — Bad Boy / Good Guy Grid',
-    description: 'Wealth (productivity, sharing, social popularity, unique talent); aesthetics, virility, fitness; humour as intelligence signal. Drives initiation attraction, time-to-intimacy, investment requirement. Maps to Bad Boy / Good Guy grid.',
+    description: 'Wealth (productivity, sharing, social popularity, unique talent); physical signifiers (face, body, symmetry, skin/hair, voice, height, grooming, vitality—weighted within Physical/Genetic; one optional sensitive item); humour. Drives initiation attraction, time-to-intimacy, investment requirement. Maps to Bad Boy / Good Guy grid.',
     subcategories: {
       radActivity: { label: 'Rad Activity', desc: 'External interest that signals direction; she competes with it. Anti-rad (gaming, TV, porn, drugs) = consumption/escape. Low-rad (badminton, casual hobbies) = weak. Rad (snowboarding, martial arts) = risk, skill. High-rad (business, mission) = "fucking the world with your passion." Weighted: activity type 40%, consumption 30%, competition 20%, visibility 10%.' },
       performanceStatus: { label: 'Performance/Status (Wealth)', desc: 'Productivity, sharing, social network popularity, unique/outstanding talent.' },
-      physicalGenetic: { label: 'Physical/Genetic Signals', desc: 'Aesthetics, genetics, virility, fitness, cleanliness.' },
+      physicalGenetic: { label: 'Physical/Genetic Signals', desc: 'Face, body shape, symmetry, skin/hair/teeth, voice and presence, height, grooming, vitality; one item is an honest market read on visible difference (not a judgment of worth).' },
       humour: { label: 'Humour', desc: 'Intelligence indicator; approachability and attraction.' }
     },
     questions: MALE_AXIS_QUESTIONS
@@ -291,9 +315,9 @@ export const FEMALE_CLUSTERS = {
     id: 'axisOfAttraction',
     title: 'Axis of Attraction',
     subtitle: 'Male Mate Choice Filters — Keeper-Sweeper Chart',
-    description: 'Fertility & Health cues; Risk Cost indicators. Personality, promiscuity history, factors hidden. Maps to Keeper-Sweeper chart.',
+    description: 'Fertility & Health cues (face, WHR, shape, skin/symmetry, optional visible-difference market read, age, net calibration—weighted within fertility); Risk Cost; personality; factors hidden. Maps to Keeper-Sweeper chart.',
     subcategories: {
-      fertility: { label: 'Fertility & Health Cues (Hot)', desc: 'Youth, waist-hip ratio, skin/hair health, facial symmetry.' },
+      fertility: { label: 'Fertility & Health Cues (Hot)', desc: 'Face, waist–hip ratio, age bracket, skin/hair/teeth, symmetry, overall shape; weighted blend; includes an honest market-read item on visible difference (not a judgment of worth).' },
       riskCost: { label: 'Risk Cost Indicators (Crazy)', desc: 'Volatility, infidelity risk, sabotage potential.' },
       personality: { label: 'Personality', desc: 'Compatibility and ease of partnership.' },
       factorsHidden: { label: 'Factors Hidden', desc: 'Secrets or undisclosed elements that affect trust.' }

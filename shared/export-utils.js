@@ -1022,17 +1022,6 @@ function buildRelationshipReportBody(data) {
     });
   }
 
-  if (data.compatibilityScores && Object.keys(data.compatibilityScores).length > 0) {
-    html += '<h2>Compatibility Overview</h2><p class="muted">All areas ranked by impact:</p><ul>';
-    const sorted = Object.entries(data.compatibilityScores)
-      .map(([key, s]) => ({ key, ...s }))
-      .sort((a, b) => (b.weightedScore || 0) - (a.weightedScore || 0));
-    sorted.forEach(item => {
-      html += `<li><strong>${escapeHtml(item.name || item.key)}</strong> — ${escapeHtml(item.impactTier || '')} impact</li>`;
-    });
-    html += '</ul>';
-  }
-
   return html || '<p>No report data available. Complete the assessment to generate a full report.</p>';
 }
 

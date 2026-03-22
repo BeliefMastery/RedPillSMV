@@ -13,7 +13,7 @@ import { showConfirm } from './shared/confirm-modal.js';
 let COMPATIBILITY_POINTS, IMPACT_TIER_WEIGHTS, SCORING_THRESHOLDS, SEVERITY_TIERS;
 let ACTION_STRATEGIES, ARCHETYPAL_INSIGHTS, ARCHETYPAL_PRESSURES_BY_POINT;
 let STAGE_2_DOMAIN_QUESTIONS, STAGE_3_SCENARIO_QUESTIONS, RELATIONSHIP_DOMAINS;
-let RELATIONSHIP_MATERIAL, RELATIONSHIP_ANALYSIS_MODULES;
+let RELATIONSHIP_ANALYSIS_MODULES;
 let VIABILITY_DIMENSIONS, getViabilityQuestions, getViabilityBand, VIABILITY_BAND_LABELS, VIABILITY_BAND_CONCLUSIONS;
 
 /**
@@ -133,12 +133,6 @@ export class RelationshipEngine {
       STAGE_2_DOMAIN_QUESTIONS = questionsModule.STAGE_2_DOMAIN_QUESTIONS;
       STAGE_3_SCENARIO_QUESTIONS = questionsModule.STAGE_3_SCENARIO_QUESTIONS;
       RELATIONSHIP_DOMAINS = questionsModule.RELATIONSHIP_DOMAINS;
-
-      const materialModule = await loadDataModule(
-        './relationship-data/relationship-material.js',
-        'Relationship Material'
-      );
-      RELATIONSHIP_MATERIAL = materialModule.RELATIONSHIP_MATERIAL || {};
 
       const modulesModule = await loadDataModule(
         './relationship-data/relationship-modules.js',
@@ -1358,7 +1352,7 @@ export class RelationshipEngine {
       html += `<li style="margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.08);"><strong>${SecurityUtils.sanitizeHTML(dim.name || '')}</strong> — <span style="color: ${levelColor};">${SecurityUtils.sanitizeHTML(level)}</span>${scoreText}</li>`;
     });
     html += '</ul></div>';
-    html += '<p style="color: var(--muted); line-height: 1.7; margin-top: 1.5rem;">If your answers point to disconnection or one-sided investment, stepping away may be the clear choice. If there is potential for shared growth and mutual commitment, investing in resolution may be worthwhile. Use the reflection in Closure &amp; Next Steps to align your decision with your goals and values.</p>';
+    html += '<p style="color: var(--muted); line-height: 1.7; margin-top: 1.5rem;">If your answers point to disconnection or one-sided investment, stepping away may be the clear choice. If there is potential for shared growth and mutual commitment, investing in resolution may be worthwhile. Use the reflection prompts below (or in Closure &amp; Next Steps) to align your decision with your goals and values.</p>';
     html += '</div>';
     return html;
   }
@@ -1518,37 +1512,23 @@ export class RelationshipEngine {
         html += '<p style="font-size: 0.9rem; color: var(--muted); margin: 1.5rem 0 0; font-style: italic;">Several areas show critical or high strain. This pattern often indicates fundamental incompatibility; consider whether to focus on a few key areas or to reassess the relationship.</p>';
       }
     } else {
-      html += '<p>No dominant strain points were flagged. Review the overview below for your lowest-scoring areas.</p>';
+      html += '<p>No dominant strain points were flagged. Review strain context above and supplemental modules below for context.</p>';
     }
 
-    // Add summary of all scores
-    html += '<details style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid rgba(0,0,0,0.1);">';
-    html += '<summary><strong>Complete Compatibility Overview</strong></summary>';
-    html += '<p style="color: var(--muted); margin: 1rem 0;">All compatibility points ranked by impact:</p>';
-    
-    const allScores = Object.entries(this.analysisData.compatibilityScores)
-      .map(([key, data]) => ({ key, ...data }))
-      .sort((a, b) => b.weightedScore - a.weightedScore);
-    
-    html += '<ul style="list-style: none; padding: 0;">';
-    allScores.forEach(item => {
-      const tier = this.getSeverityTier(item.rawScore);
-      const scoreColor = tier && (tier.id === 'Critical' || tier.id === 'Severe') ? 'var(--accent)' : tier && tier.id === 'Moderate' ? 'var(--brand)' : 'var(--muted)';
-      html += `<li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(0,0,0,0.1);">
-        <strong>${SecurityUtils.sanitizeHTML(item.name || '')}</strong>
-        <span style="color: ${scoreColor}; font-size: 0.9em;"> (${SecurityUtils.sanitizeHTML(item.impactTier || '')} impact)</span>
-      </li>`;
-    });
-    html += '</ul></details>';
-
-    // Additional analysis modules
-    html += `<details style="margin-top: 2rem;">
+    if (this.assessmentMode === 'both') {
+      html += '<h2 style="margin-top: 2.5rem; padding-top: 2rem; border-top: 2px solid rgba(255,255,255,0.12);">Part 2: Relationship Viability Evaluation</h2>';
+      html += this.renderViabilityResults();
+      html += this.renderAnalysisModules({ part2: true });
+      html += this.getViabilityReflectionBlock();
+    } else {
+      html += `<details style="margin-top: 2rem;">
       <summary><strong>Supplemental Analysis Modules</strong></summary>
-      ${this.renderAnalysisModules()}
+      ${this.renderAnalysisModules({ part2: false })}
     </details>`;
+    }
 
-    // Mandatory Closure Section
-    html += this.getClosureSection();
+    // Mandatory Closure Section (viability reflection lives in Part 2 when mode is both)
+    html += this.getClosureSection(this.assessmentMode === 'both');
 
     // Follow-up invitation
     html += `
@@ -1556,11 +1536,6 @@ export class RelationshipEngine {
         <p style="margin: 0;"><strong style="color: var(--accent);">Explore further:</strong> Strain points often root in identity, polarity, or market reality. <a href="temperament.html">Polarity Position Mapping</a> clarifies whether masculine–feminine fit underlies the tension. <a href="archetype.html">Modern Archetype Identification</a> surfaces archetypal pressures, and <a href="attraction.html">Attraction &amp; Status</a> maps your mating-market position so you can separate compatibility issues from selection reality.</p>
       </div>
     `;
-
-    if (this.assessmentMode === 'both') {
-      html += '<h2 style="margin-top: 2.5rem; padding-top: 2rem; border-top: 2px solid rgba(255,255,255,0.12);">Part 2: Relationship Viability Evaluation</h2>';
-      html += this.renderViabilityResults();
-    }
 
     // Sanitize HTML before rendering - all dynamic content is already sanitized above
     SecurityUtils.safeInnerHTML(resultsContainer, html);
@@ -1578,26 +1553,32 @@ export class RelationshipEngine {
 
   }
 
-  renderAnalysisModules() {
+  /**
+   * @param {{ part2?: boolean }} opts - part2: inline under Part 2 (no duplicate section title; no framework dropdowns)
+   */
+  renderAnalysisModules(opts = {}) {
     if (!Array.isArray(RELATIONSHIP_ANALYSIS_MODULES) || RELATIONSHIP_ANALYSIS_MODULES.length === 0) {
       return '';
     }
+    const part2 = Boolean(opts.part2);
 
-    let html = `
-      <div class="analysis-modules-section" style="margin-top: 3rem;">
-        <h3>Relationship Viability Evaluation</h3>
-        <p style="color: var(--muted); margin-bottom: 1rem;">
-          Integrated viability readout combining core principles, conflict repair, and termination considerations.
-        </p>
-        <div class="analysis-modules-grid">
-    `;
+    let html = `<div class="analysis-modules-section" style="margin-top: ${part2 ? '1.5' : '3'}rem;">`;
+    if (!part2) {
+      html += `<h4 style="color: var(--brand); margin-bottom: 0.75rem;">Cross-cutting module readouts</h4>
+        <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.95rem;">
+          Summaries from compatibility scores across related strain areas (principles, repair, termination considerations).
+        </p>`;
+    } else {
+      html += `<p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.95rem;">
+        The following modules aggregate related compatibility areas for a quick cross-check alongside your viability responses above.
+      </p>`;
+    }
+    html += '<div class="analysis-modules-grid">';
 
     RELATIONSHIP_ANALYSIS_MODULES.forEach(module => {
       const score = this.getModuleScore(module.pointKeys);
       const status = this.getModuleStatus(score);
       const conclusion = module.conclusions?.[status.toLowerCase()] || '';
-      const referenceText = this.getModuleReferenceText(module);
-      const referenceHtml = referenceText ? this.formatReferenceText(referenceText) : '';
 
       html += `
         <div class="analysis-module-card card">
@@ -1605,38 +1586,13 @@ export class RelationshipEngine {
           <p>${SecurityUtils.sanitizeHTML(module.summary || '')}</p>
           ${score !== null ? `<p><strong>Module Score:</strong> ${score.toFixed(1)}/10 <span class="module-status">${SecurityUtils.sanitizeHTML(status)}</span></p>` : ''}
           ${conclusion ? `<p class="module-conclusion">${SecurityUtils.sanitizeHTML(conclusion)}</p>` : ''}
-          ${referenceHtml ? `
-            <details class="module-reference">
-              <summary>View Framework Reference</summary>
-              <div class="module-reference-text">${referenceHtml}</div>
-            </details>
-          ` : ''}
         </div>
       `;
     });
 
-    html += `
-        </div>
-      </div>
-    `;
+    html += '</div></div>';
 
     return html;
-  }
-
-  getModuleReferenceText(module) {
-    if (!module || !RELATIONSHIP_MATERIAL) return '';
-    if (module.materialKey === 'relationshipViability') {
-      const sections = [
-        'Healthy Relationships: 5 Core Principles',
-        RELATIONSHIP_MATERIAL.healthyPrinciples || '',
-        'Conflict Management: 8 Core Principles',
-        RELATIONSHIP_MATERIAL.conflictPrinciples || '',
-        'Evaluating Termination: 6 Key Considerations',
-        RELATIONSHIP_MATERIAL.terminationConsiderations || ''
-      ];
-      return sections.filter(Boolean).join('\n-\n');
-    }
-    return RELATIONSHIP_MATERIAL[module.materialKey] || '';
   }
 
   getModuleScore(pointKeys = []) {
@@ -1656,11 +1612,6 @@ export class RelationshipEngine {
     return 'Strong';
   }
 
-  formatReferenceText(text) {
-    const safe = SecurityUtils.sanitizeHTML(text || '');
-    return safe.replace(/\n/g, '<br>');
-  }
-  
   getSelfRegulationStrategies(link) {
     // Only return point-specific self-regulation; omit when generic or absent to avoid redundancy
     if (!ACTION_STRATEGIES || !link?.point) return [];
@@ -1697,11 +1648,32 @@ export class RelationshipEngine {
     return strategies.acceptanceStrategies.filter(Boolean);
   }
   
-  getClosureSection() {
+  /** Prompts merged into Part 2 when assessmentMode is both */
+  getViabilityReflectionBlock() {
     return `
-      <div class="panel-brand-left" style="background: var(--glass); border-radius: var(--radius); padding: 2rem; margin-top: 2.5rem; border-left: 4px solid var(--brand);">
-        <h3 style="color: var(--brand); margin-bottom: 1rem;">Closure & Next Steps</h3>
-        <div style="line-height: 1.8;">
+      <div style="margin-top: 2rem; padding: 1.25rem 1.5rem; background: var(--glass); border-radius: var(--radius); border-left: 4px solid var(--brand);">
+        <h4 style="color: var(--brand); margin-top: 0; margin-bottom: 0.5rem;">Relationship Viability Reflection</h4>
+        <p style="color: var(--muted); margin: 0 0 0.75rem;">Relationships shape the trajectory of our lives. The key is discernment: does this relationship support your vision for growth, or has it become a drain on your energy and aspirations? Conflicts do not always signal the end—what matters is whether investing in resolution brings long-term value and whether you share fundamental values, goals, and a compatible vision for the future.</p>
+        <p style="color: var(--muted); margin: 0 0 0.5rem; font-size: 0.95rem;">Consider:</p>
+        <ul style="color: var(--muted); margin: 0 0 0 1.25rem; padding-left: 0.5rem;">
+          <li style="margin-bottom: 0.35rem;">Does this relationship support the future you envision? Is there a shared vision that makes the effort worthwhile?</li>
+          <li style="margin-bottom: 0.35rem;">Is the discomfort temporary or a pattern that undermines your goals? Can resolving these challenges lead to a deeper connection?</li>
+          <li style="margin-bottom: 0.35rem;">Does the energy spent on resolution bring long-term value, or does it drain your emotional and mental health? Are you both committed to solutions that foster mutual growth?</li>
+          <li style="margin-bottom: 0.35rem;">Do you align on values, goals, and growth trajectories, or are they diverging?</li>
+          <li style="margin-bottom: 0.35rem;">In conflict, do you reflect and grow, or does the relationship become reactive and stagnant?</li>
+        </ul>
+        <p style="color: var(--muted); margin: 0.75rem 0 0; font-size: 0.95rem;">If your answers point to disconnection, lack of shared vision, or one-sided investment, stepping away may be the clear choice. If there is potential for shared growth, depth, and mutual understanding, investing in resolution may lead to a rewarding connection. Use Part 2 and your strain analysis together as a basis for your decision.</p>
+      </div>
+    `;
+  }
+
+  /**
+   * @param {boolean} omitViabilityReflection - true when Part 2 already included the viability reflection block
+   */
+  getClosureSection(omitViabilityReflection = false) {
+    const reflection = omitViabilityReflection
+      ? ''
+      : `
           <div style="margin-bottom: 1.5rem;">
             <h4 style="color: var(--brand); margin-bottom: 0.5rem;">Relationship Viability Reflection</h4>
             <p style="color: var(--muted); margin: 0 0 0.75rem;">Relationships shape the trajectory of our lives. The key is discernment: does this relationship support your vision for growth, or has it become a drain on your energy and aspirations? Conflicts do not always signal the end—what matters is whether investing in resolution brings long-term value and whether you share fundamental values, goals, and a compatible vision for the future.</p>
@@ -1714,7 +1686,13 @@ export class RelationshipEngine {
               <li style="margin-bottom: 0.35rem;">In conflict, do you reflect and grow, or does the relationship become reactive and stagnant?</li>
             </ul>
             <p style="color: var(--muted); margin: 0.75rem 0 0; font-size: 0.95rem;">If your answers point to disconnection, lack of shared vision, or one-sided investment, stepping away may be the clear choice. If there is potential for shared growth, depth, and mutual understanding, investing in resolution may lead to a rewarding connection. The evaluation above offers a clear basis for your decision.</p>
-          </div>
+          </div>`;
+
+    return `
+      <div class="panel-brand-left" style="background: var(--glass); border-radius: var(--radius); padding: 2rem; margin-top: 2.5rem; border-left: 4px solid var(--brand);">
+        <h3 style="color: var(--brand); margin-bottom: 1rem;">Closure & Next Steps</h3>
+        <div style="line-height: 1.8;">
+          ${reflection}
           <div style="margin-bottom: 1.5rem;">
             <h4 style="color: var(--brand); margin-bottom: 0.5rem;">What You Control</h4>
             <p style="color: var(--muted); margin: 0;">You control your responses, boundaries, communication style, and self-regulation. Focus your energy on actions within your sovereignty.</p>
