@@ -6,6 +6,12 @@ import { loadDataModule, setDebugReporter } from './shared/data-loader.js';
 import { createDebugReporter } from './shared/debug-reporter.js';
 import { ErrorHandler, DataStore, DOMUtils, SecurityUtils } from './shared/utils.js';
 import { downloadFile, generateReadableReport } from './shared/export-utils.js';
+import {
+  TEMPERAMENT_REPORT_TIER1_PARAS,
+  TEMPERAMENT_REPORT_SPECTRUM_NOTE,
+  TEMPERAMENT_REPORT_TIER2_SUMMARY,
+  TEMPERAMENT_REPORT_TIER2_PARAS
+} from './temperament-data/temperament-report-copy.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 
@@ -32,6 +38,21 @@ const EXPECTED_GENDER_TRENDS = {
 // Cross-polarity: respondent scores significantly beyond their gender's typical range
 // toward the opposite pole (e.g. man more feminine than avg woman, woman more masculine than avg man).
 const CROSS_POLARITY_THRESHOLD = 0.12;
+
+/** Tier 1 + Tier 2 educational block (static copy only). */
+function buildTemperamentReportEducationHtml() {
+  let block = `<div class="info-box panel-brand-left temperament-report-primer" style="margin: 1rem 0 0; text-align: left;">`;
+  block += `<h4 style="margin-top:0;color:var(--brand);font-size:0.95rem;">Reading this report: polarity and couples</h4>`;
+  TEMPERAMENT_REPORT_TIER1_PARAS.forEach(p => {
+    block += `<p style="margin:0.55rem 0 0;color:var(--muted);font-size:0.92rem;line-height:1.65;">${SecurityUtils.sanitizeHTML(p)}</p>`;
+  });
+  block += `<details class="temperament-plasticity-details" style="margin: 0.9rem 0 0;"><summary style="cursor:pointer;color:var(--brand);font-weight:600;font-size:0.9rem;">${SecurityUtils.sanitizeHTML(TEMPERAMENT_REPORT_TIER2_SUMMARY)}</summary><div style="margin-top:0.65rem;">`;
+  TEMPERAMENT_REPORT_TIER2_PARAS.forEach(p => {
+    block += `<p style="margin:0.45rem 0 0;color:var(--muted);font-size:0.88rem;line-height:1.62;">${SecurityUtils.sanitizeHTML(p)}</p>`;
+  });
+  block += '</div></details></div>';
+  return block;
+}
 
 /**
  * Temperament Engine - Analyzes masculine-feminine temperament spectrum
@@ -1272,7 +1293,8 @@ export class TemperamentEngine {
       <div class="temperament-profile-card${crossPolarityClass}">
         <h2>Temperament Expression Profile</h2>
         <p class="temperament-assessment-context"><strong>Assessment context:</strong> Taken as ${SecurityUtils.sanitizeHTML(genderLabel)}.</p>
-        <p class="temperament-variation-opening" style="color: var(--muted); font-size: 0.95rem; line-height: 1.65; margin: 0.75rem 0 0;">Variation across situations and life phases is normal; noticing where you tend to lean can help you interpret points of friction, contention, and polarity dynamics more clearly—especially with a partner.</p>
+        <p class="temperament-variation-opening" style="color: var(--muted); font-size: 0.95rem; line-height: 1.65; margin: 0.75rem 0 0;">Variation across situations and life phases is normal; noticing where you lean helps you read friction and polarity with a partner—see below for how complementary poles (and similar <em>intensity</em> on opposite sides) relate to chemistry and support.</p>
+        ${buildTemperamentReportEducationHtml()}
         <div class="temperament-profile-inner">
           <h3>${SecurityUtils.sanitizeHTML(interpretation.label || '')}</h3>
           <p>${SecurityUtils.sanitizeHTML(interpretation.description || '')}</p>
@@ -1308,6 +1330,7 @@ export class TemperamentEngine {
           <p class="temperament-spectrum-position">
             Expression Position: ${(temperament.normalizedScore * 100).toFixed(1)}% on the spectrum
           </p>
+          <p class="temperament-spectrum-context" style="color: var(--muted); font-size: 0.88rem; line-height: 1.6; margin: 0.75rem 0 0;">${SecurityUtils.sanitizeHTML(TEMPERAMENT_REPORT_SPECTRUM_NOTE)}</p>
         </div>
       </div>
     `;
@@ -1351,8 +1374,8 @@ export class TemperamentEngine {
           <h4 style="margin-top: 1rem; margin-bottom: 0.5rem;">What the &quot;Temperament anomaly&quot; dimensions mean</h4>
           <p>These dimensions can create a <strong>non-standard polarity dynamic</strong> or, depending on your partner, a <strong>polarity breakdown</strong>. The outcome depends on how your partner is placed:</p>
           <ul style="margin: 0.5rem 0 1rem 1.5rem;">
-            <li><strong>Complementary opposite:</strong> Your partner also has a polarity anomaly in the opposite direction — the dynamic can work; polarity is restored in a non-standard way.</li>
-            <li><strong>Shared polarity:</strong> Your partner shares the same pole in this dimension — the relationship can still be functional but may result in <strong>reduced hormonal leverage</strong> (less tension and attraction in this area).</li>
+            <li><strong>Complementary opposite (matched intensity):</strong> Your partner leans the other way on this dimension with a <strong>similar degree of strength</strong>—the dynamic can work; polarity is restored even when both of you sit off the population average.</li>
+            <li><strong>Shared polarity:</strong> Your partner occupies the same pole in this dimension with you—the relationship can still be functional but may show <strong>reduced hormonal leverage</strong> (less tension and attraction in this area).</li>
           </ul>
           <p>This is not inherently destabilizing but points to something worth investigating — often connected to trauma response, unhealed wounds, or context-dependent adaptation.</p>
           <p class="polarity-failure-ref" style="margin-bottom: 0;"><em>The dimensions highlighted above indicate where this applies.</em></p>` : '';
@@ -1360,7 +1383,7 @@ export class TemperamentEngine {
         <div class="polarity-failure-alert panel-brand-left">
           <h3 class="polarity-failure-alert-title">Potential Polarity Failure — Partner Fit Consideration</h3>
           <p><strong>What this means:</strong> ${whatMeans}</p>
-          <p><strong>Relationship implication:</strong> Polarity—the natural complement between opposite poles—tends to support attraction and dynamic flow. If your partner does not have the <strong>complementary opposite</strong> (i.e. a ${complement} temperament in these areas), polarity can degrade: reduced tension and attraction, or role confusion. A partner who naturally occupies the opposite pole can restore polarity. This is not a verdict but an invitation to consider partner fit and intentional polarity calibration.</p>
+          <p><strong>Relationship implication:</strong> Polarity—the complement between opposite poles at <strong>similar intensity</strong>—tends to support attraction and dynamic flow. If your partner does not occupy the <strong>opposite pole with enough matched strength</strong> (e.g. a ${complement} lean in these areas that is neither absent nor wildly mismatched in degree), polarity can degrade: reduced tension and attraction, or role confusion. A partner who naturally occupies the opposite pole at a fitting strength can restore polarity. This is not a verdict but an invitation to consider partner fit and intentional polarity calibration.</p>
           ${polarityConsiderationBlurb}
         </div>
       `;

@@ -1,6 +1,13 @@
 // Shared Export Utilities
 // Standardized export functionality with AI agent instructions for all questionnaire systems
 
+import {
+  TEMPERAMENT_REPORT_TIER1_PARAS,
+  TEMPERAMENT_REPORT_SPECTRUM_NOTE,
+  TEMPERAMENT_REPORT_TIER2_SUMMARY,
+  TEMPERAMENT_REPORT_TIER2_PARAS
+} from '../temperament-data/temperament-report-copy.js';
+
 const EXPORT_VERSION = '1.1.0';
 
 const FRAMEWORK_MAP = {
@@ -1092,6 +1099,21 @@ function dimensionKeyToDisplayName(key) {
   return String(key).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+/** Mirrors on-screen Tier 1 + Tier 2 polarity education (static copy). */
+function buildTemperamentReportPrimerExportHtml() {
+  let h = '<div class="card"><h3>Reading this report: polarity and couples</h3>';
+  TEMPERAMENT_REPORT_TIER1_PARAS.forEach(p => {
+    h += `<p>${escapeHtml(p)}</p>`;
+  });
+  h += `<p><em>${escapeHtml(TEMPERAMENT_REPORT_SPECTRUM_NOTE)}</em></p>`;
+  h += `<h4>${escapeHtml(TEMPERAMENT_REPORT_TIER2_SUMMARY)}</h4>`;
+  TEMPERAMENT_REPORT_TIER2_PARAS.forEach(p => {
+    h += `<p>${escapeHtml(p)}</p>`;
+  });
+  h += '</div>';
+  return h;
+}
+
 function buildTemperamentReportBody(data) {
   let html = '';
   const ot = data.overallTemperament;
@@ -1099,6 +1121,7 @@ function buildTemperamentReportBody(data) {
     html += '<h2>Polarity Position</h2>';
     html += `<p><strong>Category:</strong> ${escapeHtml(ot.category || 'Not specified')}</p>`;
     html += `<p>Normalized: ${(ot.normalizedScore != null ? (ot.normalizedScore * 100).toFixed(1) : '—')}% · Masculine: ${(ot.masculineScore != null ? (ot.masculineScore * 100).toFixed(1) : '—')}% · Feminine: ${(ot.feminineScore != null ? (ot.feminineScore * 100).toFixed(1) : '—')}% · Net: ${(ot.netScore != null ? (ot.netScore * 100).toFixed(1) : '—')}%</p>`;
+    html += buildTemperamentReportPrimerExportHtml();
   }
   if (data.crossPolarityDetected && data.crossPolarityNote) {
     html += `<div class="card"><h3>Cross-polarity finding</h3><p>${escapeHtml(data.crossPolarityNote)}</p></div>`;
@@ -1111,7 +1134,7 @@ function buildTemperamentReportBody(data) {
     } else {
       html += '<p>One or more dimensions show a significant swing from typical gender norms.</p>';
     }
-    html += '<p>These dimensions can create a <strong>non-standard polarity dynamic</strong> or, depending on your partner, a <strong>polarity breakdown</strong>. If your partner has a <strong>complementary opposite</strong> anomaly, the dynamic can work and polarity is restored in a non-standard way. If your partner <strong>shares the same pole</strong> in this dimension, the relationship can still be functional but may have reduced hormonal leverage (less tension and attraction in that area). This is not inherently destabilizing but worth investigating — often connected to trauma response, unhealed wounds, or context-dependent adaptation.</p></div>';
+    html += '<p>These dimensions can create a <strong>non-standard polarity dynamic</strong> or, depending on your partner, a <strong>polarity breakdown</strong>. If your partner has a <strong>complementary opposite at similar intensity</strong> (other pole, matched strength), the dynamic can work and polarity is restored in a non-standard way. If your partner <strong>shares the same pole</strong> in this dimension, the relationship can still be functional but may have reduced hormonal leverage (less tension and attraction in that area). This is not inherently destabilizing but worth investigating — often connected to trauma response, unhealed wounds, or context-dependent adaptation.</p></div>';
   }
   if (data.dimensionScores && Object.keys(data.dimensionScores).length > 0) {
     const displayNames = data.dimensionDisplayNames && typeof data.dimensionDisplayNames === 'object' ? data.dimensionDisplayNames : {};
