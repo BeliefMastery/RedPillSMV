@@ -1667,7 +1667,8 @@ showGenderSelection() {
 
   analyzePhase3Results() {
     this.analysisData.phase3Results = {
-      shadowIndicators: this.identifyShadowPatterns(),
+      // Shadow list needs primary/secondary/tertiary — filled in finalizeResults via getShadowPatternsForReport()
+      shadowIndicators: [],
       aspirationalTraits: this.identifyAspirationalTraits(),
       timestamp: new Date().toISOString()
     };
@@ -2116,7 +2117,10 @@ showGenderSelection() {
       .slice(0, count);
   }
 
-  identifyShadowPatterns() {
+  /**
+   * All shadow-tagged archetypes with Phase 3 signal (unfiltered).
+   */
+  getShadowPatternsRaw() {
     return Object.keys(this.archetypeScores)
       .filter(archId => ARCHETYPES[archId]?.isShadow)
       .map(archId => ({
@@ -2126,6 +2130,39 @@ showGenderSelection() {
       }))
       .filter(arch => arch.score > 0)
       .sort((a, b) => b.score - a.score);
+  }
+
+  /**
+   * Shadow patterns for the report: only shadows whose parentType matches primary/secondary/tertiary families,
+   * and never the same archetype id already shown in the top three (dark-as-primary is not duplicated).
+   * Note: male Beta line has no isShadow with parentType beta in taxonomy — Beta-heavy profiles may show none.
+   */
+  getShadowPatternsForReport() {
+    const primary = this.analysisData?.primaryArchetype;
+    if (!primary?.id) return [];
+
+    const topIds = [
+      primary.id,
+      this.analysisData.secondaryArchetype?.id,
+      this.analysisData.tertiaryArchetype?.id
+    ].filter(Boolean);
+
+    const allowedParentTypes = new Set();
+    topIds.forEach(id => {
+      const p = ARCHETYPES[id]?.parentType;
+      if (p) allowedParentTypes.add(p);
+    });
+    if (allowedParentTypes.size === 0) return [];
+
+    const excludeIds = new Set(topIds);
+
+    return this.getShadowPatternsRaw().filter(arch => {
+      const def = ARCHETYPES[arch.id];
+      if (!def?.parentType) return false;
+      if (!allowedParentTypes.has(def.parentType)) return false;
+      if (excludeIds.has(arch.id)) return false;
+      return true;
+    });
   }
 
   identifyAspirationalTraits() {
@@ -2154,6 +2191,8 @@ showGenderSelection() {
   async finalizeResults() {
     await this.loadArchetypeData(); // Ensure data is loaded
     this.identifyArchetypes();
+    this.analysisData.phase3Results = this.analysisData.phase3Results || {};
+    this.analysisData.phase3Results.shadowIndicators = this.getShadowPatternsForReport();
     this.analysisData.allAnswers = { ...this.answers };
     // Store full question objects with text for export
     this.analysisData.questionSequence = this.questionSequence.map(q => ({
@@ -2438,14 +2477,14 @@ showGenderSelection() {
       `;
     }
 
-    // Shadow Patterns
-    const shadowPatterns = this.analysisData.phase3Results?.shadowIndicators || [];
+    // Shadow Patterns (family-aligned with primary/secondary/tertiary — recomputed for saved-report revisits)
+    const shadowPatterns = this.getShadowPatternsForReport();
     if (shadowPatterns.length > 0) {
       resultsHTML += `
         <div class="shadow-section" style="background: rgba(255, 0, 0, 0.1); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; border-left: 4px solid #ff4444;">
           <h3 style="color: #ff4444; margin-top: 0;">Shadow Patterns</h3>
           <p style="color: var(--muted); line-height: 1.7; margin-bottom: 1rem;">
-            These patterns may emerge under stress or represent areas for healing and integration.
+            These are stress or integration patterns tied to the <strong>same archetype families</strong> as your primary, secondary, and tertiary results above—not unrelated shadow types. They may surface under pressure or signal areas for healing.
           </p>
           <ul style="color: var(--muted); line-height: 1.8;">
             ${shadowPatterns.map(shadow => `<li><strong>${SecurityUtils.sanitizeHTML(shadow.name || '')}:</strong> ${SecurityUtils.sanitizeHTML(ARCHETYPES[shadow.id]?.description || '')}</li>`).join('')}
