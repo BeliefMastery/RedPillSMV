@@ -43,9 +43,10 @@ export const FEMALE_CLUSTER_WEIGHTS = {
  */
 export const AXIS_SUBCATEGORY_WEIGHTS = {
   male: {
-    radActivity: 0.30,
-    performanceStatus: 0.30,
-    physicalGenetic: 0.25,
+    // RAD is a meaningful persistence modifier, but not a core matrix pillar.
+    radActivity: 0.15,
+    performanceStatus: 0.35,
+    physicalGenetic: 0.35,
     humour: 0.15
   },
   female: {
@@ -276,7 +277,7 @@ export const MALE_CLUSTERS = {
     subtitle: 'Performance/Status + Physical/Genetic + Humour — Bad Boy / Good Guy Grid',
     description: 'Wealth (productivity, sharing, social popularity, unique talent); physical signifiers (face, body, symmetry, skin/hair, voice, height, grooming, vitality—weighted within Physical/Genetic; one optional sensitive item); humour. Drives initiation attraction, time-to-intimacy, investment requirement. Maps to Bad Boy / Good Guy grid.',
     subcategories: {
-      radActivity: { label: 'Rad Activity', desc: 'External interest that signals direction; she competes with it. Anti-rad (gaming, TV, porn, drugs) = consumption/escape. Low-rad (badminton, casual hobbies) = weak. Rad (snowboarding, martial arts) = risk, skill. High-rad (business, mission) = "fucking the world with your passion." Weighted: activity type 40%, consumption 30%, competition 20%, visibility 10%.' },
+      radActivity: { label: 'Rad Activity (Modifier)', desc: 'Modifier signal, not a core matrix bar: external direction that creates constructive scarcity and social-proof-like trust. Anti-rad (gaming, TV, porn, drugs) = consumption/escape. Low-rad (casual hobbies) = weak direction. Rad/high-rad (risk, craft, business, mission) improves persistence when paired with core pillars.' },
       performanceStatus: { label: 'Performance/Status (Wealth)', desc: 'Productivity, sharing, social network popularity, unique/outstanding talent.' },
       physicalGenetic: { label: 'Physical/Genetic Signals', desc: 'Face, body shape, symmetry, skin/hair/teeth, voice and presence, height, grooming, vitality; one item is an honest market read on visible difference (not a judgment of worth).' },
       humour: { label: 'Humour', desc: 'Intelligence indicator; approachability and attraction.' }

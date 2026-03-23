@@ -412,7 +412,8 @@ export class AttractionEngine {
   }
 
   /**
-   * Rad Activity: weighted scoring (activity type 40%, consumption 30%, competition 20%, visibility 10%).
+   * Rad Activity modifier signal.
+   * Component mix (inside RAD): activity type 40%, consumption 30%, competition 20%, visibility 10%.
    * Anti-rad floor: porn/drugs or gaming/TV tanks the score to max 25th percentile.
    * Implementation: shared/attraction-smv-core.mjs (keep in sync).
    */
@@ -473,7 +474,7 @@ export class AttractionEngine {
 
   identifyWeakestSubcategories(smv) {
     const weakest = {};
-    const subLabels = { radActivity: 'Rad Activity', courage: 'Courage', control: 'Control', competence: 'Competence', perspicacity: 'Perspicacity', protector: 'Protector', provider: 'Provider', parentalInvestor: 'Parental Investor', performanceStatus: 'Performance/Status (Wealth)', physicalGenetic: 'Physical/Genetic', humour: 'Humour', socialInfluence: 'Social Influence', selectivity: 'Selectivity & Mate Guarding', statusSignaling: 'Status Signaling', paternityCertainty: 'Paternity Certainty', nurturingStandard: 'Nurturing Standard', collaborativeTrust: 'Collaborative Trust', fertility: 'Fertility & Health', riskCost: 'Risk Cost', personality: 'Personality', factorsHidden: 'Factors Hidden' };
+    const subLabels = { radActivity: 'Rad Activity (Modifier)', courage: 'Courage', control: 'Control', competence: 'Competence', perspicacity: 'Perspicacity', protector: 'Protector', provider: 'Provider', parentalInvestor: 'Parental Investor', performanceStatus: 'Performance/Status (Wealth)', physicalGenetic: 'Physical/Genetic', humour: 'Humour', socialInfluence: 'Social Influence', selectivity: 'Selectivity & Mate Guarding', statusSignaling: 'Status Signaling', paternityCertainty: 'Paternity Certainty', nurturingStandard: 'Nurturing Standard', collaborativeTrust: 'Collaborative Trust', fertility: 'Fertility & Health', riskCost: 'Risk Cost', personality: 'Personality', factorsHidden: 'Factors Hidden' };
     Object.keys(smv.subcategories || {}).forEach(clusterId => {
       const subs = smv.subcategories[clusterId];
       if (!subs || !Object.keys(subs).length) return;
@@ -610,7 +611,7 @@ export class AttractionEngine {
       performanceStatus: { meaning: 'Performance/Status (wealth = productivity, sharing, social popularity, unique talent) drives initiation attraction and time-to-intimacy. Unique talent (music, sport, craft) signals potential windfall or novelty.', actions: ['Raise visible status: certifications, titles, audience, or social proof', 'Develop or showcase one outstanding talent — music, sport, craft, or expertise', 'Increase generosity: time, introductions, sharing; produce and publish content others can point to'] },
       physicalGenetic: { meaning: 'Physical/Genetic combines face, body shape, symmetry, skin/hair/teeth, voice and first-impression presence, height, grooming, vitality, plus a calibration item. Mismatches (e.g. strong body vs weaker face) show up across multiple items; one item is an honest market read on visible difference—not a verdict on your worth.', actions: ['Prioritise the lowest-weighted sub-areas in your report bars (face, composition, or presentation as indicated)', 'Train strength and body composition; align grooming and skin/hair/teeth with the standard you are targeting', 'Posture, voice, and sleep sharply affect first-30-second presence'] },
       humour: { meaning: 'Humour is an intelligence signal and drives approachability and attraction. Women are drawn to men who can make them laugh and show quick wit.', actions: ['Study comedic timing and delivery — watch stand-up, practice in low-stakes settings', 'Read widely; humour relies on pattern recognition and surprise', 'Use self-deprecation sparingly; aim for playful observation over put-downs'] },
-      radActivity: { meaning: 'Rad Activity is an external interest that signals direction; she competes with it. Anti-rad (gaming, TV, porn, drugs) = consumption/escape, no direction, attraction-killing. Low-rad (badminton, casual hobbies) = weak signal. Rad (snowboarding, martial arts, kitesurfing) = risk, skill, lifestyle. High-rad (business, mission) = "fucking the world with your passion."', actions: ['Replace consumption (gaming, TV, porn, scrolling) with building or mastery—output, not input', 'Develop one serious passion: sport, business, craft, or mission—make it visible', 'Choose activities that require risk, skill, or creation over passive hobbies'] },
+      radActivity: { meaning: 'Rad Activity is a persistence modifier, not a core matrix bar. It works like directional social proof: she competes with your mission/time, and trust grows when she sees your attention allocated to something real. Anti-rad (gaming, TV, porn, drugs) signals consumption/escape; mission-led activity signals purpose.', actions: ['Replace consumption (gaming, TV, porn, scrolling) with building or mastery—output, not input', 'Develop one serious passion: sport, business, craft, or mission—make it visible', 'Choose activities that require risk, skill, or creation over passive hobbies'] },
       socialInfluence: { meaning: 'Social Influence is control over perceptions and alliances. It determines resource flow and protection in the female network.', actions: ['Identify key nodes in your social graph and deepen those alliances', 'Speak up in group settings; practice shaping narratives and opinions', 'Avoid burning bridges; repair one strained relationship and document the pattern'] },
       selectivity: { meaning: 'Selectivity & Mate Guarding Success is the ability to attract and retain top male attention against rivals.', actions: ['Raise your standards visibly — decline low-value attention and broadcast selectivity', 'Invest in appearance and presentation where it increases attention quality', 'Reduce availability and increase mystery; scarcity raises perceived value'] },
       statusSignaling: { meaning: 'Status Signaling is strategic display of beauty, fertility, and alliance without triggering sabotage.', actions: ['Display value incrementally rather than in one competitive burst', 'Build alliances before you shine — secure cover from key women first', 'Avoid overt one-upmanship; use subtle cues (quality, exclusivity, association)'] },
@@ -673,7 +674,7 @@ export class AttractionEngine {
     if (!container) return;
     const s = this.smv;
     const rec = s.recommendation || {};
-    const subLabels = { radActivity: 'Rad Activity', courage: 'Courage', control: 'Control', competence: 'Competence', perspicacity: 'Perspicacity', protector: 'Protector', provider: 'Provider', parentalInvestor: 'Parental Investor', performanceStatus: 'Performance/Status (Wealth)', physicalGenetic: 'Physical/Genetic', humour: 'Humour', socialInfluence: 'Social Influence', selectivity: 'Selectivity & Mate Guarding', statusSignaling: 'Status Signaling', paternityCertainty: 'Paternity Certainty', nurturingStandard: 'Nurturing Standard', collaborativeTrust: 'Collaborative Trust', fertility: 'Fertility & Health', riskCost: 'Risk Cost', personality: 'Personality', factorsHidden: 'Factors Hidden' };
+    const subLabels = { radActivity: 'Rad Activity (Modifier)', courage: 'Courage', control: 'Control', competence: 'Competence', perspicacity: 'Perspicacity', protector: 'Protector', provider: 'Provider', parentalInvestor: 'Parental Investor', performanceStatus: 'Performance/Status (Wealth)', physicalGenetic: 'Physical/Genetic', humour: 'Humour', socialInfluence: 'Social Influence', selectivity: 'Selectivity & Mate Guarding', statusSignaling: 'Status Signaling', paternityCertainty: 'Paternity Certainty', nurturingStandard: 'Nurturing Standard', collaborativeTrust: 'Collaborative Trust', fertility: 'Fertility & Health', riskCost: 'Risk Cost', personality: 'Personality', factorsHidden: 'Factors Hidden' };
 
     const peerRank = Math.round(s.clusters?.coalitionRank ?? 0);
     const reproConf = Math.round(s.clusters?.reproductiveConfidence ?? 0);
@@ -716,20 +717,20 @@ export class AttractionEngine {
       const weakest = s.weakestSubcategories?.[clusterId];
       const clusterPct = s.clusters?.[clusterId] ?? (Object.values(subs).reduce((a, b) => a + b, 0) / Object.keys(subs).length);
       const tierInfo = this.getPercentileTier(clusterPct);
-      const subHtml = Object.entries(subs).map(([subId, score]) => {
+      const subHtml = Object.entries(subs).filter(([subId]) => !(this.currentGender === 'male' && subId === 'radActivity')).map(([subId, score]) => {
         const isWeak = weakest && weakest.id === subId;
         return `<div class="subcategory-row ${isWeak ? 'weakest' : ''}"><span class="sub-label">${subLabels[subId] || subId}</span><div class="sub-bar"><div class="sub-bar-fill" style="width:${score}%;background:${this.getPercentileColor(score)}"></div></div></div>`;
       }).join('');
       const badge = badgeByCluster[clusterId] || '';
       const clusterSummary = this.getClusterSummary(clusterId);
-      return `<div class="attraction-cluster-section"><div class="attraction-cluster-badge">${badge}</div><div class="cluster-subcategory-block"><h4>${this.formatClusterName(clusterId)}: Tier ${tierInfo.tier} (${tierInfo.label})</h4>${clusterSummary ? `<p class="cluster-summary" style="font-size:0.95rem;color:var(--brand);margin:0.5rem 0 0.5rem;line-height:1.6;">${SecurityUtils.sanitizeHTML(clusterSummary)}</p>` : ''}<p class="tier-logic" style="font-size:0.9rem;color:var(--muted);margin:0.25rem 0 0.75rem;font-style:italic;">${SecurityUtils.sanitizeHTML(tierInfo.logic)}</p>${subHtml}</div></div>`;
+      return `<section class="report-section"><h2 class="report-section-title">${this.getReportClusterHeading(clusterId)}</h2><div class="attraction-cluster-section"><div class="attraction-cluster-badge">${badge}</div><div class="cluster-subcategory-block"><h4>Tier ${tierInfo.tier} (${tierInfo.label})</h4>${clusterSummary ? `<p class="cluster-summary" style="font-size:0.95rem;color:var(--brand);margin:0.5rem 0 0.5rem;line-height:1.6;">${SecurityUtils.sanitizeHTML(clusterSummary)}</p>` : ''}<p class="tier-logic" style="font-size:0.9rem;color:var(--muted);margin:0.25rem 0 0.75rem;font-style:italic;">${SecurityUtils.sanitizeHTML(tierInfo.logic)}</p>${subHtml}</div></div></section>`;
     }).join('');
 
     const radScore = this.currentGender === 'male' && s.subcategories?.axisOfAttraction?.radActivity;
     const radBlock = this.currentGender === 'male' && radScore != null && (radScore < 40 || radScore >= 75)
       ? radScore < 40
-        ? `<section class="report-section"><div class="panel-brand-left" style="background: rgba(211, 47, 47, 0.12); border-left: 4px solid #d32f2f; border-radius: var(--radius); padding: 1.25rem;"><h3 style="color: #d32f2f; margin-top: 0;">Rad Activity — Notable Finding</h3><p style="margin: 0;">Your Rad Activity score is <strong>~${Math.round(radScore)}th percentile</strong>. Anti-rad activities (gaming, TV, porn, drugs) signal consumption and escape, not direction. Low-rad hobbies (badminton, casual pastimes) are better than nothing but weak. Shift toward building, mastery, or risk—sport, business, craft, or mission—so she competes with something real.</p></div></section>`
-        : `<section class="report-section"><div class="panel-brand-left" style="background: rgba(40, 167, 69, 0.12); border-left: 4px solid #28a745; border-radius: var(--radius); padding: 1.25rem;"><h3 style="color: #28a745; margin-top: 0;">Rad Activity — Notable Finding</h3><p style="margin: 0;">Your Rad Activity score is <strong>~${Math.round(radScore)}th percentile</strong>. You have an external interest that she competes with—proof of value beyond initial attraction and the ultimate enduring competition. This strengthens your market position.</p></div></section>`
+        ? `<section class="report-section"><h2 class="report-section-title">Rad Activity — Notable Finding</h2><div class="panel-brand-left" style="background: rgba(211, 47, 47, 0.12); border-left: 4px solid #d32f2f; border-radius: var(--radius); padding: 1.25rem;"><p style="margin: 0;">Your Rad Activity modifier is <strong>~${Math.round(radScore)}th percentile</strong>. This is not a core matrix pillar; it adjusts persistence and perceived direction. Anti-rad patterns (gaming, TV, porn, drugs) signal consumption/escape and weaken sustained interest. Build a visible mission (sport, craft, business, service) that creates constructive scarcity and trustworthy purpose.</p></div></section>`
+        : `<section class="report-section"><h2 class="report-section-title">Rad Activity — Notable Finding</h2><div class="panel-brand-left" style="background: rgba(40, 167, 69, 0.12); border-left: 4px solid #28a745; border-radius: var(--radius); padding: 1.25rem;"><p style="margin: 0;">Your Rad Activity modifier is <strong>~${Math.round(radScore)}th percentile</strong>. You show directional drive outside the relationship, which can act like social proof: she competes for time and can trust where attention goes when it is not on her. This tends to support sustained hormonal interest when core pillars are also solid.</p></div></section>`
       : '';
 
     let html = `
@@ -740,8 +741,7 @@ export class AttractionEngine {
           <div class="attraction-exec-badges">${combinedCard}</div>
         </section>
 
-        <section class="report-section">
-        <div class="subcategory-breakdown">${subcategoryBlock}</div></section>
+        <div class="subcategory-breakdown">${subcategoryBlock}</div>
 
         ${radBlock}
         <section class="report-section"><h2 class="report-section-title">Market Position</h2>
@@ -775,6 +775,15 @@ export class AttractionEngine {
     return map[id] || id;
   }
 
+  getReportClusterHeading(id) {
+    const map = {
+      coalitionRank: 'Peer Rank',
+      reproductiveConfidence: 'Reproductive Confidence',
+      axisOfAttraction: 'Attraction Opportunity'
+    };
+    return map[id] || this.formatClusterName(id);
+  }
+
   /** Short description of what each cluster measures (used above the subcategory bars for context). */
   getClusterSummary(clusterId) {
     const male = this.currentGender === 'male';
@@ -786,7 +795,7 @@ export class AttractionEngine {
         ? 'Reproductive Confidence is the long-term commitment signal you project: provision, stability, and willingness to invest. It drives how seriously you are taken as a potential partner. The bars below break down the factors (provider, parental investor, etc.) that contribute.'
         : 'Reproductive Confidence is the commitment and nesting signal you project: how seriously you are taken as a long-term option. The bars below break down the factors (nurturing, paternity certainty, collaborative trust, etc.) that contribute.',
       axisOfAttraction: male
-        ? 'Axis of Attraction captures initiation and access: physical presence, rad activity, and the traits that drive initial pull. The bars below show where you stand on the subdimensions that determine attraction opportunity.'
+        ? 'Axis of Attraction captures initiation and access: physical presence and the traits that drive initial pull. Rad Activity is treated as a modifier signal (shown separately), not a core bar. The bars below show where you stand on the core subdimensions that determine attraction opportunity.'
         : 'Axis of Attraction captures initiation and access: how you are perceived on the dimensions that drive initial pull (fertility signals, risk cost, personality, etc.). The bars below show where you stand on each subdimension.'
     };
     return summaries[clusterId] || '';
