@@ -437,6 +437,13 @@ body.home-page main {
     color: var(--muted);
 }
 
+.disclaimer-section .ack-box .disclaimer-privacy {
+    margin-top: 0.85rem;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
 /* Extended Explanation Panel Styling */
 .extended-explanation-panel p strong {
     color: var(--accent);
