@@ -17,10 +17,10 @@
     --accent-hover: #076e62;     /* Deeper tide on hover */
 
     /* Backgrounds */
-    --bg: #faf6ee;               /* Warm linen white */
-    --glass: rgba(255, 252, 245, 0.90);        /* Bleached sand panel */
-    --glass-light: rgba(248, 243, 232, 0.82);  /* Sun-warm off-white */
-    --card-bg: rgba(255, 252, 244, 0.96);      /* Shell white card */
+    --bg: #e8d5a3;               /* Sandier warm base */
+    --glass: rgba(224, 200, 150, 0.90);        /* Sand panel */
+    --glass-light: rgba(210, 185, 130, 0.82);  /* Deeper sand tint */
+    --card-bg: rgba(235, 210, 160, 0.96);      /* Card / chrome sand */
     --card-hover: rgba(235, 248, 244, 1);      /* Sea-foam hover */
     --accent-panel: rgba(10, 138, 122, 0.07);
     --accent-panel-strong: rgba(10, 138, 122, 0.14);
@@ -231,7 +231,7 @@ header.site-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 252, 244, 0.96);
+    background: var(--card-bg);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-subtle);
     box-shadow: 0 2px 16px rgba(43, 58, 46, 0.08);
@@ -641,7 +641,7 @@ section:hover {
 .search-input:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(10, 138, 122, 0.15);
-    background: rgba(255, 252, 244, 1);
+    background: rgba(235, 210, 160, 1);
 }
 
 .conditions-grid {
@@ -658,7 +658,7 @@ footer {
     position: relative;
     z-index: 2;
     border-top: 1px solid var(--border-subtle);
-    background: rgba(255, 252, 244, 0.90);
+    background: var(--glass);
 }
 
 .footer-link { color: var(--accent); font-weight: 700; }
@@ -731,14 +731,14 @@ button.secondary:hover {
 }
 
 .btn-save {
-    background: rgba(250, 246, 238, 0.98) !important;
+    background: rgba(232, 213, 163, 0.98) !important;
     border: 2px solid var(--border-medium) !important;
     color: var(--brand) !important;
     box-shadow: var(--shadow-sm);
 }
 
 .btn-save:hover {
-    background: rgba(255, 252, 244, 1) !important;
+    background: rgba(235, 210, 160, 1) !important;
     border-color: var(--accent) !important;
     transform: translateY(-2px) !important;
     box-shadow: var(--shadow-md) !important;
@@ -1104,7 +1104,7 @@ select,
 textarea {
     width: 100%;
     padding: var(--text-field-pad-y) var(--text-field-pad-x);
-    background: rgba(255, 252, 244, 1);
+    background: rgba(235, 210, 160, 1);
     border: 1px solid var(--border-medium);
     border-radius: var(--radius);
     color: var(--brand);
@@ -1120,7 +1120,7 @@ select:focus,
 textarea:focus {
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(10, 138, 122, 0.15);
-    background: rgba(255, 252, 244, 1);
+    background: rgba(235, 210, 160, 1);
 }
 
 input::placeholder,

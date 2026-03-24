@@ -10,6 +10,7 @@
     { id: 'beach', label: 'Beach' },
     { id: 'cloud', label: 'Cloud' },
     { id: 'forge', label: 'Forge' },
+    { id: 'graze', label: 'Graze' },
     { id: 'neomorphism', label: 'Neomorphism' },
     { id: 'signal', label: 'Signal' },
     { id: 'sovereign-vault', label: 'Sovereign Vault' }
