@@ -2898,6 +2898,17 @@ main > .section-inner.minimal-section > .section-title-btn {
     line-height: 1.6;
 }
 
+.question-help {
+    margin: -0.35rem 0 0.85rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--muted);
+    background: var(--glass-light, rgba(255, 255, 255, 0.06));
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent);
+}
+
 .navigation-buttons {
     display: flex;
     justify-content: space-between;

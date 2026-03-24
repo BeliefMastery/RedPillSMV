@@ -211,7 +211,7 @@ export class AttractionEngine {
     const container = document.getElementById('questionContainer');
     if (!container) return;
 
-    let html = `<div class="phase-intro"><h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences calibrate your assessment to the market segment you're targeting.</p><form id="preferencesForm" class="preferences-form">`;
+    let html = `<div class="phase-intro"><h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math.</p><form id="preferencesForm" class="preferences-form">`;
     questions.forEach(q => {
       html += `<div class="form-group"><label class="form-label">${SecurityUtils.sanitizeHTML(q.text)}</label>`;
       if (q.type === 'number') {
@@ -298,9 +298,11 @@ export class AttractionEngine {
       const optsHtml = pairs.map(p => `<label class="option-label"><input type="radio" name="${SecurityUtils.sanitizeHTML(q.id)}" value="${p.value}"${req}><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(p.label)}</span></span></label>`).join('');
       const subcat = phase.subcategories?.[q.subcategory]?.label || q.subcategory;
       const optHint = q.optional ? '<p class="question-optional-hint" style="color:var(--muted);font-size:0.88rem;margin:0 0 0.75rem;line-height:1.5;">Optional: press <strong>Next</strong> without choosing if you prefer not to answer—this item is omitted from scoring; your other answers still count.</p>' : '';
+      const helpHint = q.helpText ? `<p class="question-help">${SecurityUtils.sanitizeHTML(q.helpText)}</p>` : '';
       html += `<div class="question-block" data-question-index="${idx}" data-phase="${phaseName}" style="${idx === 0 ? '' : 'display:none'}">
         <div class="question-header"><span class="question-number">Question ${idx + 1} of ${questions.length}</span><span class="question-category">${SecurityUtils.sanitizeHTML(subcat)}</span></div>
         <p class="question-text">${SecurityUtils.sanitizeHTML(q.text)}</p>
+        ${helpHint}
         ${optHint}
         <div class="options-container">${optsHtml}</div>
       </div>`;
@@ -609,7 +611,7 @@ export class AttractionEngine {
       provider: { meaning: 'Provider capacity is stable resource generation. It predicts whether offspring will be supported to maturity.', actions: ['Increase income or build a second stream — show upward trajectory', 'Create visible proof of provisioning: savings, assets, or documented support history', 'Reduce debt and instability; men who can’t provide are filtered out early'] },
       parentalInvestor: { meaning: 'Parental Investor signals willingness and competence in offspring rearing. Women filter for men who will stay and invest.', actions: ['Spend time with children (nieces, nephews, friends’ kids) and document it', 'Articulate a clear vision of fatherhood and how you’d structure family life', 'Demonstrate consistency and follow-through in other domains as a proxy for parental reliability'] },
       performanceStatus: { meaning: 'Performance/Status (wealth = productivity, sharing, social popularity, unique talent) drives initiation attraction and time-to-intimacy. Unique talent (music, sport, craft) signals potential windfall or novelty.', actions: ['Raise visible status: certifications, titles, audience, or social proof', 'Develop or showcase one outstanding talent — music, sport, craft, or expertise', 'Increase generosity: time, introductions, sharing; produce and publish content others can point to'] },
-      physicalGenetic: { meaning: 'Physical/Genetic combines face, body shape, symmetry, skin/hair/teeth, voice and first-impression presence, height, grooming, vitality, plus a calibration item. Mismatches (e.g. strong body vs weaker face) show up across multiple items; one item is an honest market read on visible difference—not a verdict on your worth.', actions: ['Prioritise the lowest-weighted sub-areas in your report bars (face, composition, or presentation as indicated)', 'Train strength and body composition; align grooming and skin/hair/teeth with the standard you are targeting', 'Posture, voice, and sleep sharply affect first-30-second presence'] },
+      physicalGenetic: { meaning: 'Physical/Genetic combines face, body shape, balance of features/proportions (not clinical “symmetry”), skin/hair/teeth, voice and early presence, height, grooming, vitality, plus optional early-filter and net calibration items. Mismatches (e.g. strong body vs weaker face) show up across multiple items; one item is an honest market read on visible difference—not a verdict on your worth.', actions: ['Prioritise the lowest-weighted sub-areas in your report bars (face, composition, or presentation as indicated)', 'Train strength and body composition; align grooming and skin/hair/teeth with the standard you are targeting', 'Posture, voice, and sleep sharply affect first-impression presence'] },
       humour: { meaning: 'Humour is an intelligence signal and drives approachability and attraction. Women are drawn to men who can make them laugh and show quick wit.', actions: ['Study comedic timing and delivery — watch stand-up, practice in low-stakes settings', 'Read widely; humour relies on pattern recognition and surprise', 'Use self-deprecation sparingly; aim for playful observation over put-downs'] },
       radActivity: { meaning: 'Rad Activity is a persistence modifier, not a core matrix bar. It works like directional social proof: she competes with your mission/time, and trust grows when she sees your attention allocated to something real. Anti-rad (gaming, TV, porn, drugs) signals consumption/escape; mission-led activity signals purpose.', actions: ['Replace consumption (gaming, TV, porn, scrolling) with building or mastery—output, not input', 'Develop one serious passion: sport, business, craft, or mission—make it visible', 'Choose activities that require risk, skill, or creation over passive hobbies'] },
       socialInfluence: { meaning: 'Social Influence is control over perceptions and alliances. It determines resource flow and protection in the female network.', actions: ['Identify key nodes in your social graph and deepen those alliances', 'Speak up in group settings; practice shaping narratives and opinions', 'Avoid burning bridges; repair one strained relationship and document the pattern'] },
@@ -618,7 +620,7 @@ export class AttractionEngine {
       paternityCertainty: { meaning: 'Paternity Certainty: men filter for signals of loyalty and exclusivity. High partner count, infidelity history, or opacity about the past raise paternity risk and reduce commitment willingness.', actions: ['Be fully transparent about relationship history when appropriate — no hidden bombs', 'Demonstrate exclusivity through behaviour, not just words', 'Reduce or reframe factors that signal volatility or infidelity risk'] },
       nurturingStandard: { meaning: 'Nurturing Standard aligns with the male’s early maternal care baseline. Men commit when they see warmth, care, and domestic potential.', actions: ['Practice active listening and emotional attunement in low-stakes settings', 'Demonstrate care through acts of service (food, comfort, support) without overgiving', 'Share examples of nurturing behaviour (family, pets, friends) in conversation'] },
       collaborativeTrust: { meaning: 'Collaborative Trust Efficiency is the ability to work with a male partner without waste, sabotage, or chronic conflict.', actions: ['Identify one recurring conflict pattern and change your response', 'Reduce drama: pause before escalating, avoid triangulation, address issues directly', 'Demonstrate reliability — follow through on commitments and show up consistently'] },
-      fertility: { meaning: 'Fertility & Health cues combine face, waist–hip ratio, age bracket, skin/hair/teeth, symmetry, overall shape, and a net calibration. Items are weighted; face and WHR pull harder than the “visible difference / early filter” item, which measures typical market friction, not value.', actions: ['Address the weakest bars first—often face, WHR line, or vitality presentation', 'Skin, hair, teeth, and posture compound; invest where you are thinnest', 'If the early-filter item is low, pair presentation work with realistic venue and pacing—initial impression is not the whole story'] },
+      fertility: { meaning: 'Fertility & Health cues combine face, waist-to-hip silhouette (self-reported from mirror, not tape measure), overall shape, skin/hair/teeth, balance of features/proportions, age bracket, optional early-filter item, and net calibration. Face and waist/hip silhouette pull harder than the optional early-filter item, which measures typical market friction, not value.', actions: ['Address the weakest bars first—often face, waist/hip line, or vitality presentation', 'Skin, hair, teeth, and posture compound; invest where you are thinnest', 'If the early-filter item is low, pair presentation work with realistic venue and pacing—initial impression is not the whole story'] },
       riskCost: { meaning: 'Risk Cost indicators (volatility, infidelity risk, sabotage potential) filter men out of long-term investment.', actions: ['Reduce visible red flags: substance use, instability, destructive patterns', 'Increase predictability — stable routine, consistent mood, clear communication', 'Address mental health or trauma if it shows up as volatility or conflict'] },
       personality: { meaning: 'Personality affects ease of partnership. Men invest when they enjoy your company and feel low friction.', actions: ['Audit one friction point (negativity, criticism, neediness) and reduce it', 'Increase positive interactions: humour, gratitude, shared interests', 'Be easy to be around — low maintenance, flexible, agreeable when it matters'] },
       factorsHidden: { meaning: 'Hidden factors (secrets, undisclosed past, concealed habits) undermine trust and commitment once discovered.', actions: ['Surface significant secrets before commitment deepens; control the narrative', 'Work through shame or guilt so you’re not carrying hidden weight', 'If disclosure is risky, get support (therapy, trusted friend) to plan timing and framing'] }
@@ -746,7 +748,7 @@ export class AttractionEngine {
         ${radBlock}
         <section class="report-section"><h2 class="report-section-title">Market Position</h2>
         ${s.delusionBand !== 'low' ? `<div class="delusion-warning"><h3>⚠️ Standards-Market Mismatch: ${SecurityUtils.sanitizeHTML(s.delusionBand.toUpperCase())}</h3><p>${this.getDelusionWarning(s.delusionBand)}</p></div>` : ''}
-        ${this.currentGender === 'male' ? this.getMaleStandardsContextNote(s) : ''}
+        ${this.currentGender === 'male' ? this.getMaleStandardsContextNote(s) : this.getFemaleStandardsContextNote(s)}
         <div class="market-analysis"><div class="market-grid"><div class="market-card"><h4>Realistic Target</h4><p>${s.targetMarket?.realistic || ''}</p></div><div class="market-card"><h4>Aspirational</h4><p>${s.targetMarket?.aspirational || ''}</p></div></div></div></section>
 
         <section class="report-section"><h2 class="report-section-title">Strategic Recommendations</h2>
@@ -913,6 +915,53 @@ export class AttractionEngine {
         `You indicated strong priority on a partner’s fertility / having children; your Reproductive Confidence cluster (~${Math.round(repro)}th percentile) is what signals nesting and paternal intent to women screening for long-term fathers.`
       );
     }
+    if (!parts.length) return '';
+    return `<div class="standards-context-note" style="margin-top:1rem;padding:0.75rem 1rem;background:var(--glass);border-radius:var(--radius);font-size:0.9rem;line-height:1.5;border-left:3px solid var(--accent);"><strong>Preferences vs scored pillars:</strong><ul style="margin:0.5rem 0 0 1rem;">${parts.map(t => `<li>${SecurityUtils.sanitizeHTML(t)}</li>`).join('')}</ul></div>`;
+  }
+
+  /**
+   * Female: tie stated partner requirements to scored pillars (narrative only; weights unchanged).
+   */
+  getFemaleStandardsContextNote(smv) {
+    const p = this.preferences || {};
+    const parts = [];
+    const coalition = smv.clusters?.coalitionRank ?? 50;
+    const repro = smv.clusters?.reproductiveConfidence ?? 50;
+    const fertSub = smv.subcategories?.axisOfAttraction?.fertility;
+
+    if ((p.height_requirement || 0) >= 7 && coalition < 58) {
+      parts.push(
+        `You indicated a strict height floor for partners (${p.height_requirement >= 10 ? '6\'2"+ only' : '6\'0"+ or higher'}). Your Coalition Rank (~${Math.round(coalition)}th percentile) reflects female–female hierarchy and attention quality—both affect realistic access to the partner pool you described.`
+      );
+    } else if ((p.height_requirement || 0) >= 5 && coalition < 55) {
+      parts.push(
+        `You indicated a meaningful height preference for partners. Your Coalition Rank (~${Math.round(coalition)}th percentile) shapes how you read in social and mating markets alongside that filter.`
+      );
+    }
+
+    if ((p.income_requirement || 0) >= 7 && repro < 58) {
+      parts.push(
+        `You indicated high income/wealth expectations for a partner. Your Reproductive Confidence cluster (~${Math.round(repro)}th percentile) is part of what signals long-term pair-bonding and trust to men calibrating on those axes.`
+      );
+    } else if ((p.income_requirement || 0) >= 5 && repro < 55) {
+      parts.push(
+        `You indicated elevated income/wealth expectations. Reproductive Confidence (~${Math.round(repro)}th percentile) contributes to how you read on nesting and commitment-relevant signals.`
+      );
+    }
+
+    if ((p.status_requirement || 0) >= 5 && coalition < 55) {
+      parts.push(
+        `Status and prestige matter in your stated preferences. Coalition Rank (~${Math.round(coalition)}th percentile) affects your own standing and how alliance and rivalry dynamics play out.`
+      );
+    }
+
+    const longTermGoal = p.relationship_goal === 'marriage' || p.relationship_goal === 'family';
+    if (longTermGoal && fertSub != null && fertSub < 55) {
+      parts.push(
+        `You selected a marriage- or family-oriented goal. Your Fertility & Health subscore (~${Math.round(fertSub)}th percentile) is one lane men weigh for long-term pairing; Attraction Opportunity still blends risk, personality, and hidden-factor signals.`
+      );
+    }
+
     if (!parts.length) return '';
     return `<div class="standards-context-note" style="margin-top:1rem;padding:0.75rem 1rem;background:var(--glass);border-radius:var(--radius);font-size:0.9rem;line-height:1.5;border-left:3px solid var(--accent);"><strong>Preferences vs scored pillars:</strong><ul style="margin:0.5rem 0 0 1rem;">${parts.map(t => `<li>${SecurityUtils.sanitizeHTML(t)}</li>`).join('')}</ul></div>`;
   }

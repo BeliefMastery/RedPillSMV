@@ -2,6 +2,15 @@
 
 Maintainer reference for how **physical aesthetics** and **fertility markers** enter Sexual Market Value (SMV) scoring. Implementation: [`attraction-data.js`](../attraction-data.js), [`attraction-engine.js`](../attraction-engine.js), shared math [`shared/attraction-smv-core.mjs`](../shared/attraction-smv-core.mjs).
 
+## Weighting policy: preferences vs numeric model
+
+- **Cluster weights** (`MALE_CLUSTER_WEIGHTS` / `FEMALE_CLUSTER_WEIGHTS`) and **axis sub-blend weights** (`AXIS_SUBCATEGORY_WEIGHTS`) are **fixed** in code so overall SMV stays **comparable** across respondents and runs.
+- **Market preference answers** (partner age band, relationship goal, physical standards, fertility priority, height/income/status requirements, etc.) are used for:
+  - **Delusion index** (standards vs scored position),
+  - **Narrative “Preferences vs scored pillars”** blocks: [`getMaleStandardsContextNote`](../attraction-engine.js) and [`getFemaleStandardsContextNote`](../attraction-engine.js),
+  - **Target market** copy where applicable.
+- They **do not** renormalize or rescale cluster/axis weights at runtime. If product later adopts **preference-conditioned weighting**, document new rules here, cap deltas, and extend `scripts/smv-sensitivity-check.mjs`.
+
 ## Pipeline
 
 1. For each cluster, raw Likert values (1–10 stepped scale) are collected per **subcategory**. Within each subcategory, a **weighted mean** of raw scores is computed (`weight` on each question, default **1** if omitted), then mapped to a **percentile** via a sigmoid (`scoreToPercentile` in `shared/attraction-smv-core.mjs`).
@@ -19,14 +28,14 @@ Maintainer reference for how **physical aesthetics** and **fertility markers** e
 
 Female axis carries **50%** of overall SMV vs **40%** for males.
 
-## Axis sub-blend weights
+## Axis sub-blend weights (code — source of truth)
 
-| Male subcategory      | Weight |
-|-----------------------|--------|
-| radActivity           | 0.30   |
-| performanceStatus     | 0.30   |
-| physicalGenetic       | 0.25   |
-| humour                | 0.15   |
+| Male subcategory   | Weight |
+|--------------------|--------|
+| radActivity        | 0.15   |
+| performanceStatus  | 0.35   |
+| physicalGenetic    | 0.35   |
+| humour             | 0.15   |
 
 | Female subcategory | Weight |
 |--------------------|--------|
@@ -41,7 +50,7 @@ Approximate **slot** for a pillar = `axisClusterWeight × subWeight`:
 
 | Path                   | Male (40% axis) | Female (50% axis) |
 |------------------------|-----------------|-------------------|
-| physicalGenetic        | **10%**         | —                 |
+| physicalGenetic        | **14%**         | —                 |
 | fertility              | —               | **15%**           |
 
 Within `physicalGenetic` / `fertility`, each item’s influence on the subcategory raw composite is **`weight / sum(weights)`** (not equal slices). Higher `weight` = more pull on that subcategory’s percentile.
@@ -53,9 +62,9 @@ Within `physicalGenetic` / `fertility`, each item’s influence on the subcatego
 | phys_1  | 1.2    | Face / features |
 | phys_2  | 1.0    | Fitness / strength / capability |
 | phys_6  | 1.1    | Body composition as seen |
-| phys_7  | 0.9    | Symmetry / proportions (self-report) |
+| phys_7  | 0.9    | Balance of features / body proportions (plain-language self-report; examples in stem) |
 | phys_8  | 1.0    | Skin, hair, teeth |
-| phys_9  | 0.85   | Voice, posture, first-30s presence |
+| phys_9  | 0.85   | Voice, posture, early presence |
 | phys_10 | 0.8    | Visible difference — **market friction** read (not worth) |
 | phys_3  | 1.0    | Height bracket |
 | phys_4  | 1.0    | Grooming / hygiene |
@@ -67,10 +76,10 @@ Within `physicalGenetic` / `fertility`, each item’s influence on the subcatego
 | ID     | Weight | Role |
 |--------|--------|------|
 | fert_1 | 1.2    | Face / feminine features |
-| fert_2 | 1.15   | Waist–hip / midsection |
+| fert_2 | 1.15   | Waist vs hips **silhouette** (mirror/fitted-clothes categories; not tape-measured WHR) |
 | fert_4 | 1.0    | Skin, hair, teeth vitality |
-| fert_5 | 0.9    | Symmetry / proportions |
-| fert_6 | 1.0    | Overall leanness / shape (aside from WHR) |
+| fert_5 | 0.9    | Balance of features / proportions (examples in stem) |
+| fert_6 | 1.0    | Overall leanness / shape (aside from waist–hip line) |
 | fert_7 | 0.8    | Visible difference — market friction read |
 | fert_3 | 1.2    | Age bracket |
 | fert_8 | 0.65   | Net overall first-impression calibration |
@@ -83,16 +92,22 @@ See table above. **phys_10** / **fert_7** are framed as *typical stranger/early 
 
 ### Female — `fertility`
 
-See table above. **fert_2** is WHR-specific; **fert_6** is general shape/leanness to avoid double-counting the same construct.
+See table above. **fert_2** is silhouette / waist–hip **read**, not clinical ratio; **fert_6** is general shape/leanness to avoid double-counting the same construct.
 
 ### Cross-cluster overlap (female)
 
 Coalition **status signaling** and **selectivity** are separate subcategories; they add through **coalition** (20%), not the fertility bucket.
 
-## Preferences vs scored pillars (male)
+## Preferences vs scored pillars
+
+### Male
 
 - **`physical_standards`** contributes to **delusion index** vs **whole `axisOfAttraction` percentile**, not `physicalGenetic` alone. The report can show a **Market Position** note when standards are high but Physical/Genetic is low (`getMaleStandardsContextNote` in `attraction-engine.js`).
 - **`fertility_priority`** contributes to **delusion index** vs **`reproductiveConfidence`**.
+
+### Female
+
+- **`height_requirement`**, **`income_requirement`**, **`status_requirement`**, and **`relationship_goal`** can trigger **`getFemaleStandardsContextNote`**: narrative only, comparing stated filters to Coalition Rank, Reproductive Confidence, and (for long-term goals) Fertility & Health subscore.
 
 ## Sensitivity check (synthetic, mid baseline)
 
@@ -127,7 +142,7 @@ Re-run the script after changing questions, weights, or `scoreToPercentile`.
 
 **Current intent (as implemented):**
 
-- **Male axis** emphasises **mission/status/rad** (60% combined rad + performance) over **physicalGenetic** (25%).
+- **Male axis** blends **rad (15%)**, **performance (35%)**, **physicalGenetic (35%)**, **humour (15%)**.
 - **Female axis** splits **fertility** and **riskCost** at **30% / 30%**.
 - **Overall** female SMV tilts **more** toward the axis than male overall does.
 
