@@ -311,7 +311,9 @@ export function buildPolarityLayer(ad) {
   ).map(cleanActionText);
 
   const reportedGender = ad.gender;
-  const title = temperamentTitleExplicit(cat, reportedGender, interp.label);
+  const titleRaw = temperamentTitleExplicit(cat, reportedGender, interp.label);
+  // Integrated map should not show respondent suffix here (other cards don't display it).
+  const title = String(titleRaw).replace(/\s*\((?:male|female) respondent\)\s*$/, '');
 
   return {
     title,
@@ -408,11 +410,9 @@ export function buildAttractionLayer(snap) {
     6
   );
 
-  const pathNote =
-    gender === 'male' ? 'Male SMV path' : gender === 'female' ? 'Female SMV path' : '';
-  const goalNote = relationshipGoalLabel(goal);
-  const title = 'Sexual Market Value — Inconsistent Leverage';
-  const subtitleFinal = [subtitle, pathNote, goalNote ? `Goal: ${goalNote}` : ''].filter(Boolean).join(' · ') || undefined;
+  const marketBand = smv?.marketPosition ? String(smv.marketPosition).trim() : '';
+  const title = `Sexual Market Value — ${marketBand}: inconsistent leverage`;
+  const subtitleFinal = undefined;
 
   return {
     title,
