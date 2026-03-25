@@ -242,7 +242,7 @@ export function buildPolarityLayer(ad) {
 
   const helps = characteristics.length
     ? `You tend to express ${characteristics.slice(0, 3).join(', ')}, which helps you connect by balancing structure and flow to the situation.`
-    : 'This temperament profile helps you calibrate your expression so you don\\'t overcommit to one way of being.';
+    : "This temperament profile helps you calibrate your expression so you don't overcommit to one way of being.";
 
   const costs =
     concerns[0]
