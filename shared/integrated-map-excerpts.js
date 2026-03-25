@@ -10,7 +10,7 @@ import {
   getDelusionWarning,
   getSMVInterpretation
 } from './attraction-report-copy.js';
-import { ensurePeriod, softenNarrativeTone, summarizeBehavioralAccent } from './archetype-narrative-utils.js';
+import { ensurePeriod } from './archetype-narrative-utils.js';
 
 function takeSentences(text, maxCount) {
   if (!text) return '';
@@ -63,15 +63,40 @@ function buildAccessPrinciple({ goal, gender, hasDelusionFlag }) {
   return intimacy;
 }
 
-function buildGameExecutionLine(gender) {
-  const base = 'Game execution here means social calibration + frame stability + escalation judgment + logistics follow-through.';
-  if (gender === 'male') {
-    return `${base} In this model it is integrated within existing Axis signals (especially performance/status and humour), not scored as a separate pillar.`;
+function normalizeForDedupe(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function dedupeKeepOrder(items, maxCount = 3) {
+  const out = [];
+  const seen = [];
+  for (const raw of items || []) {
+    const s = String(raw || '').trim();
+    if (!s) continue;
+    const ns = normalizeForDedupe(s);
+    if (!ns) continue;
+    // Simple redundancy check: treat as duplicate if one string includes the other.
+    const isDup = seen.some((prev) => ns.includes(prev) || prev.includes(ns));
+    if (isDup) continue;
+    out.push(s);
+    seen.push(ns);
+    if (out.length >= maxCount) break;
   }
-  if (gender === 'female') {
-    return `${base} In this model it is integrated within existing Axis signals (especially personality and risk-cost dynamics), not scored as a separate pillar.`;
-  }
-  return `${base} It is integrated within existing Axis signals, not scored as a separate pillar.`;
+  return out;
+}
+
+function cleanActionText(action) {
+  const s = String(action || '').trim();
+  // Remove obvious labels so the action reads cleanly in a combined list.
+  return s
+    .replace(/^What to do next:\s*/i, '')
+    .replace(/^Action:\s*/i, '')
+    .replace(/^Weakest area\s*—\s*[^:]+:\s*/i, '')
+    .trim();
 }
 
 /** Explicit temperament headline: category + biological sex context (unplugged polarity framing). */
@@ -106,7 +131,7 @@ export function temperamentTitleExplicit(category, reportedGender, labelFallback
 }
 
 /**
- * @returns {{ title: string, subtitle?: string, qualities: { intro?: string, bullets: string[] }, narrative?: string, concerns: { bullets: string[] }, orientation: { bullets: string[] }, href: string, hrefLabel: string }}
+ * @returns {{ title: string, subtitle?: string, frame: { meaning: string, helps: string, costs: string }, nextMoveCandidates?: string[], href: string, hrefLabel: string }}
  */
 export function buildArchetypeLayer(ad) {
   const p = ad?.primaryArchetype;
@@ -115,11 +140,10 @@ export function buildArchetypeLayer(ad) {
   if (!p?.id) {
     return {
       title: 'Red-Pill Archetype',
-      qualities: { bullets: [] },
-      concerns: { bullets: [] },
-      orientation: { bullets: [] },
+      frame: { meaning: 'Archetype data is incomplete.', helps: '', costs: '' },
       href,
-      hrefLabel
+      hrefLabel,
+      nextMoveCandidates: []
     };
   }
 
@@ -131,15 +155,7 @@ export function buildArchetypeLayer(ad) {
     const ex = takeSentences(p.explanation, 2);
     qualitiesIntro = qualitiesIntro ? `${qualitiesIntro} ${ex}` : ex;
   }
-  const qualitiesBullets = (Array.isArray(p.behavioralTraits) ? p.behavioralTraits : [])
-    .slice(0, 5)
-    .map(capitalizeTrait)
-    .filter(Boolean);
-
-  const rawBrutal = String(BRUTAL_TRUTHS?.[p.id]?.narrative || p.archetypalNarrative || '').trim();
-  const narrative = rawBrutal
-    ? summarizeBehavioralAccent(softenNarrativeTone(rawBrutal), 2)
-    : '';
+  // Bulleted traits and deeper narrative live in the full archetype report; the combined card stays concise.
 
   const concerns = [];
   if (optimizationCopy?.likelyBlindSpot) {
@@ -158,30 +174,32 @@ export function buildArchetypeLayer(ad) {
     });
   }
 
-  const orientation = [];
-  orientation.push('Significance: this archetype profile shows your default social strategy and where it helps or limits access to the outcomes you want.');
-  if (optimizationCopy?.optimizationStrategy) {
-    let line = `Within-archetype strategy: ${ensurePeriod(optimizationCopy.optimizationStrategy)}`;
-    if (traitsSummary) line += ` Leverage your strengths: ${traitsSummary}.`;
-    orientation.push(line);
-  } else if (p.growthEdge) {
-    let line = `Within-archetype strategy: ${ensurePeriod(p.growthEdge)}`;
-    if (traitsSummary) line += ` Leverage your strengths: ${traitsSummary}.`;
-    orientation.push(line);
-  } else if (traitsSummary) {
-    orientation.push(`Leverage your strengths: ${traitsSummary}.`);
-  }
-  orientation.push('Action: treat this as a calibration map, not identity destiny; use one concrete behavioral change cycle and re-test later.');
+  const withinStrategyRaw = optimizationCopy?.optimizationStrategy || p.growthEdge || '';
+  const withinStrategy = withinStrategyRaw ? ensurePeriod(String(withinStrategyRaw).trim()) : '';
+
+  const meaning = takeSentences(qualitiesIntro || '', 2) || 'This archetype reflects default social strategy patterns.';
+
+  const helps = withinStrategy
+    ? (traitsSummary ? `${withinStrategy} Leverage your strengths: ${traitsSummary}.` : withinStrategy)
+    : (traitsSummary ? `Leverage your strengths: ${traitsSummary}.` : 'Leverage your strengths consistently and choose environments that reward your default approach.');
+
+  const costs = (concerns[0] ? ensurePeriod(String(concerns[0]).trim()) : (p.stressResponse ? ensurePeriod(String(p.stressResponse).trim()) : 'Your default strategy can become a blind spot under pressure.')) || '';
+
+  const nextMoveCandidates = dedupeKeepOrder(
+    [
+      withinStrategy ? withinStrategy : '',
+      'Treat this as a calibration map, not identity destiny: use one concrete behavioral change cycle and re-test later.'
+    ],
+    4
+  ).map(cleanActionText);
 
   const subtitle = p.socialRole ? String(p.socialRole).trim() : '';
 
   return {
     title: `Red-Pill Archetype — ${p.name || 'Primary pattern'}`,
     subtitle,
-    qualities: { intro: qualitiesIntro || undefined, bullets: qualitiesBullets },
-    narrative: narrative || undefined,
-    concerns: { bullets: concerns },
-    orientation: { bullets: orientation },
+    frame: { meaning, helps, costs },
+    nextMoveCandidates,
     href,
     hrefLabel
   };
@@ -199,11 +217,10 @@ export function buildPolarityLayer(ad) {
   if (!interp) {
     return {
       title: 'Temperament — Polarity map',
-      qualities: { bullets: [] },
-      concerns: { bullets: [] },
-      orientation: { bullets: [] },
+      frame: { meaning: 'Polarity data is incomplete.', helps: '', costs: '' },
       href,
-      hrefLabel
+      hrefLabel,
+      nextMoveCandidates: []
     };
   }
 
@@ -221,14 +238,24 @@ export function buildPolarityLayer(ad) {
     );
   }
 
-  const orientation = [];
-  if (ad.contextSensitivity?.detected && ad.contextSensitivity?.message) {
-    orientation.push(String(ad.contextSensitivity.message).trim());
-  }
-  if (TEMPERAMENT_REPORT_TIER2_PARAS[2]) {
-    orientation.push(TEMPERAMENT_REPORT_TIER2_PARAS[2]);
-  }
-  orientation.push('Use this map to read where polarity supports or blocks intimacy, then calibrate habits and partner-fit choices accordingly.');
+  const meaning = takeSentences(interp.description || '', 2) || `Your polarity expresses as ${capitalizeTrait(interp.label || cat || 'a distinct temperament pattern')}.`;
+
+  const helps = characteristics.length
+    ? `You tend to express ${characteristics.slice(0, 3).join(', ')}, which helps you connect by balancing structure and flow to the situation.`
+    : 'This temperament profile helps you calibrate your expression so you don\\'t overcommit to one way of being.';
+
+  const costs =
+    concerns[0]
+    ? ensurePeriod(String(concerns[0]).trim())
+    : (variationFirst ? ensurePeriod(`Variation matters: ${variationFirst}.`) : 'Without a clear dominant edge, partner-fit can require more calibration by context.');
+
+  const nextMoveCandidates = dedupeKeepOrder(
+    [
+      ad.contextSensitivity?.detected && ad.contextSensitivity?.message ? String(ad.contextSensitivity.message).trim() : '',
+      'Use this map to read where polarity supports or blocks intimacy, then calibrate habits and partner-fit choices accordingly.'
+    ],
+    4
+  ).map(cleanActionText);
 
   const reportedGender = ad.gender;
   const title = temperamentTitleExplicit(cat, reportedGender, interp.label);
@@ -236,13 +263,8 @@ export function buildPolarityLayer(ad) {
   return {
     title,
     subtitle: undefined,
-    qualities: {
-      intro: interp.description ? String(interp.description).trim() : undefined,
-      bullets: [...characteristics, ...(variationFirst ? [`Variation: ${variationFirst}`] : [])]
-    },
-    narrative: undefined,
-    concerns: { bullets: concerns },
-    orientation: { bullets: orientation },
+    frame: { meaning, helps, costs },
+    nextMoveCandidates,
     href,
     hrefLabel
   };
@@ -260,15 +282,13 @@ export function buildAttractionLayer(snap) {
   if (!smv) {
     return {
       title: 'Sexual Market Value',
-      qualities: { bullets: [] },
-      concerns: { bullets: [] },
-      orientation: { bullets: [] },
+      frame: { meaning: 'SMV data is incomplete.', helps: '', costs: '' },
       href,
-      hrefLabel
+      hrefLabel,
+      nextMoveCandidates: []
     };
   }
 
-  const qualitiesBullets = [];
   const overall = typeof smv.overall === 'number' ? smv.overall : 0;
   const goal = snap?.preferences?.relationship_goal;
   const accessLine = buildAccessPrinciple({
@@ -276,7 +296,6 @@ export function buildAttractionLayer(snap) {
     gender,
     hasDelusionFlag: Boolean(smv?.delusionBand && smv.delusionBand !== 'low')
   });
-  const gameLine = buildGameExecutionLine(gender);
   const interpretation = getSMVInterpretation(overall);
 
   let smvPrimaryRead = '';
@@ -285,8 +304,7 @@ export function buildAttractionLayer(snap) {
     const label = smv.badBoyGoodGuy.label;
     smvPrimaryRead = label;
     subtitle = smv.marketPosition ? `Market band: ${String(smv.marketPosition).trim()}` : '';
-    const expl = getQualificationExplanation(label, 'badBoyGoodGuy');
-    if (expl) qualitiesBullets.push(expl);
+    // The qualification explanation is used in full reports; for this combined card we keep it concise.
   } else if (gender === 'female' && smv.keeperSweeper?.label) {
     const ks = smv.keeperSweeper;
     smvPrimaryRead = ks.label;
@@ -296,15 +314,8 @@ export function buildAttractionLayer(snap) {
     ]
       .filter(Boolean)
       .join(' — ');
-    const expl = getQualificationExplanation(ks.label, 'keeperSweeper');
-    if (expl) qualitiesBullets.push(expl);
   } else {
     smvPrimaryRead = smv.marketPosition ? String(smv.marketPosition).trim() : '';
-  }
-
-  if (smv.levelClassification) {
-    const levelExpl = getQualificationExplanation(smv.levelClassification, 'developmentalLevel');
-    if (levelExpl) qualitiesBullets.push(levelExpl);
   }
 
   const concerns = [];
@@ -315,39 +326,37 @@ export function buildAttractionLayer(snap) {
     concerns.push(String(smv.recommendation.warning).trim());
   }
 
-  const orientation = [];
   const rec = smv.recommendation || {};
-  if (rec.priority) orientation.push(String(rec.priority).trim());
-  if (rec.strategic) orientation.push(String(rec.strategic).trim());
 
-  (rec.weakestGuidance || []).slice(0, 2).forEach((w) => {
-    if (w.meaning) {
-      orientation.push(`Weakest area — ${w.label}: ${String(w.meaning).trim()}`);
-    }
-    (w.actions || []).slice(0, 2).forEach((a) => orientation.push(String(a).trim()));
-  });
+  const frameMeaning = smvPrimaryRead
+    ? `Your SMV read is ${smvPrimaryRead}. ${interpretation}`
+    : interpretation;
 
-  (rec.tactical || []).slice(0, 4).forEach((t) => orientation.push(String(t).trim()));
+  const frameHelps = hasFamilyIntent(goal)
+    ? `${accessLine} In this context it also speaks to access to stable long-term pairing.`
+    : accessLine;
 
-  if (smv.targetMarket?.realistic) {
-    orientation.push(`Realistic target: ${String(smv.targetMarket.realistic).trim()}`);
-  }
-  if (smv.targetMarket?.aspirational) {
-    orientation.push(`Aspirational: ${String(smv.targetMarket.aspirational).trim()}`);
-  }
+  const frameCosts = concerns[0]
+    ? ensurePeriod(String(concerns[0]).trim())
+    : (() => {
+      const w = (rec.weakestGuidance || [])[0];
+      if (w?.meaning && w?.label) return ensurePeriod(`Weakest lever — ${String(w.label).trim()}: ${String(w.meaning).trim()}.`);
+      return 'The trade-off: leverage depends on whether your weakest area gets upgraded consistently.';
+    })();
 
-  // Explicit meaning -> why -> what to do framing.
-  const meaningLine = smvPrimaryRead
-    ? `Meaning: your current SMV read is ${smvPrimaryRead}. ${interpretation}`
-    : `Meaning: ${interpretation}`;
-  const whyLine = hasFamilyIntent(goal)
-    ? 'Why this matters: better positioning improves access to both desired intimacy and stable long-term pairing where family/reproduction is part of your intent.'
-    : 'Why this matters: better positioning improves access to desired intimacy and increases your room to select, not just accept.';
-  const actionLine = rec.strategic
-    ? `What to do next: ${String(rec.strategic).trim()}`
-    : 'What to do next: focus on the first weak area with one consistent habit upgrade at a time.';
+  const weakestGuidanceActions = (rec.weakestGuidance || [])
+    .flatMap((w) => w.actions || [])
+    .map(cleanActionText);
 
-  const clarityIntro = [accessLine, gameLine, meaningLine, whyLine, actionLine].join(' ');
+  const tacticalActions = (rec.tactical || []).map(cleanActionText);
+
+  const nextMoveCandidates = dedupeKeepOrder(
+    [
+      ...(weakestGuidanceActions || []),
+      ...(tacticalActions || [])
+    ],
+    6
+  );
 
   const pathNote =
     gender === 'male' ? 'Male SMV path' : gender === 'female' ? 'Female SMV path' : '';
@@ -357,16 +366,93 @@ export function buildAttractionLayer(snap) {
     : 'Sexual Market Value';
   const subtitleFinal = [subtitle, pathNote, goalNote ? `Goal: ${goalNote}` : ''].filter(Boolean).join(' · ') || undefined;
 
+  const gameShort =
+    gender === 'male'
+      ? 'Game execution signals are integrated within existing Axis signals (especially performance/status and humour).'
+      : gender === 'female'
+        ? 'Game execution signals are integrated within existing Axis signals (especially personality and risk-cost dynamics).'
+        : 'Game execution signals are integrated within existing Axis signals.';
+
   return {
     title,
     subtitle: subtitleFinal,
-    qualities: { intro: clarityIntro, bullets: qualitiesBullets },
-    narrative: undefined,
-    concerns: { bullets: concerns },
-    orientation: { bullets: orientation },
+    frame: {
+      meaning: frameMeaning,
+      helps: `${frameHelps} ${gameShort}`.trim(),
+      costs: frameCosts
+    },
+    nextMoveCandidates,
     href,
     hrefLabel
   };
+}
+
+export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attractionSnap) {
+  const ad = archetypeSnap?.analysisData || {};
+  const pd = polaritySnap?.analysisData || {};
+  const smv = attractionSnap?.smv;
+  const gender = attractionSnap?.currentGender;
+
+  const archPrimary = ad?.primaryArchetype;
+  const archetypeName = archPrimary?.name || 'your archetype lead';
+  const optimizationCopy = archPrimary?.id ? ARCHETYPE_OPTIMIZATION?.[archPrimary.id] || null : null;
+  const withinStrategy = optimizationCopy?.optimizationStrategy || archPrimary?.growthEdge || '';
+  const blindSpot = optimizationCopy?.likelyBlindSpot || archPrimary?.stressResponse || '';
+  const traitsSummary = summarizeArchetypeTraits(archPrimary);
+
+  const cat = pd?.overallTemperament?.category;
+  const interp = cat ? TEMPERAMENT_SCORING?.interpretation?.[cat] : null;
+  const tempDesc = interp?.description ? takeSentences(interp.description, 1) : (interp?.label ? String(interp.label).trim() : '');
+  const variationFirst = takeSentences(interp?.variations || '', 1);
+
+  let smvPrimaryRead = '';
+  let interpretation = '';
+  if (smv) {
+    const overall = typeof smv.overall === 'number' ? smv.overall : 0;
+    interpretation = getSMVInterpretation(overall);
+    if (gender === 'male' && smv.badBoyGoodGuy?.label) smvPrimaryRead = smv.badBoyGoodGuy.label;
+    else if (gender === 'female' && smv.keeperSweeper?.label) smvPrimaryRead = smv.keeperSweeper.label;
+    else smvPrimaryRead = smv.marketPosition ? String(smv.marketPosition).trim() : '';
+  }
+
+  const rec = smv?.recommendation || {};
+  const weakest = (rec.weakestGuidance || [])[0];
+  const weakestLabel = weakest?.label ? String(weakest.label).trim() : '';
+
+  const archStrategyLine = withinStrategy
+    ? ensurePeriod(String(withinStrategy).trim())
+    : (traitsSummary ? `You tend to leverage: ${traitsSummary}.` : `You default to a ${archetypeName} pattern that avoids being managed by external hierarchy.`);
+
+  const blindLine = blindSpot ? ensurePeriod(String(blindSpot).trim()) : '';
+  const tempLine = [
+    tempDesc ? `Your temperament expresses: ${tempDesc}.` : '',
+    variationFirst ? `Variation can make your expression swing across contexts: ${variationFirst}` : ''
+  ].filter(Boolean).join(' ');
+
+  const weakestLine = weakestLabel ? `Most improvement comes from upgrading ${weakestLabel} with one consistent habit cycle.` : 'Most improvement comes from upgrading your first weak area with one consistent habit cycle.';
+
+  // Keep it as one paragraph for readability.
+  return [
+    `You operate from a ${archetypeName} social strategy: ${archStrategyLine}`,
+    blindLine ? `and your likely blind spot shows up as: ${blindLine}` : '',
+    tempLine,
+    smvPrimaryRead ? `In your current dating outcomes, your SMV read is ${smvPrimaryRead} (${interpretation}).` : smv ? `In your current dating outcomes, your SMV read is captured by this access profile (${interpretation}).` : '',
+    weakestLine
+  ].filter(Boolean).join(' ');
+}
+
+export function buildNextMoveCandidates(archetypeSnap, polaritySnap, attractionSnap) {
+  const archLayer = buildArchetypeLayer(archetypeSnap?.analysisData || {});
+  const polLayer = buildPolarityLayer(polaritySnap?.analysisData || {});
+  const attLayer = buildAttractionLayer(attractionSnap || {});
+
+  const candidates = [
+    ...(archLayer.nextMoveCandidates || []),
+    ...(polLayer.nextMoveCandidates || []),
+    ...(attLayer.nextMoveCandidates || [])
+  ];
+
+  return dedupeKeepOrder(candidates, 3).map(cleanActionText).filter(Boolean);
 }
 
 export function buildHeroFragments(archetypeSnap, polaritySnap, attractionSnap) {
@@ -399,7 +485,7 @@ export function buildHeroFragments(archetypeSnap, polaritySnap, attractionSnap) 
 
 export function buildCrossIntegrationBullets(archetypeLayer, polarityLayer, attractionLayer) {
   const out = [];
-  const pick = (layer) => layer?.concerns?.bullets?.[0];
+  const pick = (layer) => layer?.frame?.costs || layer?.frame?.meaning || '';
   const a = pick(archetypeLayer);
   const p = pick(polarityLayer);
   const m = pick(attractionLayer);

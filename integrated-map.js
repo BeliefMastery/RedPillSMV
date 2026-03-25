@@ -7,7 +7,8 @@ import {
   buildArchetypeLayer,
   buildPolarityLayer,
   buildAttractionLayer,
-  buildHeroFragments,
+  buildCurrentPatternSummary,
+  buildNextMoveCandidates,
   buildCrossIntegrationBullets
 } from './shared/integrated-map-excerpts.js';
 
@@ -54,62 +55,62 @@ function renderGate(c) {
 }
 
 function renderLayer(layer) {
-  const subtitle = layer.subtitle
-    ? `<p class="integrated-map-layer-subtitle">${esc(layer.subtitle)}</p>`
+  const subtitle = layer.subtitle ? `<p class="integrated-map-layer-subtitle">${esc(layer.subtitle)}</p>` : '';
+  const frame = layer.frame || { meaning: '', helps: '', costs: '' };
+  const meaning = frame.meaning
+    ? `<h3 class="integrated-map-subhead">What it means</h3><p class="integrated-map-layer-intro">${esc(frame.meaning)}</p>`
     : '';
-  const hasQualities = layer.qualities?.intro || (layer.qualities?.bullets || []).length;
-  const qualitiesBlock = hasQualities
-    ? `<h3 class="integrated-map-subhead">Essential qualities</h3>${layer.qualities?.intro ? `<p class="integrated-map-layer-intro">${esc(layer.qualities.intro)}</p>` : ''}${(layer.qualities?.bullets || []).length ? `<ul class="integrated-map-layer-list">${(layer.qualities.bullets || []).map((b) => `<li>${esc(b)}</li>`).join('')}</ul>` : ''}`
+  const helps = frame.helps
+    ? `<h3 class="integrated-map-subhead">Where it helps</h3><p class="integrated-map-layer-intro">${esc(frame.helps)}</p>`
     : '';
-  const narrative = layer.narrative
-    ? `<p class="integrated-map-layer-narrative"><strong>Deeper pattern (excerpt):</strong> ${esc(layer.narrative)}</p>`
-    : '';
-  const cList = (layer.concerns?.bullets || []).length
-    ? `<h3 class="integrated-map-subhead">Concerns / friction</h3><ul class="integrated-map-layer-list">${(layer.concerns.bullets || []).map((b) => `<li>${esc(b)}</li>`).join('')}</ul>`
-    : '';
-  const oList = (layer.orientation?.bullets || []).length
-    ? `<h3 class="integrated-map-subhead">Orientation / advice</h3><ul class="integrated-map-layer-list">${(layer.orientation.bullets || []).map((b) => `<li>${esc(b)}</li>`).join('')}</ul>`
+  const costs = frame.costs
+    ? `<h3 class="integrated-map-subhead">Where it costs</h3><p class="integrated-map-layer-intro">${esc(frame.costs)}</p>`
     : '';
 
   return `
     <section class="integrated-map-layer">
       <h2 class="integrated-map-layer-title">${esc(layer.title)}</h2>
       ${subtitle}
-      ${qualitiesBlock}
-      ${narrative}
-      ${cList}
-      ${oList}
+      ${meaning}
+      ${helps}
+      ${costs}
       <a class="integrated-map-more" href="${esc(layer.href)}">${esc(layer.hrefLabel)}</a>
     </section>`;
 }
 
-function renderHero(archetypeSnap, polaritySnap, attractionSnap) {
-  const h = buildHeroFragments(archetypeSnap, polaritySnap, attractionSnap);
-  const band = h.marketBand
-    ? ` Segment band: <strong>${esc(h.marketBand)}</strong>.`
-    : '';
-  const path =
-    h.assessmentGender === 'male' || h.assessmentGender === 'female'
-      ? ` (${h.assessmentGender === 'male' ? 'male' : 'female'} SMV assessment path).`
-      : '';
-  const p1 = `Unplugged <strong>integrated map</strong>${path} — three red-pill lenses: <strong>${esc(h.primaryName)}</strong> as your <strong>red-pill archetype</strong> lead; <strong>${esc(h.polarityExplicit)}</strong>; and <strong>Sexual Market Value — ${esc(h.smvHeadline)}</strong>.${band} Use these to inform choices and calibration, not to freeze identity.`;
-  const p2 = 'Each card mirrors full-report language and answers three things explicitly: what this means, why it matters for access and outcomes, and what to do next.';
+function renderCurrentPatternSummary(summary) {
+  if (!summary) return '';
+  return `
+    <section class="integrated-map-current-pattern" aria-labelledby="integrated-current-pattern-heading">
+      <h2 id="integrated-current-pattern-heading" class="integrated-map-frame-heading">Your Current Pattern (Summary)</h2>
+      <p>${esc(summary)}</p>
+    </section>`;
+}
 
-  return `<div class="integrated-map-hero"><p>${p1}</p><p>${p2}</p></div>`;
+function renderNextMove(nextMoves) {
+  const moves = Array.isArray(nextMoves) ? nextMoves.filter(Boolean).slice(0, 3) : [];
+  if (!moves.length) return '';
+  return `
+    <section class="integrated-map-next-move" aria-labelledby="integrated-next-move-heading">
+      <h2 id="integrated-next-move-heading" class="integrated-map-frame-heading">Your Next Move (Priority)</h2>
+      <ul class="integrated-map-next-move-list">
+        ${moves.map((m) => `<li>${esc(m)}</li>`).join('')}
+      </ul>
+      <p style="margin-top:0.75rem;color:var(--muted);font-size:0.9rem;line-height:1.45;">Pick one move, run it for a short cycle, and re-test later.</p>
+    </section>`;
 }
 
 function renderContent(snapshots) {
   const a = snapshots.archetype;
   const t = snapshots.polarity;
   const r = snapshots.attraction;
-  const ad = a?.analysisData;
-  const pd = t?.analysisData;
-
-  const archL = buildArchetypeLayer(ad || {});
-  const polL = buildPolarityLayer(pd || {});
+  const archL = buildArchetypeLayer(a?.analysisData || {});
+  const polL = buildPolarityLayer(t?.analysisData || {});
   const attL = buildAttractionLayer(r || {});
 
-  const hero = renderHero(a, t, r);
+  const summary = buildCurrentPatternSummary(a, t, r);
+  const nextMoves = buildNextMoveCandidates(a, t, r);
+
   const layers = `
     <div class="integrated-map-layers">
       ${renderLayer(archL)}
@@ -128,8 +129,9 @@ function renderContent(snapshots) {
 
   return `
     <h1 class="section-title-btn" style="text-align:center;margin-bottom:0.5rem;">Integrated map</h1>
-    ${hero}
+    ${renderCurrentPatternSummary(summary)}
     ${layers}
+    ${renderNextMove(nextMoves)}
     ${cross}
     <p style="text-align:center;margin-top:1.5rem;color:var(--muted);font-size:0.9rem;"><a href="index.html">Home</a> · <a href="relationship.html">Relationships</a> (separate lens)</p>`;
 }
