@@ -78,7 +78,7 @@ export const ARCHETYPAL_INSIGHTS = {
         ]
       },
       axisOfAttraction: {
-        components: ['Performance/Status Signals (wealth, productivity, popularity, status, generosity)', 'Physical/Genetic Signals (aesthetics, genetics, virility, fitness, cleanliness)'],
+        components: ['Wealth/Finance/Status/Performance/Productivity/Talent/Popularity', 'Looks/Physical/Genetic/Aesthetic'],
         function: 'Immediate draw in mating/coalition markets; amplifies or bottlenecks access to opportunities from other clusters.',
         application: [
           'Attraction operates through multiple channels. Physical, status, and performance signals all contribute.',

@@ -23,9 +23,9 @@ const FEMALE_CLUSTER_WEIGHTS = {
 };
 const AXIS_SUBCATEGORY_WEIGHTS = {
   male: {
-    radActivity: 0.3,
-    performanceStatus: 0.3,
-    physicalGenetic: 0.25,
+    radActivity: 0.15,
+    performanceStatus: 0.35,
+    physicalGenetic: 0.35,
     humour: 0.15
   },
   female: {
@@ -50,7 +50,7 @@ const qw = (id, subcategory, weight, reverseScore = false) => ({
   ...(reverseScore ? { reverseScore: true } : {})
 });
 
-const MALE_PHYS_IDS = ['phys_1', 'phys_2', 'phys_6', 'phys_7', 'phys_8', 'phys_9', 'phys_10', 'phys_3', 'phys_4', 'phys_5', 'phys_11'];
+const MALE_PHYS_IDS = ['phys_1', 'phys_2', 'phys_6', 'phys_7', 'phys_8', 'phys_9', 'phys_10', 'phys_3', 'phys_4', 'phys_12', 'phys_5', 'phys_11'];
 const FEMALE_FERT_IDS = ['fert_1', 'fert_2', 'fert_4', 'fert_5', 'fert_6', 'fert_7', 'fert_3', 'fert_8'];
 
 function buildMaleClusters() {
@@ -68,7 +68,9 @@ function buildMaleClusters() {
     qw('rad_2', 'radActivity', 0.3),
     qw('rad_3', 'radActivity', 0.2),
     qw('rad_4', 'radActivity', 0.1),
-    ...[1, 2, 3, 4, 5, 6].map(i => q(`perf_${i}`, 'performanceStatus')),
+    ...[1, 2, 3, 4, 5, 6].map(i => qw(`perf_${i}`, 'performanceStatus', 1.0)),
+    qw('perf_7', 'performanceStatus', 0.95),
+    qw('perf_8', 'performanceStatus', 0.9),
     qw('phys_1', 'physicalGenetic', 1.2),
     qw('phys_2', 'physicalGenetic', 1.0),
     qw('phys_6', 'physicalGenetic', 1.1),
@@ -78,9 +80,10 @@ function buildMaleClusters() {
     qw('phys_10', 'physicalGenetic', 0.8),
     qw('phys_3', 'physicalGenetic', 1.0),
     qw('phys_4', 'physicalGenetic', 1.0),
+    qw('phys_12', 'physicalGenetic', 0.95),
     qw('phys_5', 'physicalGenetic', 1.0),
     qw('phys_11', 'physicalGenetic', 0.65),
-    ...[1, 2, 3].map(i => q(`humour_${i}`, 'humour'))
+    ...[1, 2, 3, 4, 5].map(i => qw(`humour_${i}`, 'humour', 1.0))
   ];
   return {
     coalitionRank: { questions: coalition },

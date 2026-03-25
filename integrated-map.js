@@ -109,7 +109,8 @@ function renderContent(snapshots) {
   const attL = buildAttractionLayer(r || {});
 
   const summary = buildCurrentPatternSummary(a, t, r);
-  const nextMoves = buildNextMoveCandidates(a, t, r);
+  const layerBundle = { archL, polL, attL };
+  const nextMoves = buildNextMoveCandidates(a, t, r, { layers: layerBundle });
 
   const layers = `
     <div class="integrated-map-layers">
@@ -118,7 +119,7 @@ function renderContent(snapshots) {
       ${renderLayer(attL)}
     </div>`;
 
-  const convergence = buildPatternConvergenceParagraph(archL, polL, attL);
+  const convergence = buildPatternConvergenceParagraph(a, t, r, { layers: layerBundle });
   const cross = `
     <section class="integrated-map-cross" aria-labelledby="integrated-cross-heading">
       <h2 id="integrated-cross-heading">Pattern Convergence</h2>

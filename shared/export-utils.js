@@ -1136,6 +1136,50 @@ function buildTemperamentReportBody(data) {
     }
     html += '<p>These dimensions can create a <strong>non-standard polarity dynamic</strong> or, depending on your partner, a <strong>polarity breakdown</strong>. If your partner has a <strong>complementary opposite at similar intensity</strong> (other pole, matched strength), the dynamic can work and polarity is restored in a non-standard way. If your partner <strong>shares the same pole</strong> in this dimension, the relationship can still be functional but may have reduced hormonal leverage (less tension and attraction in that area). This is not inherently destabilizing but worth investigating — often connected to trauma response, unhealed wounds, or context-dependent adaptation.</p></div>';
   }
+  const strongMascBand = Array.isArray(data.stronglyMascBandDimensionNames) ? data.stronglyMascBandDimensionNames : [];
+  const hypermascBand = Array.isArray(data.hypermascBandDimensionNames) ? data.hypermascBandDimensionNames : [];
+  const strongFemmeBand = Array.isArray(data.stronglyFemmeBandDimensionNames) ? data.stronglyFemmeBandDimensionNames : [];
+  const hyperfemmeBand = Array.isArray(data.hyperfemmeBandDimensionNames) ? data.hyperfemmeBandDimensionNames : [];
+  const anyStrongAlign =
+    (Array.isArray(data.stronglyAlignedDimensionNames) && data.stronglyAlignedDimensionNames.length > 0) ||
+    strongMascBand.length > 0 ||
+    hypermascBand.length > 0 ||
+    strongFemmeBand.length > 0 ||
+    hyperfemmeBand.length > 0;
+  if (anyStrongAlign) {
+    const complementLabel = data.gender === 'man' ? 'feminine-leaning' : data.gender === 'woman' ? 'masculine-leaning' : 'complementary';
+    if (data.gender === 'man' && (strongMascBand.length > 0 || hypermascBand.length > 0)) {
+      html += '<div class="card"><h3>Masculine polarity alignment</h3>';
+      if (strongMascBand.length > 0) {
+        html += `<h4>Strongly Masc (60–80%)</h4><p><strong>${strongMascBand.map(n => escapeHtml(n)).join(', ')}</strong></p>`;
+      }
+      if (hypermascBand.length > 0) {
+        html += `<h4>Hyper-masc (80%+)</h4><p><strong>${hypermascBand.map(n => escapeHtml(n)).join(', ')}</strong></p>`;
+      }
+      html += `<p>These dimensions can increase polarity pull when a partner occupies the <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+    } else if (data.gender === 'man' && Array.isArray(data.stronglyAlignedDimensionNames) && data.stronglyAlignedDimensionNames.length > 0) {
+      html += `<div class="card"><h3>Masculine polarity alignment</h3>`;
+      html += `<p>Aligned dimensions: <strong>${data.stronglyAlignedDimensionNames.map(n => escapeHtml(n)).join(', ')}</strong>.</p>`;
+      html += `<p>These dimensions can increase polarity pull when a partner occupies the <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+    } else if (data.gender === 'woman' && (strongFemmeBand.length > 0 || hyperfemmeBand.length > 0)) {
+      html += `<div class="card"><h3>${escapeHtml('Feminine polarity alignment')}</h3>`;
+      if (strongFemmeBand.length > 0) {
+        html += `<h4>Strongly femme (20–40%)</h4><p><strong>${strongFemmeBand.map(n => escapeHtml(n)).join(', ')}</strong></p>`;
+      }
+      if (hyperfemmeBand.length > 0) {
+        html += `<h4>Hyper femme (0–20%)</h4><p><strong>${hyperfemmeBand.map(n => escapeHtml(n)).join(', ')}</strong></p>`;
+      }
+      html += `<p>These dimensions can increase polarity pull when a partner occupies the <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+    } else if (data.gender === 'woman' && Array.isArray(data.stronglyAlignedDimensionNames) && data.stronglyAlignedDimensionNames.length > 0) {
+      html += `<div class="card"><h3>${escapeHtml('Feminine polarity alignment')}</h3>`;
+      html += `<p>Aligned dimensions: <strong>${data.stronglyAlignedDimensionNames.map(n => escapeHtml(n)).join(', ')}</strong>.</p>`;
+      html += `<p>These dimensions can increase polarity pull when a partner occupies the <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+    } else if (Array.isArray(data.stronglyAlignedDimensionNames) && data.stronglyAlignedDimensionNames.length > 0) {
+      html += `<div class="card"><h3>Strongly aligned polarity expression</h3>`;
+      html += `<p>Aligned dimensions: <strong>${data.stronglyAlignedDimensionNames.map(n => escapeHtml(n)).join(', ')}</strong>.</p>`;
+      html += `<p>These dimensions can increase polarity pull when a partner occupies a <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+    }
+  }
   if (data.dimensionScores && Object.keys(data.dimensionScores).length > 0) {
     const displayNames = data.dimensionDisplayNames && typeof data.dimensionDisplayNames === 'object' ? data.dimensionDisplayNames : {};
     html += '<h3>Dimension scores</h3><ul>';

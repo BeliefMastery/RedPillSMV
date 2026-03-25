@@ -39,6 +39,14 @@ const EXPECTED_GENDER_TRENDS = {
 // toward the opposite pole (e.g. man more feminine than avg woman, woman more masculine than avg man).
 const CROSS_POLARITY_THRESHOLD = 0.12;
 
+// Dimension-level masculine alignment bands (normalized 0–1 spectrum; 1 = masculine pole)
+const STRONGLY_MASC_DIM_MIN = 0.6; // 60%+
+const HYPERMASC_DIM_MIN = 0.8; // 80%+
+
+// Feminine pole is the low end of the same spectrum (0% = feminine); mirror of masc bands
+const STRONGLY_FEMME_DIM_MAX = 0.4; // strongly femme up to 40%
+const HYPERFEMME_DIM_MAX = 0.2; // hyper femme 0–20% (inclusive of 20% cutoff → <= 0.2)
+
 /** Tier 1 + Tier 2 educational block (static copy only). */
 function buildTemperamentReportEducationHtml() {
   let block = `<div class="info-box panel-brand-left temperament-report-primer" style="margin: 1rem 0 0; text-align: left;">`;
@@ -1234,6 +1242,52 @@ export class TemperamentEngine {
   }
 
   /**
+   * Returns a hex colour for strongly-aligned polarity badges by extremity (green scale).
+   * @param {number} normalizedDimScore - dimension score in [0,1]
+   * @param {string} reportedGender - 'man' | 'woman'
+   * @returns {string|null} hex colour or null when not strongly aligned
+   */
+  getStrongAlignmentSeverityColor(normalizedDimScore, reportedGender) {
+    let extremity = 0;
+
+    if (reportedGender === 'man') {
+      extremity = Math.max(0, normalizedDimScore - STRONGLY_MASC_DIM_MIN);
+    } else if (reportedGender === 'woman') {
+      if (normalizedDimScore > STRONGLY_FEMME_DIM_MAX) return null;
+      extremity = Math.max(0, STRONGLY_FEMME_DIM_MAX - normalizedDimScore);
+    } else {
+      return null;
+    }
+
+    if (extremity <= 0) return null;
+    if (extremity <= 0.08) return '#2e7d32';
+    if (extremity <= 0.16) return '#1f8f45';
+    return '#0f5132';
+  }
+
+  /**
+   * Badge label for masculine-leaning strong alignment on the dimension spectrum.
+   * @param {number} normalizedDimScore
+   * @returns {string}
+   */
+  getMasculineStrongAlignmentBadgeLabel(normalizedDimScore) {
+    if (normalizedDimScore >= HYPERMASC_DIM_MIN) return 'Hyper-masc (80%+)';
+    if (normalizedDimScore >= STRONGLY_MASC_DIM_MIN) return 'Strongly Masc (60–80%)';
+    return '';
+  }
+
+  /**
+   * Badge label for feminine-leaning strong alignment (same 0–1 spectrum; low = feminine pole).
+   * @param {number} normalizedDimScore
+   * @returns {string}
+   */
+  getFeminineStrongAlignmentBadgeLabel(normalizedDimScore) {
+    if (normalizedDimScore <= HYPERFEMME_DIM_MAX) return 'Hyper femme (0–20%)';
+    if (normalizedDimScore <= STRONGLY_FEMME_DIM_MAX) return 'Strongly femme (20–40%)';
+    return '';
+  }
+
+  /**
    * Render assessment results
    */
   async renderResults() {
@@ -1340,23 +1394,59 @@ export class TemperamentEngine {
 
     // Collect anomalous (cross-polarity) dimensions for polarity failure alert
     const anomalousDimensions = [];
+    const stronglyAlignedDimensions = [];
+    const stronglyMascBandNames = [];
+    const hypermascBandNames = [];
+    const stronglyFemmeBandNames = [];
+    const hyperfemmeBandNames = [];
     Object.keys(this.analysisData.dimensionScores).forEach(dimKey => {
       const score = this.analysisData.dimensionScores[dimKey];
       const normalizedDimScore = (score.net + 1) / 2;
       const isDimAnomalous = (reportedGender === 'man' && normalizedDimScore < (femaleTrend - CROSS_POLARITY_THRESHOLD)) ||
                             (reportedGender === 'woman' && normalizedDimScore > (maleTrend + CROSS_POLARITY_THRESHOLD));
+      const isDimStronglyAligned =
+        (reportedGender === 'man' && normalizedDimScore >= STRONGLY_MASC_DIM_MIN) ||
+        (reportedGender === 'woman' && normalizedDimScore <= STRONGLY_FEMME_DIM_MAX);
       if (isDimAnomalous) {
         const dimName = this.getDimensionDisplayName(dimKey);
         anomalousDimensions.push({ key: dimKey, name: dimName });
+      }
+      if (isDimStronglyAligned) {
+        const dimName = this.getDimensionDisplayName(dimKey);
+        if (reportedGender === 'man') {
+          const band = normalizedDimScore >= HYPERMASC_DIM_MIN ? 'hyper_masc' : 'strong_masc';
+          stronglyAlignedDimensions.push({ key: dimKey, name: dimName, band });
+          if (band === 'hyper_masc') hypermascBandNames.push(dimName);
+          else stronglyMascBandNames.push(dimName);
+        } else {
+          const band = normalizedDimScore <= HYPERFEMME_DIM_MAX ? 'hyper_femme' : 'strong_femme';
+          stronglyAlignedDimensions.push({ key: dimKey, name: dimName, band });
+          if (band === 'hyper_femme') hyperfemmeBandNames.push(dimName);
+          else stronglyFemmeBandNames.push(dimName);
+        }
       }
     });
 
     // Persist for Save results / export
     this.analysisData.anomalousDimensionKeys = anomalousDimensions.map(d => d.key);
     this.analysisData.anomalousDimensionNames = anomalousDimensions.map(d => d.name);
+    this.analysisData.stronglyAlignedDimensionKeys = stronglyAlignedDimensions.map(d => d.key);
+    this.analysisData.stronglyAlignedDimensionNames = stronglyAlignedDimensions.map(d => d.name);
+    if (reportedGender === 'man') {
+      this.analysisData.stronglyMascBandDimensionNames = stronglyMascBandNames;
+      this.analysisData.hypermascBandDimensionNames = hypermascBandNames;
+      this.analysisData.stronglyFemmeBandDimensionNames = [];
+      this.analysisData.hyperfemmeBandDimensionNames = [];
+    } else {
+      this.analysisData.stronglyMascBandDimensionNames = [];
+      this.analysisData.hypermascBandDimensionNames = [];
+      this.analysisData.stronglyFemmeBandDimensionNames = stronglyFemmeBandNames;
+      this.analysisData.hyperfemmeBandDimensionNames = hyperfemmeBandNames;
+    }
 
     // Build polarity failure alert HTML (rendered below Dimension Breakdown)
     let polarityFailureAlertHtml = '';
+    let polarityStrongAlignmentAlertHtml = '';
     const hasOverallCrossPolarity = isMaleCrossPolarity || isFemaleCrossPolarity;
     if (hasOverallCrossPolarity || anomalousDimensions.length > 0) {
       const direction = (hasOverallCrossPolarity ? isMaleCrossPolarity : reportedGender === 'man')
@@ -1389,12 +1479,75 @@ export class TemperamentEngine {
       `;
     }
 
+    if (stronglyAlignedDimensions.length > 0) {
+      const complementLabel = reportedGender === 'man' ? 'feminine-leaning' : 'masculine-leaning';
+      if (reportedGender === 'man') {
+        const strongMascDims = stronglyAlignedDimensions.filter(d => d.band === 'strong_masc');
+        const hyperMascDims = stronglyAlignedDimensions.filter(d => d.band === 'hyper_masc');
+        const magnetTitle =
+          strongMascDims.length && hyperMascDims.length
+            ? 'Polarity Magnetism — Strongly Masc &amp; Hyper-masc'
+            : hyperMascDims.length
+              ? 'Polarity Magnetism — Hyper-masc'
+              : 'Polarity Magnetism — Strongly Masc';
+        let whatMeansBody = '';
+        if (strongMascDims.length) {
+          whatMeansBody += `<p><strong>Strongly Masc (60–80%):</strong> ${strongMascDims.length === 1 ? 'One dimension' : strongMascDims.length + ' dimensions'} — <strong>${strongMascDims.map(d => d.name).join(', ')}</strong>.</p>`;
+        }
+        if (hyperMascDims.length) {
+          whatMeansBody += `<p><strong>Hyper-masc (80%+):</strong> ${hyperMascDims.length === 1 ? 'One dimension' : hyperMascDims.length + ' dimensions'} — <strong>${hyperMascDims.map(d => d.name).join(', ')}</strong>.</p>`;
+        }
+        polarityStrongAlignmentAlertHtml = `
+        <div class="polarity-strongly-aligned-alert panel-brand-left">
+          <h3 class="polarity-strongly-aligned-alert-title">${magnetTitle}</h3>
+          <p><strong>What this means:</strong></p>
+          ${whatMeansBody}
+          <p><strong>Partner-fit implication:</strong> This can naturally draw attraction when a partner occupies the complementary ${complementLabel} pole with enough strength. If a partner is weakly expressed on the complementary side, this can feel like over-functioning or role strain.</p>
+          <p class="polarity-failure-ref" style="margin-bottom: 0;"><em>The dimensions highlighted below indicate where this magnetism is strongest.</em></p>
+        </div>
+      `;
+      } else {
+        const strongFemmeDims = stronglyAlignedDimensions.filter(d => d.band === 'strong_femme');
+        const hyperFemmeDims = stronglyAlignedDimensions.filter(d => d.band === 'hyper_femme');
+        const magnetTitle =
+          strongFemmeDims.length && hyperFemmeDims.length
+            ? 'Polarity Magnetism — Strongly femme &amp; Hyper femme'
+            : hyperFemmeDims.length
+              ? 'Polarity Magnetism — Hyper femme'
+              : 'Polarity Magnetism — Strongly femme';
+        let whatMeansBody = '';
+        if (strongFemmeDims.length) {
+          whatMeansBody += `<p><strong>Strongly femme (20–40%):</strong> ${strongFemmeDims.length === 1 ? 'One dimension' : strongFemmeDims.length + ' dimensions'} — <strong>${strongFemmeDims.map(d => d.name).join(', ')}</strong>.</p>`;
+        }
+        if (hyperFemmeDims.length) {
+          whatMeansBody += `<p><strong>Hyper femme (0–20%):</strong> ${hyperFemmeDims.length === 1 ? 'One dimension' : hyperFemmeDims.length + ' dimensions'} — <strong>${hyperFemmeDims.map(d => d.name).join(', ')}</strong>.</p>`;
+        }
+        polarityStrongAlignmentAlertHtml = `
+        <div class="polarity-strongly-aligned-alert panel-brand-left">
+          <h3 class="polarity-strongly-aligned-alert-title">${magnetTitle}</h3>
+          <p><strong>What this means:</strong></p>
+          ${whatMeansBody}
+          <p><strong>Partner-fit implication:</strong> This can naturally draw attraction when a partner occupies the complementary ${complementLabel} pole with enough strength. If a partner is weakly expressed on the complementary side, this can feel like over-functioning or role strain.</p>
+          <p class="polarity-failure-ref" style="margin-bottom: 0;"><em>The dimensions highlighted below indicate where this magnetism is strongest.</em></p>
+        </div>
+      `;
+      }
+    }
+
     // Dimension breakdown — anomalous dimensions get polarity-notable class to stand out
     html += '<div class="dimension-breakdown">';
     html += '<h3>Dimension Breakdown</h3>';
     const anomalousKeys = new Set(anomalousDimensions.map(d => d.key));
+    const stronglyAlignedKeys = new Set(stronglyAlignedDimensions.map(d => d.key));
     if (anomalousKeys.size > 0) {
       html += '<p style="color: var(--muted); font-size: 0.95rem; margin: 0.5rem 0 1rem;">Dimensions marked with <strong>Temperament anomaly</strong> show a significant swing from typical gender norms; see the note below for how this can affect partner fit and what to explore.</p>';
+    }
+    if (stronglyAlignedKeys.size > 0) {
+      const strongAlignLegend =
+        reportedGender === 'man'
+          ? '<strong>Strongly Masc (60–80%)</strong> or <strong>Hyper-masc (80%+)</strong>'
+          : '<strong>Strongly femme (20–40%)</strong> or <strong>Hyper femme (0–20%)</strong>';
+      html += `<p style="color: var(--muted); font-size: 0.95rem; margin: 0.5rem 0 1rem;">Dimensions marked with ${strongAlignLegend} show strongly aligned polarity expression that can increase pull with complementary partner expression.</p>`;
     }
 
     Object.keys(this.analysisData.dimensionScores).forEach(dimKey => {
@@ -1404,17 +1557,27 @@ export class TemperamentEngine {
       const netScore = score.net;
       const normalizedDimScore = (netScore + 1) / 2;
       const isAnomalous = anomalousKeys.has(dimKey);
+      const isStronglyAligned = stronglyAlignedKeys.has(dimKey);
       const anomalyColor = isAnomalous ? this.getAnomalySeverityColor(normalizedDimScore, reportedGender, maleTrend, femaleTrend) : null;
-      const badgeHtml = isAnomalous && anomalyColor
+      const strongAlignmentColor = isStronglyAligned ? this.getStrongAlignmentSeverityColor(normalizedDimScore, reportedGender) : null;
+      const anomalyBadgeHtml = isAnomalous && anomalyColor
         ? ` <span class="polarity-notable-badge" style="background:${anomalyColor};color:#fff;">Temperament anomaly</span>`
         : (isAnomalous ? ' <span class="polarity-notable-badge">Temperament anomaly</span>' : '');
+      const strongBadgeLabel =
+        reportedGender === 'man'
+          ? this.getMasculineStrongAlignmentBadgeLabel(normalizedDimScore)
+          : this.getFeminineStrongAlignmentBadgeLabel(normalizedDimScore);
+      const strongBadgeHtml = isStronglyAligned && strongAlignmentColor
+        ? ` <span class="polarity-strongly-aligned-badge" style="background:${strongAlignmentColor};color:#fff;">${strongBadgeLabel}</span>`
+        : (isStronglyAligned ? ` <span class="polarity-strongly-aligned-badge">${strongBadgeLabel}</span>` : '');
+      const badgeHtml = `${anomalyBadgeHtml}${strongBadgeHtml}`;
       
       const selectionCriteriaNote = dimKey === 'selection_criteria' && (reportedGender === 'man' || reportedGender === 'woman')
         ? `<p style="color: var(--muted); margin: 0.35rem 0 0; font-size: 0.85rem;">Selection criteria adjusted for ${reportedGender === 'man' ? 'male' : 'female'} standards.</p>`
         : '';
 
       html += `
-        <div class="dimension-item${isAnomalous ? ' dimension-polarity-notable' : ''}">
+        <div class="dimension-item${isAnomalous ? ' dimension-polarity-notable' : ''}${isStronglyAligned ? ' dimension-polarity-strongly-aligned' : ''}">
           <h4>${SecurityUtils.sanitizeHTML(dimName || '')}${badgeHtml}</h4>
           <div class="dimension-spectrum">
             <div class="temperament-trend-dot temperament-trend-male" style="left: ${maleTrend * 100}%;"></div>
@@ -1431,6 +1594,7 @@ export class TemperamentEngine {
     
     html += '</div>';
     html += polarityFailureAlertHtml;
+    html += polarityStrongAlignmentAlertHtml;
 
     html += `
       <div class="panel-brand-left" style="background: var(--glass); border-radius: var(--radius); padding: 1.25rem; margin-top: 2rem; border-left: 4px solid var(--accent);">

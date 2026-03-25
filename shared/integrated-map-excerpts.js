@@ -4,10 +4,12 @@
 import { ARCHETYPES, ARCHETYPE_OPTIMIZATION } from '../archetype-data/archetypes.js';
 import BRUTAL_TRUTHS from '../archetype-data/BRUTAL-TRUTH.js';
 import { TEMPERAMENT_SCORING } from '../temperament-data/temperament-scoring.js';
+import { TEMPERAMENT_DIMENSIONS } from '../temperament-data/temperament-dimensions.js';
+import { INTIMATE_DYNAMICS } from '../temperament-data/intimate-dynamics.js';
+import { ATTRACTION_RESPONSIVENESS } from '../temperament-data/attraction-responsiveness.js';
 import { TEMPERAMENT_REPORT_TIER2_PARAS } from '../temperament-data/temperament-report-copy.js';
 import {
   getQualificationExplanation,
-  getDelusionWarning,
   getSMVInterpretation
 } from './attraction-report-copy.js';
 import { ensurePeriod } from './archetype-narrative-utils.js';
@@ -151,6 +153,117 @@ function safeSentence(text) {
   return ensurePeriod(trimTrailingPunctuation(s));
 }
 
+/** Strip trailing “(modifier)” style subcategory titles from integrated-map SMV lines. */
+function stripIntegratedMapModifierTitle(s) {
+  return String(s || '')
+    .replace(/\s*\([^)]*\bmodifier\b[^)]*\)\s*$/i, '')
+    .trim();
+}
+
+/** One-line delusion copy for integrated-map “costs” (full warnings stay in attraction report). */
+function integratedMapDelusionCostLine(band) {
+  if (band === 'severe') return 'Severe standards–market mismatch.';
+  if (band === 'high') return 'Standards ahead of market signal—adjust or upgrade.';
+  return 'Moderate mismatch—recalibrate expectations or signal.';
+}
+
+/** Hard cap for compressed report paragraphs (word-safe). */
+function clipIntegratedMapText(s, maxLen) {
+  const t = String(s || '').replace(/\s+/g, ' ').trim();
+  if (!t || t.length <= maxLen) return t;
+  const cut = t.slice(0, maxLen - 1);
+  const lastSp = cut.lastIndexOf(' ');
+  return `${lastSp > 35 ? cut.slice(0, lastSp) : cut}…`;
+}
+
+/** SMV “Where it costs”: short, capped; one weakest subcategory; tight Radical Activity line. */
+function buildAttractionCostsConcise(smv, rec, gender) {
+  const bits = [];
+  if (smv.delusionBand && smv.delusionBand !== 'low') {
+    bits.push(integratedMapDelusionCostLine(smv.delusionBand));
+  }
+  if (rec.warning) {
+    const w1 = takeSentences(String(rec.warning).trim(), 1);
+    bits.push(clipIntegratedMapText(w1, 110));
+  }
+  const w = (rec.weakestGuidance || [])[0];
+  if (w) {
+    const lab = stripIntegratedMapModifierTitle(String(w.label || '').trim());
+    const mean = clipIntegratedMapText(takeSentences(String(w.meaning || '').trim(), 1), 95);
+    if (lab && mean) bits.push(`${lab}: ${mean}`);
+    else if (mean) bits.push(mean);
+  }
+  const rad = smv.subcategories?.axisOfAttraction?.radActivity;
+  if (gender === 'male' && typeof rad === 'number' && rad < 40) {
+    bits.push('Radical Activity low—outside romance looks low-signal.');
+  }
+  const joined = bits.filter(Boolean).join(' ');
+  return clipIntegratedMapText(joined, 320);
+}
+
+function getTemperamentDimensionMeta(dimKey) {
+  return (
+    TEMPERAMENT_DIMENSIONS[dimKey] ||
+    INTIMATE_DYNAMICS[dimKey] ||
+    ATTRACTION_RESPONSIVENESS[dimKey] ||
+    null
+  );
+}
+
+/** Lowercase first character for inline quality phrases. */
+function phraseToShortQuality(raw) {
+  const t = String(raw || '').trim();
+  if (!t) return '';
+  return t.charAt(0).toLowerCase() + t.slice(1);
+}
+
+/**
+ * Plain “quality” wording for a dimension (not the full spectrum label).
+ * Spectrum labels list feminine-leaning pole first, masculine-leaning second, on the 0–1 normalized scale.
+ */
+function spectrumQualityPhrase(dimKey, normalizedDimScore) {
+  const dim = getTemperamentDimensionMeta(dimKey);
+  if (!dim) return '';
+  const label = dim.spectrumLabel;
+  if (label && /\bvs\.?\b/i.test(label)) {
+    const parts = label.split(/\bvs\.?\b/i).map((s) => s.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const femSide = parts[0];
+      const mascSide = parts[1];
+      if (normalizedDimScore >= 0.55) return phraseToShortQuality(mascSide);
+      if (normalizedDimScore <= 0.45) return phraseToShortQuality(femSide);
+    }
+  }
+  const masc = dim.masculinePoleLabel ? String(dim.masculinePoleLabel).replace(/^oriented to\s+/i, '').trim() : '';
+  const fem = dim.femininePoleLabel ? String(dim.femininePoleLabel).replace(/^oriented to\s+/i, '').trim() : '';
+  if (masc && fem) {
+    if (normalizedDimScore >= 0.55) return phraseToShortQuality(masc);
+    if (normalizedDimScore <= 0.45) return phraseToShortQuality(fem);
+  }
+  return '';
+}
+
+/** Strongest leaned qualities from saved dimension scores (for integrated map copy). */
+function buildTopQualityPhrases(analysisData, max = 4) {
+  const scores = analysisData?.dimensionScores;
+  if (!scores || typeof scores !== 'object') return [];
+  const entries = Object.entries(scores)
+    .map(([key, v]) => {
+      const net = v && typeof v.net === 'number' ? v.net : 0;
+      const norm = (net + 1) / 2;
+      return { key, norm, extremity: Math.abs(norm - 0.5) };
+    })
+    .filter((x) => (x.norm <= 0.45 || x.norm >= 0.55) && x.extremity >= 0.06)
+    .sort((a, b) => b.extremity - a.extremity);
+  const out = [];
+  for (const { key, norm } of entries) {
+    const q = spectrumQualityPhrase(key, norm);
+    if (q) out.push(q);
+    if (out.length >= max) break;
+  }
+  return dedupeKeepOrder(out, max);
+}
+
 /** Explicit temperament headline: category + biological sex context (unplugged polarity framing). */
 export function temperamentTitleExplicit(category, reportedGender, labelFallback = '') {
   const respondent =
@@ -236,8 +349,11 @@ export function buildArchetypeLayer(ad) {
 
   const costs = safeSentence(
     optimizationCopy?.likelyBlindSpot || p.stressResponse
-      ? 'You stay out of visible hierarchies, which also means fewer opportunities, less recognition, and reduced influence. Independence turns into isolation when exposure is blocked.'
-      : 'You stay out of visible hierarchies, which can mean fewer opportunities, less recognition, and reduced influence.'
+      ? clipIntegratedMapText(
+          'Outside visible hierarchies: less recognition and reach; independence can read as low visibility.',
+          140
+        )
+      : clipIntegratedMapText('Outside hierarchies: less compound status visibility than insiders get.', 120)
   );
 
   const nextMoveCandidates = [];
@@ -257,6 +373,63 @@ export function buildArchetypeLayer(ad) {
 /**
  * @returns {same shape as buildArchetypeLayer}
  */
+function buildPolarityStrengthsHelps(ad, reportedGender) {
+  if (reportedGender === 'man') {
+    const hyp = Array.isArray(ad.hypermascBandDimensionNames) ? ad.hypermascBandDimensionNames : [];
+    const str = Array.isArray(ad.stronglyMascBandDimensionNames) ? ad.stronglyMascBandDimensionNames : [];
+    const parts = [];
+    if (str.length) {
+      parts.push(
+        `Strongly Masc on ${str.join(', ')}: a clear masculine pole signal that tends to pull complementary feminine-leaning expression when intensity is matched.`
+      );
+    }
+    if (hyp.length) {
+      parts.push(
+        `Hyper-masc on ${hyp.join(', ')}: very strong pole signal; partner-fit friction shows up most when the complementary side is weak or absent.`
+      );
+    }
+    return parts.join(' ');
+  }
+  if (reportedGender === 'woman') {
+    const hyp = Array.isArray(ad.hyperfemmeBandDimensionNames) ? ad.hyperfemmeBandDimensionNames : [];
+    const str = Array.isArray(ad.stronglyFemmeBandDimensionNames) ? ad.stronglyFemmeBandDimensionNames : [];
+    const parts = [];
+    if (str.length) {
+      parts.push(
+        `Strongly femme on ${str.join(', ')}: clear feminine pole signal; polarity chemistry tends to track whether a partner meets you with matched masculine-leaning strength.`
+      );
+    }
+    if (hyp.length) {
+      parts.push(
+        `Hyper femme on ${hyp.join(', ')}: very strong feminine pole signal; when the complementary pole is missing or soft, tension and attraction can flatten in these areas.`
+      );
+    }
+    return parts.join(' ');
+  }
+  const legacy = Array.isArray(ad.stronglyAlignedDimensionNames) ? ad.stronglyAlignedDimensionNames : [];
+  if (legacy.length) {
+    return `Strong alignment on ${legacy.join(', ')} can increase polarity pull when a partner meets you with complementary intensity.`;
+  }
+  return '';
+}
+
+function buildPolarityAnomalyCosts(ad) {
+  const parts = [];
+  if (ad.crossPolarityDetected && ad.crossPolarityNote) {
+    parts.push(String(ad.crossPolarityNote).trim());
+  }
+  const anom = ad.anomalousDimensionNames;
+  if (Array.isArray(anom) && anom.length) {
+    parts.push(
+      clipIntegratedMapText(
+        `Anomaly: ${anom.join(', ')} — off typical norms; polarity needs an opposite pole at matched strength, or same-pole pairing can flatten pull.`,
+        220
+      )
+    );
+  }
+  return clipIntegratedMapText(parts.filter(Boolean).join(' '), 280);
+}
+
 export function buildPolarityLayer(ad) {
   const href = 'temperament.html';
   const hrefLabel = 'Open full polarity report';
@@ -273,34 +446,26 @@ export function buildPolarityLayer(ad) {
     };
   }
 
-  const rawCharacteristics = (interp.characteristics || []).slice(0, 4);
-  const directStatements = rawCharacteristics
-    .map(characteristicToDirectStatement)
-    .map((x) => trimTrailingPunctuation(x))
-    .filter(Boolean);
-  const variationFirst = takeSentences(interp.variations || '', 1);
+  const reportedGender = ad.gender;
+  const qualityPhrases = buildTopQualityPhrases(ad, 4);
+  const desc = takeSentences(interp.description || '', 2);
+  const meaningCore =
+    qualityPhrases.length > 0
+      ? `${desc} Qualities that lean clearest in your data: ${qualityPhrases.join('; ')}.`
+      : desc;
+  const meaning = safeSentence(meaningCore || interp.label || 'Polarity profile loaded.');
 
-  const concerns = [];
-  if (ad.crossPolarityDetected && ad.crossPolarityNote) {
-    concerns.push(String(ad.crossPolarityNote).trim());
-  }
-  const names = ad.anomalousDimensionNames;
-  if (Array.isArray(names) && names.length) {
-    concerns.push(
-      `Dimensions flagged for partner-fit consideration: ${names.join(', ')}.`
-    );
-  }
+  const strengthHelps = buildPolarityStrengthsHelps(ad, reportedGender);
+  const helps = strengthHelps
+    ? safeSentence(strengthHelps)
+    : safeSentence(
+        'No dimensions hit the strongest polarity bands in this snapshot; expression may be more blended across situations. See the full report for per-dimension detail.'
+      );
 
-  const meaning = safeSentence('You can move between structure and flow, logic and emotion, depending on the situation.');
-
-  const helps = safeSentence(
-    'You read people well and adjust easily. This makes you socially flexible and able to connect across different dynamics.'
-  );
-
-  const costs =
-    concerns[0]
-    ? safeSentence('Your lack of a dominant edge can make you feel undefined. In attraction, this weakens polarity — people don’t clearly feel your direction or role.')
-    : (variationFirst ? safeSentence('Your lack of a dominant edge can make you feel undefined. In attraction, this weakens polarity — people don’t clearly feel your direction or role.') : safeSentence('Your lack of a dominant edge can make you feel undefined, which can soften polarity in attraction.'));
+  const costText = buildPolarityAnomalyCosts(ad);
+  const costs = costText
+    ? safeSentence(costText)
+    : safeSentence('No anomaly flags in this snapshot.');
 
   const nextMoveCandidates = dedupeKeepOrder(
     [
@@ -310,9 +475,7 @@ export function buildPolarityLayer(ad) {
     4
   ).map(cleanActionText);
 
-  const reportedGender = ad.gender;
   const titleRaw = temperamentTitleExplicit(cat, reportedGender, interp.label);
-  // Integrated map should not show respondent suffix here (other cards don't display it).
   const title = String(titleRaw).replace(/\s*\((?:male|female) respondent\)\s*$/, '');
 
   return {
@@ -345,78 +508,81 @@ export function buildAttractionLayer(snap) {
   }
 
   const overall = typeof smv.overall === 'number' ? smv.overall : 0;
+  const overallR = Math.round(overall);
   const goal = snap?.preferences?.relationship_goal;
-  const accessLine = buildAccessPrinciple({
+  const accessPrinciple = buildAccessPrinciple({
     goal,
     gender,
     hasDelusionFlag: Boolean(smv?.delusionBand && smv.delusionBand !== 'low')
   });
-  const interpretation = getSMVInterpretation(overall);
-
-  let smvPrimaryRead = '';
-  let subtitle = '';
-  if (gender === 'male' && smv.badBoyGoodGuy?.label) {
-    const label = smv.badBoyGoodGuy.label;
-    smvPrimaryRead = label;
-    subtitle = smv.marketPosition ? `Market band: ${String(smv.marketPosition).trim()}` : '';
-    // The qualification explanation is used in full reports; for this combined card we keep it concise.
-  } else if (gender === 'female' && smv.keeperSweeper?.label) {
-    const ks = smv.keeperSweeper;
-    smvPrimaryRead = ks.label;
-    subtitle = [
-      smv.marketPosition ? `Market band: ${String(smv.marketPosition).trim()}` : '',
-      ks.desc ? ks.desc : ''
-    ]
-      .filter(Boolean)
-      .join(' — ');
-  } else {
-    smvPrimaryRead = smv.marketPosition ? String(smv.marketPosition).trim() : '';
-  }
-
-  const concerns = [];
-  if (smv.delusionBand && smv.delusionBand !== 'low') {
-    concerns.push(getDelusionWarning(smv.delusionBand));
-  }
-  if (smv.recommendation?.warning) {
-    concerns.push(String(smv.recommendation.warning).trim());
-  }
-
+  const accessRead = getSMVInterpretation(overall);
+  const marketBand = smv.marketPosition ? String(smv.marketPosition).trim() : 'not classified';
   const rec = smv.recommendation || {};
 
-  const frameMeaning = safeSentence('You can get dates and connection, but not consistently on your terms. Outcomes vary, and you’re often reacting instead of selecting.');
+  const bbg = smv.badBoyGoodGuy;
+  const ks = smv.keeperSweeper;
+  const gridExpl =
+    gender === 'male' && bbg?.label
+      ? getQualificationExplanation(bbg.label, 'badBoyGoodGuy')
+      : gender === 'female' && ks?.label
+        ? getQualificationExplanation(ks.label, 'keeperSweeper')
+        : '';
 
-  const frameHelps = safeSentence('You’re not locked out — small improvements will directly increase your options and control.');
+  const clusters = smv.clusters || {};
+  const cr = typeof clusters.coalitionRank === 'number' ? clusters.coalitionRank : 0;
+  const repro = typeof clusters.reproductiveConfidence === 'number' ? clusters.reproductiveConfidence : 0;
+  const axis = typeof clusters.axisOfAttraction === 'number' ? clusters.axisOfAttraction : 0;
 
-  const frameCosts = (() => {
-    const w = (rec.weakestGuidance || [])[0];
-    const label = w?.label ? String(w.label).trim() : '';
-    if (label) {
-      return safeSentence(`Primary Constraint — ${label}. Right now, your capability is not clearly signaled. Competence is what makes people rely on you, respect you, and choose you with intent.`);
-    }
-    return safeSentence('You risk being chosen for stability or provision rather than desire. That caps attraction and long-term satisfaction.');
-  })();
+  const meaningParts = [
+    `Overall sexual market value sits near the ${overallR}th percentile; market band reads as ${marketBand}.`,
+    accessRead,
+    gender === 'male' && bbg?.label ? `Likely categorisation: “${bbg.label}”.` : '',
+    gender === 'female' && ks?.label
+      ? `Likely treatment pattern: ${ks.label}${ks.desc ? ` — ${ks.desc}` : ''}.`
+      : '',
+    gridExpl,
+    accessPrinciple
+  ].filter(Boolean);
 
-  const weakestGuidanceActions = (rec.weakestGuidance || [])
-    .flatMap((w) => w.actions || [])
-    .map(cleanActionText);
+  const frameMeaning = safeSentence(meaningParts.join(' '));
 
+  const strengthBits = [];
+  if (cr >= 62) strengthBits.push('coalition rank among peers');
+  if (repro >= 62) strengthBits.push('reproductive confidence signal');
+  if (axis >= 62) strengthBits.push('attraction opportunity');
+  if (gender === 'male' && bbg && bbg.goodGuyPercentile >= 65 && bbg.badBoyPercentile >= 65) {
+    strengthBits.push('both provision-style signal and attraction axis read strong together');
+  }
+  const strategic = rec.strategic ? String(rec.strategic).trim() : '';
+  const priority = rec.priority ? String(rec.priority).trim() : '';
+  const helpsParts = [
+    strategic,
+    priority ? `Stated priority: ${priority}.` : '',
+    strengthBits.length ? `Relative strengths: ${strengthBits.join('; ')}.` : ''
+  ].filter(Boolean);
+  const frameHelps = helpsParts.length
+    ? safeSentence(helpsParts.join(' '))
+    : safeSentence(
+        'Leverage is uneven rather than absent; the full report breaks down clusters and weakest subcategories so you can prioritise upgrades.'
+      );
+
+  const costsCompact = buildAttractionCostsConcise(smv, rec, gender);
+  const frameCosts = costsCompact
+    ? safeSentence(costsCompact)
+    : safeSentence('No major mismatch flags in this snapshot.');
+
+  const weakestGuidanceActions = (rec.weakestGuidance || []).flatMap((w) => w.actions || []).map(cleanActionText);
   const tacticalActions = (rec.tactical || []).map(cleanActionText);
+  const nextMoveCandidates = dedupeKeepOrder([...weakestGuidanceActions, ...tacticalActions], 6);
 
-  const nextMoveCandidates = dedupeKeepOrder(
-    [
-      ...(weakestGuidanceActions || []),
-      ...(tacticalActions || [])
-    ],
-    6
-  );
-
-  const marketBand = smv?.marketPosition ? String(smv.marketPosition).trim() : '';
-  const title = `Sexual Market Value — ${marketBand}: inconsistent leverage`;
-  const subtitleFinal = undefined;
+  const title = `Sexual Market Value — ~${overallR}th percentile · ${marketBand}`;
+  let subtitle = '';
+  if (gender === 'male' && bbg?.label) subtitle = bbg.label;
+  else if (gender === 'female' && ks?.label) subtitle = ks.desc ? `${ks.label} — ${ks.desc}` : ks.label;
 
   return {
     title,
-    subtitle: subtitleFinal,
+    subtitle: subtitle || undefined,
     frame: {
       meaning: frameMeaning,
       helps: frameHelps,
@@ -463,13 +629,41 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
     ? `You run an independent path and avoid being placed inside hierarchies. That gives you freedom, but it also keeps you out of arenas where status, visibility, and opportunity compound.`
     : `You protect autonomy and resist being placed inside hierarchies. That gives you freedom, but it can also reduce visibility and opportunity.`;
 
+  const tempQualities = buildTopQualityPhrases(pd, 3);
   const tempLine = tempDesc
-    ? `You can shift between structure and flow, which makes you adaptable, but it can also blur your edge — people don’t always know what role you occupy.`
-    : `Your expression is adaptable across contexts, which helps you fit, but can blur your direction when attraction needs clarity.`;
+    ? tempQualities.length
+      ? `${tempDesc} Clearest quality leans: ${tempQualities.join('; ')}.`
+      : tempDesc
+    : `Polarity data was thin in the saved snapshot; open the full polarity report for detail.`;
 
   const smvLine = smv
-    ? `In dating, you’re getting inconsistent results. You can access connection, but not reliably on your terms — which increases the chance you’re chosen more for stability than desire.`
-    : `In dating, outcomes can become circumstance-driven rather than choice-driven when leverage is inconsistent.`;
+    ? (() => {
+        const o = Math.round(smv.overall ?? 0);
+        const mp = smv.marketPosition ? String(smv.marketPosition).trim() : '';
+        const gq =
+          gender === 'male' && smv.badBoyGoodGuy?.label
+            ? getQualificationExplanation(smv.badBoyGoodGuy.label, 'badBoyGoodGuy')
+            : gender === 'female' && smv.keeperSweeper?.label
+              ? getQualificationExplanation(smv.keeperSweeper.label, 'keeperSweeper')
+              : '';
+        const access = getSMVInterpretation(smv.overall);
+        const label =
+          gender === 'male' && smv.badBoyGoodGuy?.label
+            ? smv.badBoyGoodGuy.label
+            : gender === 'female' && smv.keeperSweeper?.label
+              ? smv.keeperSweeper.label
+              : '';
+        const head =
+          label && mp
+            ? `SMV ~${o}th percentile — ${mp}. Market read: “${label}”.`
+            : label
+              ? `SMV ~${o}th percentile. Market read: “${label}”.`
+              : mp
+                ? `SMV ~${o}th percentile — ${mp}.`
+                : `SMV ~${o}th percentile.`;
+        return [head, gq, access].filter(Boolean).join(' ');
+      })()
+    : `Attraction snapshot missing; complete the assessment for an SMV line in this summary.`;
 
   const fastestShift = weakestLabel
     ? `The fastest shift comes from building visible competence and tightening your direction — so others can read you clearly and respond accordingly.`
@@ -490,16 +684,75 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
   return [archLine, tempLine, smvLine, fastestShift, ...extra].filter(Boolean).join(' ');
 }
 
-export function buildNextMoveCandidates(archetypeSnap, polaritySnap, attractionSnap) {
-  // Fixed universal priority actions for the combined page (kept concise, de-duplicated).
-  return dedupeKeepOrder(
-    [
-      'Build visible competence — pick one domain and prove it (results, certification, or output people can see).',
-      'Increase physical presence — strength, posture, and movement change how you’re read instantly.',
-      'State intent earlier — stop adapting to situations and start directing them.'
-    ],
-    3
-  );
+/**
+ * One priority action per lens, derived from saved assessment data (not generic copy).
+ * @param {{ analysisData?: object }} archetypeSnap
+ * @param {{ analysisData?: object }} polaritySnap
+ * @param {{ smv?: object, currentGender?: string, preferences?: object }} attractionSnap
+ * @param {{ layers?: { archL?: object, polL?: object, attL?: object } }} [opts]
+ */
+export function buildNextMoveCandidates(archetypeSnap, polaritySnap, attractionSnap, opts = {}) {
+  const ad = archetypeSnap?.analysisData || {};
+  const pd = polaritySnap?.analysisData || {};
+  const smv = attractionSnap?.smv;
+  const gender = attractionSnap?.currentGender;
+  const prefs = attractionSnap?.preferences || {};
+
+  const archL = opts.layers?.archL ?? buildArchetypeLayer(ad);
+  const polL = opts.layers?.polL ?? buildPolarityLayer(pd);
+  const attL = opts.layers?.attL ?? buildAttractionLayer({ smv, currentGender: gender, preferences: prefs });
+
+  const archPrimary = ad.primaryArchetype;
+  const opt = archPrimary?.id ? ARCHETYPE_OPTIMIZATION?.[archPrimary.id] : null;
+  let archText =
+    (opt?.optimizationStrategy && String(opt.optimizationStrategy).trim()) ||
+    (archPrimary?.growthEdge && String(archPrimary.growthEdge).trim()) ||
+    '';
+  if (!archText) {
+    archText =
+      'Take one concrete growth edge from your archetype report and rehearse it in a real social or work situation this week.';
+  }
+  archText = clipIntegratedMapText(cleanActionText(archText), 128);
+  const move1 = `Archetype — ${ensurePeriod(archText)}`;
+
+  let polText = '';
+  if (pd.contextSensitivity?.detected && pd.contextSensitivity?.message) {
+    polText = clipIntegratedMapText(cleanActionText(String(pd.contextSensitivity.message).trim()), 128);
+  } else if (Array.isArray(pd.anomalousDimensionNames) && pd.anomalousDimensionNames.length) {
+    const names = pd.anomalousDimensionNames.slice(0, 2).join(', ');
+    polText = `Discuss or test partner fit around ${names}—you need opposite-pole complement or an explicit trade-off you accept.`;
+  } else if (
+    (pd.gender === 'man' &&
+      ((pd.stronglyMascBandDimensionNames?.length || 0) > 0 || (pd.hypermascBandDimensionNames?.length || 0) > 0)) ||
+    (pd.gender === 'woman' &&
+      ((pd.stronglyFemmeBandDimensionNames?.length || 0) > 0 || (pd.hyperfemmeBandDimensionNames?.length || 0) > 0))
+  ) {
+    polText =
+      'Use your strongest polarity poles as a filter—confirm partners can meet complementary intensity, not just chemistry in the moment.';
+  } else {
+    const pn = (polL.nextMoveCandidates || []).filter(Boolean);
+    polText = pn[0]
+      ? cleanActionText(pn[0])
+      : 'Pick one daily context to practise clear lead vs clear receive and watch how others respond.';
+  }
+  polText = clipIntegratedMapText(polText, 128);
+  const move2 = `Polarity — ${ensurePeriod(polText)}`;
+
+  const attCands = attL.nextMoveCandidates || [];
+  let attText =
+    attCands[0] ||
+    (Array.isArray(smv?.recommendation?.tactical) && smv.recommendation.tactical[0]) ||
+    (smv?.recommendation?.strategic && String(smv.recommendation.strategic).trim()) ||
+    '';
+  attText = attText
+    ? clipIntegratedMapText(cleanActionText(String(attText)), 128)
+    : clipIntegratedMapText(
+        'Open your attraction results and execute one tactical item from Strategic Recommendations.',
+        128
+      );
+  const move3 = `Market / SMV — ${ensurePeriod(attText)}`;
+
+  return dedupeKeepOrder([move1, move2, move3], 3);
 }
 
 export function buildHeroFragments(archetypeSnap, polaritySnap, attractionSnap) {
@@ -552,23 +805,70 @@ export function buildCrossIntegrationBullets(archetypeLayer, polarityLayer, attr
   return out;
 }
 
-export function buildPatternConvergenceParagraph(archetypeLayer, polarityLayer, attractionLayer) {
-  const aCosts = String(archetypeLayer?.frame?.costs || '').trim();
-  const pCosts = String(polarityLayer?.frame?.costs || '').trim();
-  const mCosts = String(attractionLayer?.frame?.costs || '').trim();
+/**
+ * How the three assessments compound: joint frame, stacked pressures, then where to lead.
+ * @param {{ analysisData?: object }} archetypeSnap
+ * @param {{ analysisData?: object }} polaritySnap
+ * @param {{ smv?: object, currentGender?: string, preferences?: object }} attractionSnap
+ * @param {{ layers?: { archL?: object, polL?: object, attL?: object } }} [opts]
+ */
+export function buildPatternConvergenceParagraph(archetypeSnap, polaritySnap, attractionSnap, opts = {}) {
+  const ad = archetypeSnap?.analysisData || {};
+  const pd = polaritySnap?.analysisData || {};
+  const smv = attractionSnap?.smv;
+  const gender = attractionSnap?.currentGender;
+  const prefs = attractionSnap?.preferences || {};
 
-  // Keep it short, synthetic, and non-redundant.
-  const parts = [
-    'Your independence keeps you out of hierarchies where visibility and opportunity compound.',
-    'Your balanced temperament softens your edge — you can adapt, but direction isn’t always felt.',
-    'Your current competence signal isn’t strong enough to override either, so outcomes become inconsistent.'
-  ];
+  const archL = opts.layers?.archL ?? buildArchetypeLayer(ad);
+  const polL = opts.layers?.polL ?? buildPolarityLayer(pd);
+  const attL = opts.layers?.attL ?? buildAttractionLayer({ smv, currentGender: gender, preferences: prefs });
 
-  // If we have concrete cost lines, use at most one as a “mirror” hook.
-  const hook = dedupeKeepOrder([aCosts, pCosts, mCosts], 1)[0];
-  if (hook) {
-    parts.push(`This works until it doesn’t: ${trimTrailingPunctuation(hook)}.`);
+  const archName = ad.primaryArchetype?.name || 'your archetype pattern';
+  const cat = pd?.overallTemperament?.category;
+  const interp = cat ? TEMPERAMENT_SCORING?.interpretation?.[cat] : null;
+  const tempLabel = interp?.label ? String(interp.label).trim() : 'your polarity profile';
+  const smvReadRaw =
+    gender === 'male' && smv?.badBoyGoodGuy?.label
+      ? smv.badBoyGoodGuy.label
+      : gender === 'female' && smv?.keeperSweeper?.label
+        ? smv.keeperSweeper.label
+        : smv?.marketPosition
+          ? String(smv.marketPosition).trim()
+          : 'your market band';
+  const smvRead = clipIntegratedMapText(smvReadRaw, 56);
+  const pct = smv?.overall != null ? Math.round(smv.overall) : null;
+
+  const opener =
+    pct != null
+      ? `Together, ${archName}, ${tempLabel}, and a ~${pct}th percentile SMV read (“${smvRead}”) map habit, chemistry fit, and who selects you—not the same problem stated three times.`
+      : `Together, ${archName}, ${tempLabel}, and “${smvRead}” map habit, chemistry fit, and who selects you—not the same problem stated three times.`;
+
+  const aCosts = String(archL?.frame?.costs || '').trim();
+  const pCosts = String(polL?.frame?.costs || '').trim();
+  const mCosts = String(attL?.frame?.costs || '').trim();
+  const costJoin = [aCosts, pCosts, mCosts].filter(Boolean).join(' ');
+  const mid = costJoin
+    ? clipIntegratedMapText(`Where each lens bites: ${clipIntegratedMapText(costJoin, 230)}`, 280)
+    : 'Where each lens bites: this snapshot shows no heavy cross-lens mismatch flags; friction may still be situational.';
+
+  const delusion = smv?.delusionBand && smv.delusionBand !== 'low';
+  const overall = typeof smv?.overall === 'number' ? smv.overall : 50;
+  const hasAnom = Array.isArray(pd.anomalousDimensionNames) && pd.anomalousDimensionNames.length > 0;
+  let closer = '';
+  if (delusion || overall < 42) {
+    closer =
+      'Integration cue: tighten standards realism and one visible SMV upgrade first—access and choice quality usually gate everything else.';
+  } else if (hasAnom) {
+    closer =
+      'Integration cue: treat polarity partner-fit on flagged dimensions as primary—market upgrades rarely fix a pole mismatch you repeat.';
+  } else if (overall < 58) {
+    closer =
+      'Integration cue: stack one credible signal upgrade with one polarity behaviour change so partners can read you consistently.';
+  } else {
+    closer =
+      'Integration cue: your archetype habits still govern how you deploy strength—use polarity awareness so high SMV doesn’t read ambiguous in person.';
   }
+  closer = clipIntegratedMapText(closer, 175);
 
-  return parts.join(' ');
+  return clipIntegratedMapText(`${opener} ${mid} ${closer}`.replace(/\s+/g, ' ').trim(), 560);
 }

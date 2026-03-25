@@ -41,6 +41,13 @@ export const FEMALE_CLUSTER_WEIGHTS = {
  *
  * Item→construct map: see docs/SMV_WEIGHTING_NOTE.md. physicalGenetic / fertility use per-question `weight` in weighted subcategory means (see shared/attraction-smv-core.mjs).
  */
+/** Report bar labels (male Axis of Attraction sub-bars under “Attraction Opportunity”). */
+export const MALE_AXIS_BAR_LABELS = {
+  performanceStatus: 'Wealth/Finance/Status/Performance/Productivity/Talent/Popularity',
+  physicalGenetic: 'Looks/Physical/Genetic/Aesthetic',
+  humour: 'Humour/Intelligence/Companionship'
+};
+
 export const AXIS_SUBCATEGORY_WEIGHTS = {
   male: {
     // RAD is a meaningful persistence modifier, but not a core matrix pillar.
@@ -116,7 +123,7 @@ const MALE_REPRODUCTIVE_QUESTIONS = [
 ];
 
 /**
- * MALE Rad Activity — External interest that signals direction; she competes with it.
+ * MALE Rad Activity — How cool, novel, or radical life outside romance reads: benign competition for the mate’s share of your attention; mitigates boredom.
  * Uses behavioral descriptors (not exhaustive category lists) to reduce gaming.
  * shuffleOptions: true hides significance; options displayed in random order per respondent.
  * Gym/vanity: fitness-for-aesthetics sits in low-rad (committed but no larger purpose).
@@ -160,17 +167,19 @@ export const RAD_ACTIVITY_TYPE_MODIFIER = {
   ANTI_RAD_THRESHOLD: 2 // rad_1 raw ≤ 2 = anti-rad penalty (OPTS_6: 1=porn/drugs, 2=gaming/TV)
 };
 
-/** MALE Axis of Attraction — Performance/Status (wealth = productivity, sharing, popularity, unique talent) + Physical/Genetic + Humour + Rad Activity. Maps to Bad Boy / Good Guy grid. */
+/** MALE Axis of Attraction — Wealth/Finance/Status/Performance/Productivity/Talent/Popularity + Looks/Physical/Genetic/Aesthetic + Humour/Intelligence/Companionship + Rad Activity. Maps to Bad Boy / Good Guy grid. */
 const MALE_AXIS_QUESTIONS = [
   ...MALE_RAD_ACTIVITY_QUESTIONS,
-  // Performance/Status (Wealth = productivity, sharing, social network popularity, unique/outstanding talent — capacity to fluff the nest, provide, support status)
+  // Wealth/status/performance pillar (income, savings/debt, credibility, productivity, popularity, talent, generosity)
   { id: 'perf_1', subcategory: 'performanceStatus', text: 'How would you rate your current social status and influence?', weight: 1.0, options: OPTS, optionLabels: ['Low; little influence', 'Below average', 'Average', 'Above average; notable', 'High; significant influence'] },
   { id: 'perf_2', subcategory: 'performanceStatus', text: 'What is your current annual income bracket?', weight: 1.0, options: OPTS, optionLabels: ['Under $30k', '$30k-$60k', '$60k-$100k', '$100k-$200k', 'Over $200k'] },
   { id: 'perf_3', subcategory: 'performanceStatus', text: 'How generous are you with resources (time, money, connections) toward people you care about?', weight: 1.0, options: OPTS, optionLabels: ['Very guarded; rarely share', 'Selective; only close few', 'Moderate; fair when asked', 'Generous; share readily', 'Very generous; invest heavily'] },
   { id: 'perf_4', subcategory: 'performanceStatus', text: 'How productive and output-oriented are you in your work or projects?', weight: 1.0, options: OPTS, optionLabels: ['Low; struggle to produce', 'Below average', 'Average', 'Above average; reliable output', 'High; consistent high output'] },
   { id: 'perf_5', subcategory: 'performanceStatus', text: 'How popular or well-regarded are you in your social and professional circles?', weight: 1.0, options: OPTS, optionLabels: ['Not popular; overlooked', 'Below average', 'Average', 'Well-liked; respected', 'Very popular; sought after'] },
   { id: 'perf_6', subcategory: 'performanceStatus', text: 'Do you have a unique or outstanding talent (music, sport, craft, invention, expertise) that signals potential windfall or novelty?', weight: 1.0, options: OPTS, optionLabels: ['None; no standout skill', 'One hobby; not notable', 'Moderate; some recognition', 'Strong; admired in niche', 'Outstanding; widely recognised'] },
-  // Physical/Genetic — ordered: face → body → strength → detail cues → optional market-read → frame → polish → net
+  { id: 'perf_7', subcategory: 'performanceStatus', text: 'Beyond income alone, how solid is your financial position (savings, debt control, emergency runway)?', weight: 0.95, options: OPTS, optionLabels: ['Fragile; high debt or no buffer', 'Weak; little savings', 'Moderate; some cushion', 'Strong; healthy buffer', 'Very strong; low stress on money'] },
+  { id: 'perf_8', subcategory: 'performanceStatus', text: 'How visible is your professional credibility (credentials, title, track record, or reputation others can verify)?', weight: 0.9, options: OPTS, optionLabels: ['Not visible; no clear signal', 'Weak; unclear to outsiders', 'Moderate; some recognition', 'Strong; clear credentials or wins', 'Very strong; widely known in your arena'] },
+  // Looks/physical/genetic/aesthetic — ordered: face → body → strength → detail cues → optional market-read → frame → polish → style → vitality → net
   { id: 'phys_1', subcategory: 'physicalGenetic', text: 'How would you honestly rate your facial attractiveness (face, features—separate from body below)?', weight: 1.2, options: OPTS, optionLabels: ['Below average', 'Slightly below average', 'Average', 'Above average', 'Top tier'] },
   { id: 'phys_6', subcategory: 'physicalGenetic', text: 'How would you rate your body composition and shape as seen by others (muscle, leanness, proportions—not the same as strength alone)?', weight: 1.1, options: OPTS, optionLabels: ['Poor shape for my goals', 'Below average', 'Average', 'Above average; clear shape', 'Standout physique'] },
   { id: 'phys_2', subcategory: 'physicalGenetic', text: 'How would you rate your fitness, strength, and physical capability (training and performance—not only how you look)?', weight: 1.0, options: OPTS, optionLabels: ['Poor; sedentary', 'Below average', 'Average', 'Above average; fit', 'Elite; very strong'] },
@@ -180,12 +189,15 @@ const MALE_AXIS_QUESTIONS = [
   { id: 'phys_10', subcategory: 'physicalGenetic', text: 'Honest read: visible disability, difference, or chronic visible health factor—how much does it typically filter stranger or early dating first impressions? (Not your worth; typical market friction.)', weight: 0.8, optional: true, options: OPTS, optionLabels: ['Major; often a strong early filter', 'Noticeable; frequently shapes first glance', 'Moderate; sometimes matters early', 'Minor; rarely the main signal', 'Not a factor in typical first impressions'] },
   { id: 'phys_3', subcategory: 'physicalGenetic', text: 'What is your height bracket?', weight: 1.0, options: OPTS, optionLabels: ['Under 5\'6"', '5\'6"-5\'8"', '5\'9"-5\'11"', '6\'0"-6\'2"', 'Over 6\'2"'] },
   { id: 'phys_4', subcategory: 'physicalGenetic', text: 'How well do you maintain grooming, hygiene, and physical presentation?', weight: 1.0, options: OPTS, optionLabels: ['Poor; inconsistent', 'Below average', 'Average', 'Above average; polished', 'Excellent; always put-together'] },
+  { id: 'phys_12', subcategory: 'physicalGenetic', text: 'How strong is your style and aesthetic presentation—clothing fit, taste, and a cohesive look others notice?', weight: 0.95, options: OPTS, optionLabels: ['Weak; sloppy or incoherent', 'Below average', 'Average; acceptable', 'Above average; intentional style', 'Strong; stands out positively'] },
   { id: 'phys_5', subcategory: 'physicalGenetic', text: 'How would others describe your energy and vitality?', weight: 1.0, options: OPTS, optionLabels: ['Low; tired or sluggish', 'Below average', 'Average', 'Above average; energetic', 'High; vibrant and vital'] },
   { id: 'phys_11', subcategory: 'physicalGenetic', text: 'Net calibration: how strong is your overall physical first-impression signal in typical dating or social settings (face + body + presence together)?', weight: 0.65, options: OPTS, optionLabels: ['Weak overall signal', 'Below average', 'Average', 'Above average', 'Strong overall signal'] },
-  // Humour (intelligence indicator; drives attraction and approachability)
+  // Humour / intelligence / companionship
   { id: 'humour_1', subcategory: 'humour', text: 'How easily do you make others laugh in social settings?', weight: 1.0, options: OPTS, optionLabels: ['Rarely; humour doesn\'t come naturally', 'Sometimes; hit and miss', 'Moderately; decent delivery', 'Often; people enjoy my timing', 'Consistently; known for wit'] },
   { id: 'humour_2', subcategory: 'humour', text: 'How quick are you to spot absurdity, irony, or playful angles in conversation?', weight: 1.0, options: OPTS, optionLabels: ['Slow; often miss it', 'Below average', 'Average; catch some', 'Quick; usually first', 'Very quick; sharp and clever'] },
-  { id: 'humour_3', subcategory: 'humour', text: 'How well do you use humour to put others at ease or defuse tension?', weight: 1.0, options: OPTS, optionLabels: ['Poorly; often misfires', 'Below average', 'Moderately', 'Well; people relax around me', 'Exceptionally; natural icebreaker'] }
+  { id: 'humour_3', subcategory: 'humour', text: 'How well do you use humour to put others at ease or defuse tension?', weight: 1.0, options: OPTS, optionLabels: ['Poorly; often misfires', 'Below average', 'Moderately', 'Well; people relax around me', 'Exceptionally; natural icebreaker'] },
+  { id: 'humour_4', subcategory: 'humour', text: 'How often are you described as insightful, interesting, or mentally stimulating in conversation (beyond jokes alone)?', weight: 1.0, options: OPTS, optionLabels: ['Rarely; flat or shallow', 'Sometimes', 'Moderately', 'Often', 'Consistently; known for substance'] },
+  { id: 'humour_5', subcategory: 'humour', text: 'How enjoyable and easy is extended one-on-one time with you—warmth, attunement, and companionship?', weight: 1.0, options: OPTS, optionLabels: ['Draining or awkward', 'Below average', 'Fine in short bursts', 'Pleasant; people open up', 'Deeply enjoyable; people seek your company'] }
 ];
 
 /** FEMALE 3S's — 9 questions (3 per S). Female-female hierarchy; weakest identified. */
@@ -274,13 +286,13 @@ export const MALE_CLUSTERS = {
   axisOfAttraction: {
     id: 'axisOfAttraction',
     title: 'Axis of Attraction',
-    subtitle: 'Performance/Status + Physical/Genetic + Humour — Bad Boy / Good Guy Grid',
-    description: 'Wealth (productivity, sharing, social popularity, unique talent); physical signifiers (face, body, symmetry, skin/hair, voice, height, grooming, vitality—weighted within Physical/Genetic; one optional sensitive item); humour. Drives initiation attraction, time-to-intimacy, investment requirement. Maps to Bad Boy / Good Guy grid.',
+    subtitle: 'Wealth/Status/Performance + Looks/Physical/Aesthetic + Humour/Mind/Companionship — Bad Boy / Good Guy Grid',
+    description: 'Wealth, finance, status, productivity, talent, popularity; looks, physical, genetic, and aesthetic signals (face, body, symmetry, skin/hair, voice, height, grooming, vitality, style—weighted within Physical/Genetic; one optional sensitive item); humour, intelligence, and companionship. Drives initiation attraction, time-to-intimacy, investment requirement. Maps to Bad Boy / Good Guy grid.',
     subcategories: {
-      radActivity: { label: 'Rad Activity (Modifier)', desc: 'Modifier signal, not a core matrix bar: external direction that creates constructive scarcity and social-proof-like trust. Anti-rad (gaming, TV, porn, drugs) = consumption/escape. Low-rad (casual hobbies) = weak direction. Rad/high-rad (risk, craft, business, mission) improves persistence when paired with core pillars.' },
-      performanceStatus: { label: 'Performance/Status (Wealth)', desc: 'Productivity, sharing, social network popularity, unique/outstanding talent.' },
-      physicalGenetic: { label: 'Physical/Genetic Signals', desc: 'Face, body shape, symmetry, skin/hair/teeth, voice and presence, height, grooming, vitality; one item is an honest market read on visible difference (not a judgment of worth).' },
-      humour: { label: 'Humour', desc: 'Intelligence indicator; approachability and attraction.' }
+      radActivity: { label: 'Radical Activity (modifier)', desc: 'Not a core bar: whether your outside-relationship life reads as cool, novel, or radical—so a partner has something real to compete with for your time (boredom mitigation). Passive consumption reads as low signal; visible skill, risk, build, or mission reads high.' },
+      performanceStatus: { label: 'Wealth / status / performance', desc: 'Wealth, finance, status, productivity, talent, popularity—see report bars for full shorthand.' },
+      physicalGenetic: { label: 'Looks / physical / aesthetic', desc: 'Face, body, genetic and aesthetic presentation, symmetry, skin/hair/teeth, voice and presence, height, grooming, vitality; one optional market-friction item.' },
+      humour: { label: 'Humour / mind / companionship', desc: 'Wit, intelligence signal, and enjoyable companionship—not only jokes.' }
     },
     questions: MALE_AXIS_QUESTIONS
   }

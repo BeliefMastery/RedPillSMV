@@ -6187,6 +6187,22 @@ img[data-src].loaded {
     margin: 0.75rem 0;
     line-height: 1.6;
 }
+.polarity-strongly-aligned-alert {
+    margin-top: 1.5rem;
+    padding: 1.5rem 2rem;
+    border-left: 4px solid var(--success);
+    background: rgba(74, 222, 128, 0.12);
+    border-radius: var(--radius);
+}
+.polarity-strongly-aligned-alert-title {
+    margin-top: 0;
+    color: var(--success);
+    font-size: 1.2rem;
+}
+.polarity-strongly-aligned-alert p {
+    margin: 0.75rem 0;
+    line-height: 1.6;
+}
 .polarity-failure-ref {
     font-size: 0.95rem;
     color: var(--muted);
@@ -6207,11 +6223,32 @@ img[data-src].loaded {
     gap: 0.5rem;
     flex-wrap: wrap;
 }
+.dimension-item.dimension-polarity-strongly-aligned {
+    border: 2px solid var(--success);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    background: rgba(74, 222, 128, 0.09);
+}
+.dimension-item.dimension-polarity-strongly-aligned h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
 .polarity-notable-badge {
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.2rem 0.5rem;
     background: var(--accent);
+    color: #fff;
+    border-radius: 4px;
+}
+.polarity-strongly-aligned-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    background: var(--success);
     color: #fff;
     border-radius: 4px;
 }

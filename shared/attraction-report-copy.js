@@ -12,7 +12,7 @@ export function getClusterSummary(clusterId, male) {
       ? 'Reproductive Confidence is the long-term commitment signal you project: provision, stability, and willingness to invest. It drives how seriously you are taken as a potential partner. The bars below break down the factors (provider, parental investor, etc.) that contribute.'
       : 'Reproductive Confidence is the commitment and nesting signal you project: how seriously you are taken as a long-term option. The bars below break down the factors (nurturing, paternity certainty, collaborative trust, etc.) that contribute.',
     axisOfAttraction: male
-      ? 'Axis of Attraction captures initiation and access: physical presence plus game-execution signals that shape first pull and progression (social calibration, frame/boundary stability, escalation judgment, and logistics follow-through). Rad Activity remains a modifier, not a core pillar.'
+      ? 'Attraction Opportunity (male axis) blends wealth/finance/status/performance/productivity/talent/popularity; looks/physical/genetic/aesthetic; and humour/intelligence/companionship—plus game-execution signals that shape first pull and progression. Radical Activity stays a modifier: cool or novel life outside the relationship so a mate competes for your time and boredom is less likely—not a fourth core bar.'
       : 'Axis of Attraction captures initiation and access: how you are perceived on the dimensions that drive first pull and progression. In practice this includes game-execution quality (social calibration, pacing/escalation judgment, and low-friction logistics), integrated through existing subdimensions.'
   };
   return summaries[clusterId] || '';
