@@ -34,6 +34,46 @@ function summarizeArchetypeTraits(archetype) {
   return traits.map(capitalizeTrait).filter(Boolean).join(', ');
 }
 
+function relationshipGoalLabel(goal) {
+  const g = String(goal || '').trim().toLowerCase();
+  if (g === 'casual') return 'casual / short-term';
+  if (g === 'ltr') return 'long-term';
+  if (g === 'marriage') return 'marriage';
+  if (g === 'family') return 'marriage + children';
+  return '';
+}
+
+function hasFamilyIntent(goal) {
+  const g = String(goal || '').trim().toLowerCase();
+  return g === 'family' || g === 'marriage';
+}
+
+function buildAccessPrinciple({ goal, gender, hasDelusionFlag }) {
+  const intimacy =
+    'SMV here means practical access to desired intimacy outcomes: who engages, who stays, and how much leverage you have in selecting instead of only reacting.';
+  if (hasFamilyIntent(goal)) {
+    return `${intimacy} In this context it also speaks to access to stable long-term pairing and, where desired, a viable reproduction path.`;
+  }
+  if (hasDelusionFlag) {
+    return `${intimacy} A wide standards-to-signal gap usually limits access first, then confidence and selection quality.`;
+  }
+  if (gender === 'male' || gender === 'female') {
+    return `${intimacy} Improvement is optional, but without access there is little room to choose outcomes intentionally.`;
+  }
+  return intimacy;
+}
+
+function buildGameExecutionLine(gender) {
+  const base = 'Game execution here means social calibration + frame stability + escalation judgment + logistics follow-through.';
+  if (gender === 'male') {
+    return `${base} In this model it is integrated within existing Axis signals (especially performance/status and humour), not scored as a separate pillar.`;
+  }
+  if (gender === 'female') {
+    return `${base} In this model it is integrated within existing Axis signals (especially personality and risk-cost dynamics), not scored as a separate pillar.`;
+  }
+  return `${base} It is integrated within existing Axis signals, not scored as a separate pillar.`;
+}
+
 /** Explicit temperament headline: category + biological sex context (unplugged polarity framing). */
 export function temperamentTitleExplicit(category, reportedGender, labelFallback = '') {
   const respondent =
@@ -119,6 +159,7 @@ export function buildArchetypeLayer(ad) {
   }
 
   const orientation = [];
+  orientation.push('Significance: this archetype profile shows your default social strategy and where it helps or limits access to the outcomes you want.');
   if (optimizationCopy?.optimizationStrategy) {
     let line = `Within-archetype strategy: ${ensurePeriod(optimizationCopy.optimizationStrategy)}`;
     if (traitsSummary) line += ` Leverage your strengths: ${traitsSummary}.`;
@@ -130,6 +171,7 @@ export function buildArchetypeLayer(ad) {
   } else if (traitsSummary) {
     orientation.push(`Leverage your strengths: ${traitsSummary}.`);
   }
+  orientation.push('Action: treat this as a calibration map, not identity destiny; use one concrete behavioral change cycle and re-test later.');
 
   const subtitle = p.socialRole ? String(p.socialRole).trim() : '';
 
@@ -186,6 +228,7 @@ export function buildPolarityLayer(ad) {
   if (TEMPERAMENT_REPORT_TIER2_PARAS[2]) {
     orientation.push(TEMPERAMENT_REPORT_TIER2_PARAS[2]);
   }
+  orientation.push('Use this map to read where polarity supports or blocks intimacy, then calibrate habits and partner-fit choices accordingly.');
 
   const reportedGender = ad.gender;
   const title = temperamentTitleExplicit(cat, reportedGender, interp.label);
@@ -227,7 +270,14 @@ export function buildAttractionLayer(snap) {
 
   const qualitiesBullets = [];
   const overall = typeof smv.overall === 'number' ? smv.overall : 0;
-  qualitiesBullets.push(getSMVInterpretation(overall));
+  const goal = snap?.preferences?.relationship_goal;
+  const accessLine = buildAccessPrinciple({
+    goal,
+    gender,
+    hasDelusionFlag: Boolean(smv?.delusionBand && smv.delusionBand !== 'low')
+  });
+  const gameLine = buildGameExecutionLine(gender);
+  const interpretation = getSMVInterpretation(overall);
 
   let smvPrimaryRead = '';
   let subtitle = '';
@@ -286,17 +336,31 @@ export function buildAttractionLayer(snap) {
     orientation.push(`Aspirational: ${String(smv.targetMarket.aspirational).trim()}`);
   }
 
+  // Explicit meaning -> why -> what to do framing.
+  const meaningLine = smvPrimaryRead
+    ? `Meaning: your current SMV read is ${smvPrimaryRead}. ${interpretation}`
+    : `Meaning: ${interpretation}`;
+  const whyLine = hasFamilyIntent(goal)
+    ? 'Why this matters: better positioning improves access to both desired intimacy and stable long-term pairing where family/reproduction is part of your intent.'
+    : 'Why this matters: better positioning improves access to desired intimacy and increases your room to select, not just accept.';
+  const actionLine = rec.strategic
+    ? `What to do next: ${String(rec.strategic).trim()}`
+    : 'What to do next: focus on the first weak area with one consistent habit upgrade at a time.';
+
+  const clarityIntro = [accessLine, gameLine, meaningLine, whyLine, actionLine].join(' ');
+
   const pathNote =
     gender === 'male' ? 'Male SMV path' : gender === 'female' ? 'Female SMV path' : '';
+  const goalNote = relationshipGoalLabel(goal);
   const title = smvPrimaryRead
     ? `Sexual Market Value — ${smvPrimaryRead}`
     : 'Sexual Market Value';
-  const subtitleFinal = [subtitle, pathNote].filter(Boolean).join(' · ') || undefined;
+  const subtitleFinal = [subtitle, pathNote, goalNote ? `Goal: ${goalNote}` : ''].filter(Boolean).join(' · ') || undefined;
 
   return {
     title,
     subtitle: subtitleFinal,
-    qualities: { intro: undefined, bullets: qualitiesBullets },
+    qualities: { intro: clarityIntro, bullets: qualitiesBullets },
     narrative: undefined,
     concerns: { bullets: concerns },
     orientation: { bullets: orientation },
@@ -344,7 +408,7 @@ export function buildCrossIntegrationBullets(archetypeLayer, polarityLayer, attr
   if (m) out.push(m);
   if (out.length === 0) {
     out.push(
-      'Red-pill archetype, temperament / polarity, and sexual market value are separate lenses — tension between them is normal, not a bug.'
+      'Red-pill archetype, temperament / polarity, and sexual market value are separate lenses — tension between them is normal, and each lens affects access in different ways.'
     );
   }
   if (out.length < 3) {

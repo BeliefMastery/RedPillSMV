@@ -93,7 +93,7 @@ function renderHero(archetypeSnap, polaritySnap, attractionSnap) {
       ? ` (${h.assessmentGender === 'male' ? 'male' : 'female'} SMV assessment path).`
       : '';
   const p1 = `Unplugged <strong>integrated map</strong>${path} — three red-pill lenses: <strong>${esc(h.primaryName)}</strong> as your <strong>red-pill archetype</strong> lead; <strong>${esc(h.polarityExplicit)}</strong>; and <strong>Sexual Market Value — ${esc(h.smvHeadline)}</strong>.${band} Use these to inform choices and calibration, not to freeze identity.`;
-  const p2 = 'Each card mirrors the language of the full tool reports (qualities, friction, orientation). Open the assessments for evidence, charts, and caveats.';
+  const p2 = 'Each card mirrors full-report language and answers three things explicitly: what this means, why it matters for access and outcomes, and what to do next.';
 
   return `<div class="integrated-map-hero"><p>${p1}</p><p>${p2}</p></div>`;
 }

@@ -12,8 +12,8 @@ export function getClusterSummary(clusterId, male) {
       ? 'Reproductive Confidence is the long-term commitment signal you project: provision, stability, and willingness to invest. It drives how seriously you are taken as a potential partner. The bars below break down the factors (provider, parental investor, etc.) that contribute.'
       : 'Reproductive Confidence is the commitment and nesting signal you project: how seriously you are taken as a long-term option. The bars below break down the factors (nurturing, paternity certainty, collaborative trust, etc.) that contribute.',
     axisOfAttraction: male
-      ? 'Axis of Attraction captures initiation and access: physical presence and the traits that drive initial pull. Rad Activity is treated as a modifier signal (shown separately), not a core bar. The bars below show where you stand on the core subdimensions that determine attraction opportunity.'
-      : 'Axis of Attraction captures initiation and access: how you are perceived on the dimensions that drive initial pull (fertility signals, risk cost, personality, etc.). The bars below show where you stand on each subdimension.'
+      ? 'Axis of Attraction captures initiation and access: physical presence plus game-execution signals that shape first pull and progression (social calibration, frame/boundary stability, escalation judgment, and logistics follow-through). Rad Activity remains a modifier, not a core pillar.'
+      : 'Axis of Attraction captures initiation and access: how you are perceived on the dimensions that drive first pull and progression. In practice this includes game-execution quality (social calibration, pacing/escalation judgment, and low-friction logistics), integrated through existing subdimensions.'
   };
   return summaries[clusterId] || '';
 }
@@ -72,10 +72,10 @@ export function getQualificationExplanation(label, type) {
 }
 
 export function getSMVInterpretation(smv) {
-  if (smv >= 80) return 'You are in the top quintile. Significant options and leverage.';
-  if (smv >= 60) return 'Above average. With optimization, you can access high-quality partners.';
-  if (smv >= 40) return 'Average range. Focused improvement will expand options.';
-  return 'Below average. Significant development needed.';
+  if (smv >= 80) return 'You currently read as high-access: strong optionality, stronger selectivity leverage, and easier entry into desired intimacy lanes.';
+  if (smv >= 60) return 'You currently read as above-average access: with focused optimization you can widen quality and consistency of intimacy outcomes.';
+  if (smv >= 40) return 'You currently read as mid-access: outcomes are mixed, and targeted improvement increases who you can access and retain.';
+  return 'You currently read as constrained access: improvement is mostly about opening practical access to intimacy and stronger partner selection outcomes.';
 }
 
 export function getDelusionWarning(band) {

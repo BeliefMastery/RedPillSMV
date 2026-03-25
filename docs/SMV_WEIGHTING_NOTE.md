@@ -146,6 +146,17 @@ Re-run the script after changing questions, weights, or `scoreToPercentile`.
 - **Female axis** splits **fertility** and **riskCost** at **30% / 30%**.
 - **Overall** female SMV tilts **more** toward the axis than male overall does.
 
+## Weighting + shorthand guardrails (must preserve model integrity)
+
+- Do not add new top-level clusters for future factors (including "game"). Integrate within existing shorthand buckets:
+  - Male: 3C's, 4P's, Axis (Performance/Status, Physical/Genetic, Humour), with Rad Activity as modifier.
+  - Female: 3S's, Reproductive Confidence (Paternity Certainty, Nurturing Standard, Collaborative Trust), Axis (Fertility & Health, Risk Cost, Personality, Factors Hidden).
+- Any new factor must map to an existing scored construct before wording is updated in reports. If no clean mapping exists, treat it as narrative-only until scoring design is approved.
+- "Game" is currently interpretation-level language describing execution quality (social calibration, frame stability, escalation judgment, logistics follow-through) and is not a separately weighted pillar.
+- Keep shorthand stability: do not rename core shorthand families or move constructs across families without an explicit versioned model-change decision.
+- Weight-change guardrail: if a proposed factor shifts effective overall share by more than approximately 2 percentage points for any existing shorthand family, require a sensitivity run and written rationale.
+- Always rerun `scripts/smv-sensitivity-check.mjs` after question/weight changes and document before/after deltas in this file.
+
 **If product intent shifts toward “looks-first” male SMV:**
 
 - Raise `physicalGenetic` toward **0.30–0.35** in `AXIS_SUBCATEGORY_WEIGHTS.male` and reduce `performanceStatus` and/or `radActivity` proportionally (keep sum = 1).
