@@ -30,32 +30,64 @@ function readLocalStorage(key) {
   }
 }
 
-/** @returns {{ archetype: boolean, attraction: boolean, polarity: boolean, allThree: boolean }} */
+export function normalizeGender(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (v === 'male' || v === 'man') return 'male';
+  if (v === 'female' || v === 'woman') return 'female';
+  return null;
+}
+
+/** @returns {{
+ * archetype: boolean,
+ * attraction: boolean,
+ * polarity: boolean,
+ * allThree: boolean,
+ * genders: { archetype: 'male'|'female'|null, attraction: 'male'|'female'|null, polarity: 'male'|'female'|null },
+ * sameRespondentGender: boolean,
+ * mismatch: boolean
+ * }} */
 export function getSuiteCompletion() {
   const archRaw = readLocalStorage('archetype-assessment:progress');
   const archData = parseDataStoreProgress(archRaw);
   const archetype = Boolean(archData?.analysisData?.primaryArchetype);
+  const archetypeGender = normalizeGender(archData?.gender || archData?.analysisData?.gender);
 
   let attraction = false;
+  let attractionGender = null;
   try {
     const attRaw = readLocalStorage(ATTRACTION_RESULTS_KEY);
     if (attRaw) {
       const d = JSON.parse(attRaw);
       attraction = Boolean(d?.smv && d?.currentGender);
+      attractionGender = normalizeGender(d?.currentGender);
     }
   } catch {
     attraction = false;
+    attractionGender = null;
   }
 
   const tempRaw = readLocalStorage('temperament-assessment:progress');
   const tempData = parseDataStoreProgress(tempRaw);
   const polarity = Boolean(tempData?.analysisData?.overallTemperament);
+  const polarityGender = normalizeGender(tempData?.analysisData?.gender);
+
+  const allThree = archetype && attraction && polarity;
+  const completeGenders = [archetypeGender, attractionGender, polarityGender].filter(Boolean);
+  const sameRespondentGender = allThree && completeGenders.length === 3 && new Set(completeGenders).size === 1;
+  const mismatch = allThree && !sameRespondentGender;
 
   return {
     archetype,
     attraction,
     polarity,
-    allThree: archetype && attraction && polarity
+    allThree,
+    genders: {
+      archetype: archetypeGender,
+      attraction: attractionGender,
+      polarity: polarityGender
+    },
+    sameRespondentGender,
+    mismatch
   };
 }
 
@@ -76,7 +108,8 @@ export function getSuiteSnapshots() {
     if (archData?.analysisData) {
       out.archetype = {
         analysisData: archData.analysisData,
-        gender: archData.gender || archData.analysisData?.gender
+        gender: archData.gender || archData.analysisData?.gender,
+        normalizedGender: c.genders.archetype
       };
     }
   }
@@ -87,6 +120,7 @@ export function getSuiteSnapshots() {
       out.attraction = {
         smv: d.smv,
         currentGender: d.currentGender,
+        normalizedGender: c.genders.attraction,
         preferences: d.preferences || {},
         savedAt: d.savedAt
       };
@@ -98,7 +132,10 @@ export function getSuiteSnapshots() {
   if (c.polarity) {
     const tempData = parseDataStoreProgress(readLocalStorage('temperament-assessment:progress'));
     if (tempData?.analysisData) {
-      out.polarity = { analysisData: tempData.analysisData };
+      out.polarity = {
+        analysisData: tempData.analysisData,
+        normalizedGender: c.genders.polarity
+      };
     }
   }
 

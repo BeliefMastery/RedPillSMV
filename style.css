@@ -1906,6 +1906,38 @@ h3[style*="text-align:center"][style*="border-bottom"] {
     font-size: 0.85rem;
     color: var(--muted);
 }
+.suite-gender-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    margin-left: 0.2rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.suite-gender-male {
+    color: #6ec1ff;
+    border: 1px solid rgba(110, 193, 255, 0.45);
+    background: rgba(110, 193, 255, 0.12);
+}
+.suite-gender-female {
+    color: #ff89d4;
+    border: 1px solid rgba(255, 137, 212, 0.45);
+    background: rgba(255, 137, 212, 0.12);
+}
+.suite-mismatch-note {
+    margin: 0.9rem 0 0;
+    padding: 0.65rem 0.75rem;
+    border-left: 3px solid #d32f2f;
+    border-radius: var(--radius, 8px);
+    background: rgba(211, 47, 47, 0.12);
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
 .suite-integrated-cta {
     margin-top: 1.25rem;
     padding: 1rem;

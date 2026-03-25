@@ -20,23 +20,35 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
-function gateListItem(href, label, done) {
+function genderBadge(gender) {
+  if (!gender) return '';
+  const symbol = gender === 'male' ? '♂' : '♀';
+  const cls = gender === 'male' ? 'suite-gender-badge suite-gender-male' : 'suite-gender-badge suite-gender-female';
+  const text = gender === 'male' ? 'male respondent' : 'female respondent';
+  return `<span class="${cls}" aria-label="${text}">${symbol}</span>`;
+}
+
+function gateListItem(href, label, done, gender) {
   const status = done ? 'Complete' : 'Not started';
   const icon = done ? '✓' : '○';
   const cls = done ? 'suite-progress-item suite-progress-item--complete' : 'suite-progress-item';
-  return `<li class="${cls}" role="listitem"><span class="suite-progress-icon" aria-hidden="true">${icon}</span><a class="suite-progress-link" href="${href}">${esc(label)}</a><span class="suite-progress-status"> — ${status}</span></li>`;
+  return `<li class="${cls}" role="listitem"><span class="suite-progress-icon" aria-hidden="true">${icon}</span><a class="suite-progress-link" href="${href}">${esc(label)}</a><span class="suite-progress-status"> — ${status}</span>${done ? genderBadge(gender) : ''}</li>`;
 }
 
 function renderGate(c) {
+  const mismatchNote = c.mismatch
+    ? `<p class="suite-mismatch-note" style="margin-top:0.75rem;">Gender mismatch across completed assessments. Integrated map requires all three completions to be from the same respondent gender.</p>`
+    : '';
   return `
     <div class="integrated-map-gate">
       <h1 class="section-title-btn" style="margin-bottom:0.75rem;">Integrated map</h1>
-      <p style="color:var(--muted);max-width:26rem;margin:0 auto;line-height:1.55;">Complete all three self-assessments on this device to unlock a combined read. Progress is stored locally only.</p>
+      <p style="color:var(--muted);max-width:26rem;margin:0 auto;line-height:1.55;">Complete Archetype, Attraction, and Polarity on this device with the same respondent gender to unlock a combined read.</p>
       <ul class="suite-progress-list" role="list" aria-label="Completion status">
-        ${gateListItem('archetype.html', 'Archetype', c.archetype)}
-        ${gateListItem('attraction.html', 'Attraction', c.attraction)}
-        ${gateListItem('temperament.html', 'Polarity', c.polarity)}
+        ${gateListItem('archetype.html', 'Archetype', c.archetype, c.genders?.archetype)}
+        ${gateListItem('attraction.html', 'Attraction', c.attraction, c.genders?.attraction)}
+        ${gateListItem('temperament.html', 'Polarity', c.polarity, c.genders?.polarity)}
       </ul>
+      ${mismatchNote}
       <p style="margin-top:1.25rem;"><a href="index.html">Back to home</a></p>
     </div>`;
 }
@@ -127,7 +139,7 @@ function mount() {
   if (!root) return;
 
   const c = getSuiteCompletion();
-  if (!c.allThree) {
+  if (!c.allThree || !c.sameRespondentGender) {
     root.innerHTML = renderGate(c);
     return;
   }
