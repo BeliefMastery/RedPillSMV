@@ -9,7 +9,7 @@ import {
   buildAttractionLayer,
   buildCurrentPatternSummary,
   buildNextMoveCandidates,
-  buildCrossIntegrationBullets
+  buildPatternConvergenceParagraph
 } from './shared/integrated-map-excerpts.js';
 
 function esc(s) {
@@ -118,13 +118,11 @@ function renderContent(snapshots) {
       ${renderLayer(attL)}
     </div>`;
 
-  const crossItems = buildCrossIntegrationBullets(archL, polL, attL)
-    .map((x) => `<li>${esc(x)}</li>`)
-    .join('');
+  const convergence = buildPatternConvergenceParagraph(archL, polL, attL);
   const cross = `
     <section class="integrated-map-cross" aria-labelledby="integrated-cross-heading">
-      <h2 id="integrated-cross-heading">How these layers meet</h2>
-      <ul>${crossItems}</ul>
+      <h2 id="integrated-cross-heading">Pattern Convergence</h2>
+      <p class="integrated-map-cross-paragraph">${esc(convergence)}</p>
     </section>`;
 
   return `

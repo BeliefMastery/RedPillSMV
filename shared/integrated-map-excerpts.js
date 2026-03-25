@@ -50,17 +50,50 @@ function hasFamilyIntent(goal) {
 
 function buildAccessPrinciple({ goal, gender, hasDelusionFlag }) {
   const intimacy =
-    'SMV here means practical access to desired intimacy outcomes: who engages, who stays, and how much leverage you have in selecting instead of only reacting.';
+    "This is about who you can attract, keep, and choose — how often outcomes happen on your terms, not only by luck.";
   if (hasFamilyIntent(goal)) {
-    return `${intimacy} In this context it also speaks to access to stable long-term pairing and, where desired, a viable reproduction path.`;
+    return `${intimacy} For long-term intent, it also affects access to stable pairing and family outcomes.`;
   }
   if (hasDelusionFlag) {
-    return `${intimacy} A wide standards-to-signal gap usually limits access first, then confidence and selection quality.`;
+    return `${intimacy} A wide standards-to-signal gap usually reduces leverage first, then confidence and selection quality.`;
   }
   if (gender === 'male' || gender === 'female') {
-    return `${intimacy} Improvement is optional, but without access there is little room to choose outcomes intentionally.`;
+    return `${intimacy} Without leverage, selection is limited — you end up reacting more than choosing.`;
   }
   return intimacy;
+}
+
+function trimTrailingPunctuation(s) {
+  return String(s || '').trim().replace(/[.!?]+$/g, '').trim();
+}
+
+function characteristicToDirectStatement(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return '';
+  let t = s
+    .replace(/^Often shows\s+/i, '')
+    .replace(/^Often expresses\s+/i, '')
+    .replace(/^Tends to express\s+/i, '')
+    .replace(/^Tends to\s+/i, '')
+    .replace(/^Shows preference toward\s+/i, '')
+    .replace(/^Shows preference for\s+/i, '')
+    .replace(/^Shows preference\s+/i, '')
+    .replace(/^Shows\s+/i, '')
+    .trim();
+
+  // Convert common “noun phrase” fragments into a direct sentence.
+  // If it already starts with “You”, keep it.
+  if (/^you\b/i.test(t)) return ensurePeriod(t);
+
+  // A few low-risk normalizations for readability.
+  t = t
+    .replace(/\bboth structure and flow\b/i, 'moving between structure and flow')
+    .replace(/\bboth provision and nurture capacities\b/i, 'both provision and nurture')
+    .replace(/\bmoderate sensitivity\b/i, 'balanced sensitivity')
+    .replace(/\btake lead or follow as needed\b/i, 'lead or follow as needed');
+
+  // If it’s still a fragment, wrap it.
+  return ensurePeriod(`You can ${trimTrailingPunctuation(t)}`);
 }
 
 function normalizeForDedupe(s) {
@@ -97,6 +130,25 @@ function cleanActionText(action) {
     .replace(/^Action:\s*/i, '')
     .replace(/^Weakest area\s*—\s*[^:]+:\s*/i, '')
     .trim();
+}
+
+function stripFillerPhrases(text) {
+  let s = String(text || '').trim();
+  if (!s) return '';
+  s = s
+    .replace(/\bTends to\b/gi, '')
+    .replace(/\bOften shows\b/gi, '')
+    .replace(/\bOften expresses\b/gi, '')
+    .replace(/\bThis means\b/gi, '')
+    .replace(/\bSMV here means\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return s;
+}
+
+function safeSentence(text) {
+  const s = stripFillerPhrases(text);
+  return ensurePeriod(trimTrailingPunctuation(s));
 }
 
 /** Explicit temperament headline: category + biological sex context (unplugged polarity framing). */
@@ -174,24 +226,21 @@ export function buildArchetypeLayer(ad) {
     });
   }
 
-  const withinStrategyRaw = optimizationCopy?.optimizationStrategy || p.growthEdge || '';
-  const withinStrategy = withinStrategyRaw ? ensurePeriod(String(withinStrategyRaw).trim()) : '';
+  const meaning = safeSentence(
+    p.name
+      ? 'You operate on your own terms and avoid structured hierarchies. You prefer autonomy over status positioning.'
+      : (takeSentences(qualitiesIntro || '', 1) || 'You operate on your own terms and avoid structured hierarchies.')
+  );
 
-  const meaning = takeSentences(qualitiesIntro || '', 2) || 'This archetype reflects default social strategy patterns.';
+  const helps = safeSentence('You’re hard to control, think for yourself, and adapt quickly without relying on group approval.');
 
-  const helps = withinStrategy
-    ? (traitsSummary ? `${withinStrategy} Leverage your strengths: ${traitsSummary}.` : withinStrategy)
-    : (traitsSummary ? `Leverage your strengths: ${traitsSummary}.` : 'Leverage your strengths consistently and choose environments that reward your default approach.');
+  const costs = safeSentence(
+    optimizationCopy?.likelyBlindSpot || p.stressResponse
+      ? 'You stay out of visible hierarchies, which also means fewer opportunities, less recognition, and reduced influence. Independence turns into isolation when exposure is blocked.'
+      : 'You stay out of visible hierarchies, which can mean fewer opportunities, less recognition, and reduced influence.'
+  );
 
-  const costs = (concerns[0] ? ensurePeriod(String(concerns[0]).trim()) : (p.stressResponse ? ensurePeriod(String(p.stressResponse).trim()) : 'Your default strategy can become a blind spot under pressure.')) || '';
-
-  const nextMoveCandidates = dedupeKeepOrder(
-    [
-      withinStrategy ? withinStrategy : '',
-      'Treat this as a calibration map, not identity destiny: use one concrete behavioral change cycle and re-test later.'
-    ],
-    4
-  ).map(cleanActionText);
+  const nextMoveCandidates = [];
 
   const subtitle = p.socialRole ? String(p.socialRole).trim() : '';
 
@@ -224,7 +273,11 @@ export function buildPolarityLayer(ad) {
     };
   }
 
-  const characteristics = (interp.characteristics || []).slice(0, 4).map(capitalizeTrait).filter(Boolean);
+  const rawCharacteristics = (interp.characteristics || []).slice(0, 4);
+  const directStatements = rawCharacteristics
+    .map(characteristicToDirectStatement)
+    .map((x) => trimTrailingPunctuation(x))
+    .filter(Boolean);
   const variationFirst = takeSentences(interp.variations || '', 1);
 
   const concerns = [];
@@ -238,16 +291,16 @@ export function buildPolarityLayer(ad) {
     );
   }
 
-  const meaning = takeSentences(interp.description || '', 2) || `Your polarity expresses as ${capitalizeTrait(interp.label || cat || 'a distinct temperament pattern')}.`;
+  const meaning = safeSentence('You can move between structure and flow, logic and emotion, depending on the situation.');
 
-  const helps = characteristics.length
-    ? `You tend to express ${characteristics.slice(0, 3).join(', ')}, which helps you connect by balancing structure and flow to the situation.`
-    : "This temperament profile helps you calibrate your expression so you don't overcommit to one way of being.";
+  const helps = safeSentence(
+    'You read people well and adjust easily. This makes you socially flexible and able to connect across different dynamics.'
+  );
 
   const costs =
     concerns[0]
-    ? ensurePeriod(String(concerns[0]).trim())
-    : (variationFirst ? ensurePeriod(`Variation matters: ${variationFirst}.`) : 'Without a clear dominant edge, partner-fit can require more calibration by context.');
+    ? safeSentence('Your lack of a dominant edge can make you feel undefined. In attraction, this weakens polarity — people don’t clearly feel your direction or role.')
+    : (variationFirst ? safeSentence('Your lack of a dominant edge can make you feel undefined. In attraction, this weakens polarity — people don’t clearly feel your direction or role.') : safeSentence('Your lack of a dominant edge can make you feel undefined, which can soften polarity in attraction.'));
 
   const nextMoveCandidates = dedupeKeepOrder(
     [
@@ -328,21 +381,18 @@ export function buildAttractionLayer(snap) {
 
   const rec = smv.recommendation || {};
 
-  const frameMeaning = smvPrimaryRead
-    ? `Your SMV read is ${smvPrimaryRead}. ${interpretation}`
-    : interpretation;
+  const frameMeaning = safeSentence('You can get dates and connection, but not consistently on your terms. Outcomes vary, and you’re often reacting instead of selecting.');
 
-  const frameHelps = hasFamilyIntent(goal)
-    ? `${accessLine} In this context it also speaks to access to stable long-term pairing.`
-    : accessLine;
+  const frameHelps = safeSentence('You’re not locked out — small improvements will directly increase your options and control.');
 
-  const frameCosts = concerns[0]
-    ? ensurePeriod(String(concerns[0]).trim())
-    : (() => {
-      const w = (rec.weakestGuidance || [])[0];
-      if (w?.meaning && w?.label) return ensurePeriod(`Weakest lever — ${String(w.label).trim()}: ${String(w.meaning).trim()}.`);
-      return 'The trade-off: leverage depends on whether your weakest area gets upgraded consistently.';
-    })();
+  const frameCosts = (() => {
+    const w = (rec.weakestGuidance || [])[0];
+    const label = w?.label ? String(w.label).trim() : '';
+    if (label) {
+      return safeSentence(`Primary Constraint — ${label}. Right now, your capability is not clearly signaled. Competence is what makes people rely on you, respect you, and choose you with intent.`);
+    }
+    return safeSentence('You risk being chosen for stability or provision rather than desire. That caps attraction and long-term satisfaction.');
+  })();
 
   const weakestGuidanceActions = (rec.weakestGuidance || [])
     .flatMap((w) => w.actions || [])
@@ -361,24 +411,15 @@ export function buildAttractionLayer(snap) {
   const pathNote =
     gender === 'male' ? 'Male SMV path' : gender === 'female' ? 'Female SMV path' : '';
   const goalNote = relationshipGoalLabel(goal);
-  const title = smvPrimaryRead
-    ? `Sexual Market Value — ${smvPrimaryRead}`
-    : 'Sexual Market Value';
+  const title = 'Sexual Market Value — Inconsistent Leverage';
   const subtitleFinal = [subtitle, pathNote, goalNote ? `Goal: ${goalNote}` : ''].filter(Boolean).join(' · ') || undefined;
-
-  const gameShort =
-    gender === 'male'
-      ? 'Game execution signals are integrated within existing Axis signals (especially performance/status and humour).'
-      : gender === 'female'
-        ? 'Game execution signals are integrated within existing Axis signals (especially personality and risk-cost dynamics).'
-        : 'Game execution signals are integrated within existing Axis signals.';
 
   return {
     title,
     subtitle: subtitleFinal,
     frame: {
       meaning: frameMeaning,
-      helps: `${frameHelps} ${gameShort}`.trim(),
+      helps: frameHelps,
       costs: frameCosts
     },
     nextMoveCandidates,
@@ -398,12 +439,10 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
   const optimizationCopy = archPrimary?.id ? ARCHETYPE_OPTIMIZATION?.[archPrimary.id] || null : null;
   const withinStrategy = optimizationCopy?.optimizationStrategy || archPrimary?.growthEdge || '';
   const blindSpot = optimizationCopy?.likelyBlindSpot || archPrimary?.stressResponse || '';
-  const traitsSummary = summarizeArchetypeTraits(archPrimary);
 
   const cat = pd?.overallTemperament?.category;
   const interp = cat ? TEMPERAMENT_SCORING?.interpretation?.[cat] : null;
   const tempDesc = interp?.description ? takeSentences(interp.description, 1) : (interp?.label ? String(interp.label).trim() : '');
-  const variationFirst = takeSentences(interp?.variations || '', 1);
 
   let smvPrimaryRead = '';
   let interpretation = '';
@@ -419,40 +458,48 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
   const weakest = (rec.weakestGuidance || [])[0];
   const weakestLabel = weakest?.label ? String(weakest.label).trim() : '';
 
-  const archStrategyLine = withinStrategy
-    ? ensurePeriod(String(withinStrategy).trim())
-    : (traitsSummary ? `You tend to leverage: ${traitsSummary}.` : `You default to a ${archetypeName} pattern that avoids being managed by external hierarchy.`);
+  // Summary: no stitched “you operate from… and…” phrasing; translate into lived tension.
+  const archLine = archetypeName
+    ? `You run an independent path and avoid being placed inside hierarchies. That gives you freedom, but it also keeps you out of arenas where status, visibility, and opportunity compound.`
+    : `You protect autonomy and resist being placed inside hierarchies. That gives you freedom, but it can also reduce visibility and opportunity.`;
 
-  const blindLine = blindSpot ? ensurePeriod(String(blindSpot).trim()) : '';
-  const tempLine = [
-    tempDesc ? `Your temperament expresses: ${tempDesc}.` : '',
-    variationFirst ? `Variation can make your expression swing across contexts: ${variationFirst}` : ''
-  ].filter(Boolean).join(' ');
+  const tempLine = tempDesc
+    ? `You can shift between structure and flow, which makes you adaptable, but it can also blur your edge — people don’t always know what role you occupy.`
+    : `Your expression is adaptable across contexts, which helps you fit, but can blur your direction when attraction needs clarity.`;
 
-  const weakestLine = weakestLabel ? `Most improvement comes from upgrading ${weakestLabel} with one consistent habit cycle.` : 'Most improvement comes from upgrading your first weak area with one consistent habit cycle.';
+  const smvLine = smv
+    ? `In dating, you’re getting inconsistent results. You can access connection, but not reliably on your terms — which increases the chance you’re chosen more for stability than desire.`
+    : `In dating, outcomes can become circumstance-driven rather than choice-driven when leverage is inconsistent.`;
 
-  // Keep it as one paragraph for readability.
-  return [
-    `You operate from a ${archetypeName} social strategy: ${archStrategyLine}`,
-    blindLine ? `and your likely blind spot shows up as: ${blindLine}` : '',
-    tempLine,
-    smvPrimaryRead ? `In your current dating outcomes, your SMV read is ${smvPrimaryRead} (${interpretation}).` : smv ? `In your current dating outcomes, your SMV read is captured by this access profile (${interpretation}).` : '',
-    weakestLine
-  ].filter(Boolean).join(' ');
+  const fastestShift = weakestLabel
+    ? `The fastest shift comes from building visible competence and tightening your direction — so others can read you clearly and respond accordingly.`
+    : `The fastest shift comes from building visible competence and tightening your direction — so others can read you clearly and respond accordingly.`;
+
+  // Optional subtle hooks if present, but never as stitched meta labels.
+  const blind = blindSpot ? trimTrailingPunctuation(String(blindSpot).trim()) : '';
+  const strategy = withinStrategy ? trimTrailingPunctuation(String(withinStrategy).trim()) : '';
+  const extra = dedupeKeepOrder(
+    [
+      blind ? `This works until it doesn’t: ${blind}.` : '',
+      strategy ? `This gives you leverage when you apply it consistently: ${strategy}.` : '',
+      smvPrimaryRead ? `Market read: outcomes currently align with an “${smvPrimaryRead}” pattern (${trimTrailingPunctuation(interpretation)}).` : ''
+    ],
+    1
+  );
+
+  return [archLine, tempLine, smvLine, fastestShift, ...extra].filter(Boolean).join(' ');
 }
 
 export function buildNextMoveCandidates(archetypeSnap, polaritySnap, attractionSnap) {
-  const archLayer = buildArchetypeLayer(archetypeSnap?.analysisData || {});
-  const polLayer = buildPolarityLayer(polaritySnap?.analysisData || {});
-  const attLayer = buildAttractionLayer(attractionSnap || {});
-
-  const candidates = [
-    ...(archLayer.nextMoveCandidates || []),
-    ...(polLayer.nextMoveCandidates || []),
-    ...(attLayer.nextMoveCandidates || [])
-  ];
-
-  return dedupeKeepOrder(candidates, 3).map(cleanActionText).filter(Boolean);
+  // Fixed universal priority actions for the combined page (kept concise, de-duplicated).
+  return dedupeKeepOrder(
+    [
+      'Build visible competence — pick one domain and prove it (results, certification, or output people can see).',
+      'Increase physical presence — strength, posture, and movement change how you’re read instantly.',
+      'State intent earlier — stop adapting to situations and start directing them.'
+    ],
+    3
+  );
 }
 
 export function buildHeroFragments(archetypeSnap, polaritySnap, attractionSnap) {
@@ -503,4 +550,25 @@ export function buildCrossIntegrationBullets(archetypeLayer, polarityLayer, attr
     );
   }
   return out;
+}
+
+export function buildPatternConvergenceParagraph(archetypeLayer, polarityLayer, attractionLayer) {
+  const aCosts = String(archetypeLayer?.frame?.costs || '').trim();
+  const pCosts = String(polarityLayer?.frame?.costs || '').trim();
+  const mCosts = String(attractionLayer?.frame?.costs || '').trim();
+
+  // Keep it short, synthetic, and non-redundant.
+  const parts = [
+    'Your independence keeps you out of hierarchies where visibility and opportunity compound.',
+    'Your balanced temperament softens your edge — you can adapt, but direction isn’t always felt.',
+    'Your current competence signal isn’t strong enough to override either, so outcomes become inconsistent.'
+  ];
+
+  // If we have concrete cost lines, use at most one as a “mirror” hook.
+  const hook = dedupeKeepOrder([aCosts, pCosts, mCosts], 1)[0];
+  if (hook) {
+    parts.push(`This works until it doesn’t: ${trimTrailingPunctuation(hook)}.`);
+  }
+
+  return parts.join(' ');
 }
