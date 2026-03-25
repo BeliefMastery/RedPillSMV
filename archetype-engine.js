@@ -8,6 +8,7 @@ import { ErrorHandler, DataStore, DOMUtils, SecurityUtils } from './shared/utils
 import { downloadFile, generateReadableReport } from './shared/export-utils.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
+import { ensurePeriod, softenNarrativeTone, summarizeBehavioralAccent } from './shared/archetype-narrative-utils.js';
 
 // Data modules - will be loaded lazily
 let ARCHETYPES, CORE_GROUPS, ARCHETYPE_OPTIMIZATION;
@@ -2280,39 +2281,9 @@ showGenderSelection() {
       : this.gender === 'male'
         ? 'Man'
         : 'Not specified';
-    const ensurePeriod = (text) => {
-      if (!text) return '';
-      const trimmed = String(text).trim();
-      if (!trimmed) return '';
-      return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
-    };
     const getBaseBrutalNarrative = (archetype) => {
       if (!archetype) return '';
       return String(BRUTAL_TRUTHS?.[archetype.id]?.narrative || archetype.archetypalNarrative || '').trim();
-    };
-    const softenNarrativeTone = (text) => {
-      if (!text) return '';
-      return String(text)
-        .replace(/\byou are\b/gi, 'you can be')
-        .replace(/\byou will\b/gi, 'you may')
-        .replace(/\byou do not\b/gi, 'you may not')
-        .replace(/\byou don't\b/gi, 'you may not')
-        .replace(/\byou never\b/gi, 'you can rarely')
-        .replace(/\balways\b/gi, 'often')
-        .replace(/\bnever\b/gi, 'rarely')
-        .replace(/\bthe truth:\s*/gi, '');
-    };
-    const summarizeBehavioralAccent = (text, maxSentences = 2) => {
-      if (!text) return '';
-      const clean = String(text).trim();
-      if (!clean) return '';
-      const sentences = clean.match(/[^.!?]+[.!?]*/g) || [];
-      const selected = (sentences.length ? sentences : [clean])
-        .map((part) => part.trim())
-        .filter(Boolean)
-        .slice(0, maxSentences)
-        .join(' ');
-      return ensurePeriod(selected);
     };
     const getRoleAwareBrutalNarrative = (archetype, role) => {
       const baseNarrative = getBaseBrutalNarrative(archetype);
@@ -2497,9 +2468,6 @@ showGenderSelection() {
       <p style="margin-top: 2rem; font-size: 0.9rem; color: var(--muted);">
         <a href="archetype-spread.html" style="color: var(--brand); text-decoration: underline;">View full archetype table</a> — cross-paradigm equivalents and population proportions.
       </p>
-      <div class="panel-brand-left" style="background: var(--glass); border-radius: var(--radius); padding: 1.25rem; margin-top: 1.5rem; border-left: 4px solid var(--accent);">
-        <p style="margin: 0;"><strong style="color: var(--accent);">Explore further:</strong> Archetype, temperament, attraction, and relationship form one map — each layer informs the others. <a href="temperament.html">Polarity Position Mapping</a> shows how your archetype expresses as masculine–feminine energy; <a href="relationship.html">Relationships</a> pinpoints where archetypal fit creates strain; <a href="attraction.html">Attraction &amp; Status</a> maps how your patterns translate to mating-market position.</p>
-      </div>
     `;
 
     resultsHTML += `</div>`;

@@ -30,6 +30,12 @@ import {
   computeSmvClustersAndSubs,
   computeOverallSmv
 } from './shared/attraction-smv-core.mjs';
+import {
+  getClusterSummary as attractionClusterSummary,
+  getQualificationExplanation as attractionQualificationExplanation,
+  getSMVInterpretation as attractionSmvInterpretation,
+  getDelusionWarning as attractionDelusionWarning
+} from './shared/attraction-report-copy.js';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 
@@ -79,9 +85,10 @@ export class AttractionEngine {
     }
   }
 
-  saveResults() {
+  /** Persist completed assessment to localStorage (must not share name with export `saveResults` below). */
+  persistResultsToStorage() {
     try {
-      if (this.smv && this.currentGender) {
+      if (this.smv && Object.keys(this.smv).length > 0 && this.currentGender) {
         localStorage.setItem(ATTRACTION_RESULTS_KEY, JSON.stringify({
           smv: this.smv,
           responses: this.responses,
@@ -91,7 +98,7 @@ export class AttractionEngine {
         }));
       }
     } catch (e) {
-      this.debugReporter.logError(e, 'saveResults');
+      this.debugReporter.logError(e, 'persistResultsToStorage');
     }
   }
 
@@ -406,7 +413,7 @@ export class AttractionEngine {
 
   calculateAndShowResults() {
     this.smv = this.calculateSMV();
-    this.saveResults();
+    this.persistResultsToStorage();
     this.setReportHeaderState(true);
     this.ui.transition('results');
     this.renderResults();
@@ -786,81 +793,20 @@ export class AttractionEngine {
     return map[id] || this.formatClusterName(id);
   }
 
-  /** Short description of what each cluster measures (used above the subcategory bars for context). */
   getClusterSummary(clusterId) {
-    const male = this.currentGender === 'male';
-    const summaries = {
-      coalitionRank: male
-        ? 'Coalition Rank reflects where you sit in the male–male hierarchy: status, resources, and social proof as perceived by the market. The bars below show how you score on the subcomponents (e.g. status, competence, influence) that feed into this rank.'
-        : 'Coalition Rank reflects where you sit in the female–female hierarchy: status, social proof, and how you are perceived by peers. The bars below show the subcomponents (e.g. selectivity, nurturing, collaboration) that feed into this rank.',
-      reproductiveConfidence: male
-        ? 'Reproductive Confidence is the long-term commitment signal you project: provision, stability, and willingness to invest. It drives how seriously you are taken as a potential partner. The bars below break down the factors (provider, parental investor, etc.) that contribute.'
-        : 'Reproductive Confidence is the commitment and nesting signal you project: how seriously you are taken as a long-term option. The bars below break down the factors (nurturing, paternity certainty, collaborative trust, etc.) that contribute.',
-      axisOfAttraction: male
-        ? 'Axis of Attraction captures initiation and access: physical presence and the traits that drive initial pull. Rad Activity is treated as a modifier signal (shown separately), not a core bar. The bars below show where you stand on the core subdimensions that determine attraction opportunity.'
-        : 'Axis of Attraction captures initiation and access: how you are perceived on the dimensions that drive initial pull (fertility signals, risk cost, personality, etc.). The bars below show where you stand on each subdimension.'
-    };
-    return summaries[clusterId] || '';
+    return attractionClusterSummary(clusterId, this.currentGender === 'male');
   }
 
-  /** Brief explanations for qualifications — respondent may not know the terms */
   getQualificationExplanation(label, type) {
-    const keeperSweeper = {
-      'Keepers': 'Men you attract are likely to invest in you for the long term: they\'d commit to and prioritise you.',
-      'Sleepers': 'The middle zone — men are open to you but not fully committed; they\'d consider you but may not prioritise you.',
-      'Sweepers': 'Men you attract are likely to treat you with less investment: they\'ll engage casually or de-prioritise you relative to women they see as higher value.'
-    };
-    const badBoyGoodGuy = {
-      'Prince Charming (Ideal Long Term)': 'Women are likely to see you as ideal long-term: high on both manner/provision and attraction.',
-      'Husband zone': 'Women see you as strong long-term material: high manner/provision and solid attraction.',
-      'Friend zone': 'Women tend to value you for your provision and reliability but don\'t feel the attraction; they keep you around without romantic intent.',
-      'Good Situationship': 'Upper-mid on manner/provision, high attraction; the relationship is ambiguous but has good foundations and could move toward commitment.',
-      'Situationship': 'Moderate manner/provision, high attraction; women are drawn to you but don\'t see clear commitment; they engage without fully investing long-term.',
-      'Bad Situationship': 'Lower-mid on manner/provision, high attraction; women engage but see weak foundations; the relationship is ambiguous and unlikely to deepen.',
-      'Good Settling': 'Upper-mid on both axes; women accept you as "good enough" — the match is workable but not exciting.',
-      'Settling': 'Moderate on both axes; women may accept but not be excited; you\'re often read as "good enough" rather than a strong match.',
-      'Bad Settling': 'Lower-mid on manner/provision, moderate attraction; women may be with you primarily for what you provide — they\'re settling for provision rather than desire.',
-      'Comfortable Compromise': 'Upper-mid provision, low attraction; women may be with you for what you provide; the compromise feels acceptable.',
-      'Resource Compromise': 'Moderate provision, low attraction; women may be with you primarily for what you provide.',
-      'Last Resort': 'Lower-mid provision, low attraction; women are barely engaged; the relationship is fragile.',
-      'Bad Boy Fun Time (Short Term)': 'Women are attracted short-term but don\'t see you as long-term material; high attraction, low manner/provision signal.',
-      '... Mistake': 'Women may engage for fun but typically don\'t see it lasting; low provision, moderate attraction.',
-      'Invisible/Ghost or Creep': 'Women are most likely to categorise you as invisible or threatening; they tend to avoid or disengage.'
-    };
-    const developmentalLevels = {
-      'Integral/Holistic (High Integration)': 'You integrate multiple perspectives and act from a coherent worldview; mature decision-making.',
-      'Achievement-Oriented (Rational/Strategic)': 'You focus on goals, strategy, and rational choice; rule-conscious and achievement-driven.',
-      'Conformist (Rule-Following)': 'You follow social norms and authority; stability and belonging matter more than individual edge.',
-      'Egocentric (Reactive/Impulsive)': 'You react from immediate needs and impulses; short-term gratification over long-term planning.',
-      'Survival Mode (Basic Needs Focus)': 'Focus is on safety, security, and meeting basic needs; little bandwidth for higher-order strategy.'
-    };
-    if (type === 'keeperSweeper') return keeperSweeper[label] || '';
-    if (type === 'badBoyGoodGuy') return badBoyGoodGuy[label] || '';
-    if (type === 'developmentalLevel') return this.getDevelopmentalOpportunity(label);
-    return '';
+    return attractionQualificationExplanation(label, type);
   }
 
-  /** Reframe developmental level as opportunity to reorient one stage higher (not a fixed label). */
-  getDevelopmentalOpportunity(currentLabel) {
-    const order = [
-      'Survival Mode (Basic Needs Focus)',
-      'Egocentric (Reactive/Impulsive)',
-      'Conformist (Rule-Following)',
-      'Achievement-Oriented (Rational/Strategic)',
-      'Integral/Holistic (High Integration)'
-    ];
-    const nextDescriptions = {
-      'Survival Mode (Basic Needs Focus)': 'Egocentric — start to act from immediate wants and impulses while still securing basics.',
-      'Egocentric (Reactive/Impulsive)': 'Conformist — begin to follow norms and consider stability and belonging, not only short-term gain.',
-      'Conformist (Rule-Following)': 'Achievement-Oriented — shift toward goals, strategy, and rational choice; rule-conscious and achievement-driven.',
-      'Achievement-Oriented (Rational/Strategic)': 'Integral/Holistic — integrate multiple perspectives and act from a coherent worldview; mature decision-making.',
-      'Integral/Holistic (High Integration)': 'You\'re at the highest integration; continue to deepen and sustain this level.'
-    };
-    const idx = order.indexOf(currentLabel);
-    if (idx === -1) return '';
-    if (idx === order.length - 1) return nextDescriptions[currentLabel] || '';
-    const nextLabel = order[idx + 1];
-    return `Your responses suggest you're operating from ${currentLabel}. The opportunity is to adjust consciousness toward the next stage: ${nextDescriptions[currentLabel] || nextLabel}.`;
+  getSMVInterpretation(smv) {
+    return attractionSmvInterpretation(smv);
+  }
+
+  getDelusionWarning(band) {
+    return attractionDelusionWarning(band);
   }
 
   /** Plain-language Reproductive Confidence for men (percentile as likelihood of nesting/reproduction if desired). */
@@ -881,18 +827,6 @@ export class AttractionEngine {
     if (p <= 60) return { tier: 3, label: 'Functional Support', logic: 'You are a reliable node within the hierarchy but currently lack apex influence.' };
     if (p <= 80) return { tier: 4, label: 'Strong', logic: 'Strong position with clear leverage; refinement and selectivity matter more than raw gain.' };
     return { tier: 5, label: 'Apex', logic: 'Top-tier position; maintain and deploy with intention.' };
-  }
-
-  getSMVInterpretation(smv) {
-    if (smv >= 80) return `You are in the top quintile. Significant options and leverage.`;
-    if (smv >= 60) return `Above average. With optimization, you can access high-quality partners.`;
-    if (smv >= 40) return `Average range. Focused improvement will expand options.`;
-    return `Below average. Significant development needed.`;
-  }
-  getDelusionWarning(band) {
-    if (band === 'severe') return 'SEVERE MISMATCH: Expectations dramatically out of alignment with market value.';
-    if (band === 'high') return 'SIGNIFICANT MISMATCH: Standards exceed market position. Adjust or improve.';
-    return 'MODERATE MISMATCH: Some recalibration needed.';
   }
 
   /**
@@ -1025,9 +959,10 @@ export class AttractionEngine {
   }
 
   /**
-   * Save results: produces a readable HTML report document recording report details (primary export action).
+   * Save results: download readable HTML report. Also refresh localStorage snapshot if a report is loaded.
    */
   saveResults() {
+    this.persistResultsToStorage();
     const data = { ...this.smv, gender: this.currentGender };
     const html = generateReadableReport(data, 'attraction', 'Status Selection Attraction');
     downloadFile(html, `attraction-report-${this.currentGender}-${Date.now()}.html`, 'text/html');

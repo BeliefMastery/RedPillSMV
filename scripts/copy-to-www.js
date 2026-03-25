@@ -9,7 +9,7 @@ const WWW = path.join(ROOT, 'www');
 
 const INCLUDE = [
   'index.html', 'archetype.html', 'archetype-spread.html', 'attraction.html',
-  'temperament.html', 'relationship.html',
+  'temperament.html', 'relationship.html', 'integrated-map.html', 'integrated-map.js',
   'style.css', 'attraction-data.js',
   'archetype-engine.js', 'attraction-engine.js', 'temperament-engine.js', 'relationship-engine.js',
   'shared', 'archetype-data', 'temperament-data', 'relationship-data', 'images', 'fonts', 'style'
