@@ -9,6 +9,7 @@ import { downloadFile, generateReadableReport } from './shared/export-utils.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import { ensurePeriod, softenNarrativeTone, summarizeBehavioralAccent } from './shared/archetype-narrative-utils.js';
+import { quotedMemeticSummary } from './shared/archetype-memetic-format.js';
 
 // Data modules - will be loaded lazily
 let ARCHETYPES, CORE_GROUPS, ARCHETYPE_OPTIMIZATION;
@@ -17,6 +18,75 @@ let SUBTYPE_REFINEMENT_QUESTIONS;
 let ARCHETYPE_SPREAD_MAP;
 let BRUTAL_TRUTHS;
 let ARCHETYPE_ROLE_ACCENTS;
+
+function archetypeSlogan(archetype) {
+  const id = archetype?.id || '';
+  const byId = {
+    alpha: 'wins the room, sets the frame',
+    alpha_xi: 'dies for the mission, not the spotlight',
+    alpha_rho: 'enforces the rules everyone else plays by',
+    dark_alpha: 'power without restraint = eventual collapse',
+    beta: 'useful, reliable... replaceable',
+    beta_iota: 'good-hearted, not taken seriously',
+    beta_kappa: 'agrees to belong',
+    gamma: 'smart, outside the system, resents it',
+    gamma_nu: 'loves the idea of love',
+    gamma_theta: 'talks to God, struggles with people',
+    gamma_pi: 'rides luck instead of building power',
+    dark_gamma: 'sees through everything, believes in nothing',
+    delta: 'keeps the world running, never leads it',
+    delta_mu: 'dad energy without dominance',
+    sigma: 'opts out, plays solo, keeps leverage',
+    sigma_kappa: 'quiet strategist, moves pieces unseen',
+    sigma_lambda: 'creates in isolation',
+    dark_sigma_zeta: 'burns the system instead of mastering it',
+    omega: 'invisible, disengaged, low agency',
+    dark_omega: 'drags others down with him',
+    phi: 'myth, not a demographic',
+
+    alpha_female: 'desired, selects-not chased',
+    alpha_xi_female: 'cuts through men with standards',
+    alpha_unicorn_female: 'idealized loyalty fantasy',
+    alpha_iota_female: 'balanced, rare, stable',
+    dark_alpha_female: 'control disguised as empowerment',
+    beta_female: 'trades access for security',
+    beta_nu_female: 'settles into tradition',
+    beta_kappa_female: 'leverages attention, plays angles',
+    beta_rho_female: 'mothering with control baked in',
+    gamma_female: 'smart, disagreeable, hard to pair',
+    gamma_theta_female: 'intense, visionary, confrontational',
+    gamma_feminist_female: 'career-first, relationship-fractured',
+    dark_gamma_female: 'withdrawn, disillusioned',
+    delta_female: 'home, stability, support',
+    delta_mu_female: 'warmth, joy, life energy',
+    dark_delta_female: 'self-sacrifice turned resentment',
+    sigma_female: 'independent, hard to lock down',
+    sigma_feminist_female: 'self-sufficient, low compromise',
+    dark_sigma_zeta_female: 'rejects system entirely',
+    omega_female: 'excluded from the game',
+    dark_omega_female: 'weaponizes destruction',
+    phi_female: 'myth, not a demographic'
+  };
+  if (byId[id]) return byId[id];
+
+  const parent = archetype?.parentType || id.split('_')[0] || '';
+  const coreByParent = {
+    alpha: 'I decide.',
+    beta: 'Pick me.',
+    gamma: "I see what others don't-but can't convert it.",
+    delta: 'Tell me what to do.',
+    sigma: "I don't need your game.",
+    omega: 'Why try?',
+    phi: 'myth, not a demographic'
+  };
+  return coreByParent[parent] || '';
+}
+
+function memeticSummaryHtml(archetype, { margin = '0.15rem 0 0.9rem', fontSize = '1rem' } = {}) {
+  const q = quotedMemeticSummary(archetypeSlogan(archetype));
+  if (!q) return '';
+  return `<p class="archetype-memetic-summary" style="margin: ${margin}; color: var(--muted); font-size: ${fontSize}; font-style: italic;">${SecurityUtils.sanitizeHTML(q)}</p>`;
+}
 
 export class ArchetypeEngine {
   constructor() {
@@ -2330,7 +2400,8 @@ showGenderSelection() {
 
         <!-- Primary Archetype -->
         <div class="archetype-card primary" style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; border: 2px solid var(--brand);">
-          <h3 style="color: var(--brand); margin-top: 0; font-size: 1.5rem;">Primary Archetype: ${SecurityUtils.sanitizeHTML(primary.name || '')}</h3>
+          <h3 style="color: var(--brand); margin-top: 0; font-size: 1.75rem; font-weight: 800; letter-spacing: 0.01em;">Primary Archetype: ${SecurityUtils.sanitizeHTML(primary.name || '')}</h3>
+          ${memeticSummaryHtml(primary, { margin: '0.15rem 0 0.9rem', fontSize: '1rem' })}
           ${primary.explanation ? `<div style="background: rgba(255, 184, 0, 0.1); border-left: 3px solid var(--brand); border-radius: var(--radius); padding: 1rem; margin: 1rem 0;"><p style="margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.6; font-style: italic;">${primary.explanation}</p></div>` : ''}
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;"><strong>Social Role:</strong> ${SecurityUtils.sanitizeHTML(primary.socialRole || '')}</p>
           ${primaryParent ? `<p style="color: var(--muted); margin: 0.5rem 0 1rem; line-height: 1.7;"><strong>Subtype of:</strong> ${SecurityUtils.sanitizeHTML(primaryParent.name || '')}${primaryParentSummary ? `: ${SecurityUtils.sanitizeHTML(primaryParentSummary)}` : ''}</p>` : ''}
@@ -2411,7 +2482,8 @@ showGenderSelection() {
     if (secondary) {
       resultsHTML += `
         <div class="archetype-card secondary" style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem;">
-          <h3 style="color: var(--brand); margin-top: 0;">Secondary Influence: ${SecurityUtils.sanitizeHTML(secondary.name || '')}</h3>
+          <h3 style="color: var(--brand); margin-top: 0; font-size: 1.4rem; font-weight: 760; letter-spacing: 0.005em;">Secondary Influence: ${SecurityUtils.sanitizeHTML(secondary.name || '')}</h3>
+          ${memeticSummaryHtml(secondary, { margin: '0.1rem 0 0.85rem', fontSize: '0.98rem' })}
           ${secondary.explanation ? `<div style="background: rgba(255, 184, 0, 0.1); border-left: 3px solid var(--brand); border-radius: var(--radius); padding: 1rem; margin: 1rem 0;"><p style="margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.6; font-style: italic;">${secondary.explanation}</p></div>` : ''}
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;"><strong>Social Role:</strong> ${SecurityUtils.sanitizeHTML(secondary.socialRole || '')}</p>
           ${secondaryParent ? `<p style="color: var(--muted); margin: 0.5rem 0 1rem; line-height: 1.7;"><strong>Subtype of:</strong> ${SecurityUtils.sanitizeHTML(secondaryParent.name || '')}${secondaryParentSummary ? `: ${SecurityUtils.sanitizeHTML(secondaryParentSummary)}` : ''}</p>` : ''}
@@ -2432,7 +2504,8 @@ showGenderSelection() {
     if (tertiary) {
       resultsHTML += `
         <div class="archetype-card tertiary" style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem;">
-          <h3 style="color: var(--brand); margin-top: 0;">Tertiary Influence: ${SecurityUtils.sanitizeHTML(tertiary.name || '')}</h3>
+          <h3 style="color: var(--brand); margin-top: 0; font-size: 1.24rem; font-weight: 720; letter-spacing: 0.003em;">Tertiary Influence: ${SecurityUtils.sanitizeHTML(tertiary.name || '')}</h3>
+          ${memeticSummaryHtml(tertiary, { margin: '0.1rem 0 0.8rem', fontSize: '0.95rem' })}
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;"><strong>Social Role:</strong> ${SecurityUtils.sanitizeHTML(tertiary.socialRole || '')}</p>
           ${tertiaryParent ? `<p style="color: var(--muted); margin: 0.5rem 0 1rem; line-height: 1.7;"><strong>Subtype of:</strong> ${SecurityUtils.sanitizeHTML(tertiaryParent.name || '')}${tertiaryParentSummary ? `: ${SecurityUtils.sanitizeHTML(tertiaryParentSummary)}` : ''}</p>` : ''}
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;">${SecurityUtils.sanitizeHTML(tertiary.description || '')}</p>

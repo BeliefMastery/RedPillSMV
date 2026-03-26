@@ -55,7 +55,13 @@ function renderGate(c) {
 }
 
 function renderLayer(layer) {
-  const subtitle = layer.subtitle ? `<p class="integrated-map-layer-subtitle">${esc(layer.subtitle)}</p>` : '';
+  const isArchetype = layer.href === 'archetype.html' || String(layer.title || '').includes('Red-Pill Archetype');
+  const subtitle =
+    isArchetype && layer.memeticSubtitleQuoted
+      ? `<p class="integrated-map-layer-subtitle integrated-map-memetic-summary">${esc(layer.memeticSubtitleQuoted)}</p>`
+      : layer.subtitle
+        ? `<p class="integrated-map-layer-subtitle">${esc(layer.subtitle)}</p>`
+        : '';
   const frame = layer.frame || { meaning: '', helps: '', costs: '' };
   const renderBullets = (bullets) => {
     if (!Array.isArray(bullets) || !bullets.length) return '';
@@ -63,7 +69,6 @@ function renderLayer(layer) {
     return `<ul class="integrated-map-layer-list">${items}</ul>`;
   };
 
-  const isArchetype = layer.href === 'archetype.html' || String(layer.title || '').includes('Red-Pill Archetype');
   const isPolarity = layer.href === 'temperament.html' || String(layer.title || '').includes('Temperament');
   const isSmv = layer.href === 'attraction.html' || String(layer.title || '').includes('Sexual Market Value');
 
@@ -86,16 +91,16 @@ function renderLayer(layer) {
   const helpsBullets = renderBullets(frame.helpsBullets);
   const helps = helpsLead || helpsBullets
     ? `<h3 class="integrated-map-subhead">${esc(helpsTitle)}</h3>${
-        helpsLead ? `<p class="integrated-map-layer-intro">${esc(helpsLead)}</p>` : ''
-      }${helpsBullets}`
+        helpsBullets || ''
+      }${helpsLead ? `<p class="integrated-map-layer-intro">${esc(helpsLead)}</p>` : ''}`
     : '';
 
   const costsLead = frame.costs ? frame.costs : '';
   const costsBullets = renderBullets(frame.costsBullets);
   const costs = costsLead || costsBullets
     ? `<h3 class="integrated-map-subhead">${esc(costsTitle)}</h3>${
-        costsLead ? `<p class="integrated-map-layer-intro">${esc(costsLead)}</p>` : ''
-      }${costsBullets}`
+        costsBullets || ''
+      }${costsLead ? `<p class="integrated-map-layer-intro">${esc(costsLead)}</p>` : ''}`
     : '';
 
   return `

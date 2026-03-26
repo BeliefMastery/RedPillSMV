@@ -52,6 +52,7 @@
     .spread-intro-inner { text-align: center; }
     .spread-intro-inner .lead-text { margin-bottom: 0.5rem; }
     .spread-intro-inner .tools-intro { margin-top: 0; margin-bottom: 0; max-width: 36em; margin-left: auto; margin-right: auto; }
+    .archetype-spread-memetic { font-style: italic; color: var(--muted); }
   </style>
 </head>
 <body class="page-fullbleed">
@@ -91,6 +92,7 @@
             <thead>
               <tr>
                 <th>Archetype</th>
+                <th>Memetic Summary</th>
                 <th>Social Role</th>
                 <th>Jungian/Q-KWML</th>
                 <th>Vedic</th>
@@ -116,6 +118,7 @@
             <thead>
               <tr>
                 <th>Archetype</th>
+                <th>Memetic Summary</th>
                 <th>Social Role</th>
                 <th>Jungian/Q-KWML</th>
                 <th>Vedic</th>
@@ -145,6 +148,7 @@
   <script type="module">
     import { ARCHETYPE_SPREAD } from './archetype-data/archetype-spread.js';
     import { ARCHETYPES, GENDER_NEUTRAL_MAPPING } from './archetype-data/archetypes.js';
+    import { quotedMemeticSummary } from './shared/archetype-memetic-format.js';
 
     const tbodyMale = document.getElementById('archetypeTableBodyMale');
     const tbodyFemale = document.getElementById('archetypeTableBodyFemale');
@@ -180,6 +184,59 @@
       return text.trim();
     };
 
+    const getMemeticSummary = (archetype) => {
+      const id = archetype?.id || '';
+      const byId = {
+        alpha: 'wins the room, sets the frame',
+        alpha_xi: 'dies for the mission, not the spotlight',
+        alpha_rho: 'enforces the rules everyone else plays by',
+        dark_alpha: 'power without restraint = eventual collapse',
+        beta: 'useful, reliable... replaceable',
+        beta_iota: 'good-hearted, not taken seriously',
+        beta_kappa: 'agrees to belong',
+        beta_nu: 'settles into tradition',
+        beta_rho: 'mothering with control baked in',
+        gamma: 'smart, outside the system, resents it',
+        gamma_nu: 'loves the idea of love',
+        gamma_theta: 'talks to God, struggles with people',
+        gamma_pi: 'rides luck instead of building power',
+        dark_gamma: 'sees through everything, believes in nothing',
+        delta: 'keeps the world running, never leads it',
+        delta_mu: 'dad energy without dominance',
+        dark_delta: 'self-sacrifice turned resentment',
+        sigma: 'opts out, plays solo, keeps leverage',
+        sigma_kappa: 'quiet strategist, moves pieces unseen',
+        sigma_lambda: 'creates in isolation',
+        dark_sigma_zeta: 'burns the system instead of mastering it',
+        omega: 'invisible, disengaged, low agency',
+        dark_omega: 'drags others down with him',
+        phi: 'myth, not a demographic',
+        alpha_female: 'desired, selects-not chased',
+        alpha_xi_female: 'cuts through men with standards',
+        alpha_unicorn_female: 'idealized loyalty fantasy',
+        alpha_iota_female: 'balanced, rare, stable',
+        dark_alpha_female: 'control disguised as empowerment',
+        beta_female: 'trades access for security',
+        beta_nu_female: 'settles into tradition',
+        beta_kappa_female: 'leverages attention, plays angles',
+        beta_rho_female: 'mothering with control baked in',
+        gamma_female: 'smart, disagreeable, hard to pair',
+        gamma_theta_female: 'intense, visionary, confrontational',
+        gamma_feminist_female: 'career-first, relationship-fractured',
+        dark_gamma_female: 'withdrawn, disillusioned',
+        delta_female: 'home, stability, support',
+        delta_mu_female: 'warmth, joy, life energy',
+        dark_delta_female: 'self-sacrifice turned resentment',
+        sigma_female: 'independent, hard to lock down',
+        sigma_feminist_female: 'self-sufficient, low compromise',
+        dark_sigma_zeta_female: 'rejects system entirely',
+        omega_female: 'excluded from the game',
+        dark_omega_female: 'weaponizes destruction',
+        phi_female: 'myth, not a demographic'
+      };
+      return byId[id] || '—';
+    };
+
     /** Derive parent cluster from archetype name (e.g. "Delta-Mu Male" → "Delta", "Dark Alpha Male" → "Alpha") */
     const getCluster = (name) => {
       if (!name || typeof name !== 'string') return '';
@@ -208,7 +265,7 @@
         const headerRow = document.createElement('tr');
         headerRow.classList.add('cluster-total-row');
         const headerCell = document.createElement('td');
-        headerCell.colSpan = 7;
+        headerCell.colSpan = 8;
         headerCell.textContent = `${cluster} — ${clusterTotal.toFixed(1)}% of population`;
         headerRow.appendChild(headerCell);
         targetBody.appendChild(headerRow);
@@ -221,11 +278,13 @@
 
         const archetype = resolveArchetype(entry.name);
         const brutalTruth = buildNarrative(archetype?.archetypalNarrative);
+        const memeticSummary = getMemeticSummary(archetype);
         const populationLabel = typeof entry.socialProportion === 'number'
           ? `${entry.socialProportion.toFixed(1)}%`
           : '—';
         const cells = [
           entry.name,
+          memeticSummary,
           entry.socialRole,
           entry.jungianEquivalent,
           entry.vedicEquivalent,
@@ -233,9 +292,18 @@
           entry.tarotCard,
           populationLabel
         ];
-        cells.forEach(text => {
+        cells.forEach((text, idx) => {
           const cell = document.createElement('td');
-          cell.textContent = text || '—';
+          if (idx === 1) {
+            if (!memeticSummary || memeticSummary === '—') {
+              cell.textContent = '—';
+            } else {
+              cell.className = 'archetype-spread-memetic';
+              cell.textContent = quotedMemeticSummary(memeticSummary);
+            }
+          } else {
+            cell.textContent = text || '—';
+          }
           row.appendChild(cell);
         });
         targetBody.appendChild(row);
@@ -243,7 +311,7 @@
         const detailRow = document.createElement('tr');
         detailRow.classList.add('brutal-truth-row');
         const detailCell = document.createElement('td');
-        detailCell.colSpan = 7;
+        detailCell.colSpan = 8;
         const detailPanel = document.createElement('div');
         detailPanel.classList.add('brutal-truth-panel');
         detailPanel.textContent = `Archetypal Narrative: The Brutal Truth — ${brutalTruth}`;

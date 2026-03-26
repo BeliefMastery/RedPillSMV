@@ -13,6 +13,7 @@ import {
   getSMVInterpretation
 } from './attraction-report-copy.js';
 import { ensurePeriod } from './archetype-narrative-utils.js';
+import { quotedMemeticSummary } from './archetype-memetic-format.js';
 
 function takeSentences(text, maxCount) {
   if (!text) return '';
@@ -176,9 +177,56 @@ function clipIntegratedMapText(s, maxLen) {
   return `${lastSp > 35 ? cut.slice(0, lastSp) : cut}…`;
 }
 
+function subcategoryLabel(subId) {
+  const labels = {
+    // Male
+    courage: 'Courage',
+    control: 'Control',
+    competence: 'Competence',
+    perspicacity: 'Perspicacity',
+    protector: 'Protector',
+    provider: 'Provider',
+    parentalInvestor: 'Parental Investor',
+    socialInfluence: 'Social Influence',
+    statusSignaling: 'Status Signaling',
+    performanceStatus: 'Performance Status',
+    physicalGenetic: 'Physical / Genetic',
+    radActivity: 'Radical Activity',
+    // Female
+    selectivity: 'Selectivity & Mate Guarding',
+    paternityCertainty: 'Paternity Certainty',
+    nurturingStandard: 'Nurturing Standard',
+    collaborativeTrust: 'Collaborative Trust',
+    fertility: 'Fertility & Health',
+    riskCost: 'Risk Cost',
+    personality: 'Personality',
+    factorsHidden: 'Factors Hidden'
+  };
+  return labels[subId] || subId;
+}
+
+function getRedZoneSubcategoryLabels(smv, gender) {
+  const out = [];
+  const clusters = smv?.subcategories || {};
+  for (const subs of Object.values(clusters)) {
+    if (!subs || typeof subs !== 'object') continue;
+    for (const [subId, rawScore] of Object.entries(subs)) {
+      if (gender === 'male' && subId === 'radActivity') continue; // Not shown in the core chart rows.
+      const score = typeof rawScore === 'number' ? rawScore : Number(rawScore);
+      if (!Number.isFinite(score)) continue;
+      if (score < 40) out.push(subcategoryLabel(subId));
+    }
+  }
+  return dedupeKeepOrder(out, 10);
+}
+
 /** SMV “Where it costs”: short, capped; one weakest subcategory; tight Radical Activity line. */
 function buildAttractionCostsConcise(smv, rec, gender) {
   const bits = [];
+  const redZoneTraits = getRedZoneSubcategoryLabels(smv, gender);
+  if (redZoneTraits.length) {
+    bits.push(`Red-zone traits in this snapshot: ${redZoneTraits.join(', ')}.`);
+  }
   if (smv.delusionBand && smv.delusionBand !== 'low') {
     bits.push(integratedMapDelusionCostLine(smv.delusionBand));
   }
@@ -349,6 +397,72 @@ export function temperamentTitleExplicit(category, reportedGender, labelFallback
   return `${prefix} — Unplugged polarity map`;
 }
 
+function archetypeSloganForId(id, parentType) {
+  const byId = {
+    // Male
+    alpha: 'I decide.',
+    alpha_xi: 'dies for the mission, not the spotlight',
+    alpha_rho: 'enforces the rules everyone else plays by',
+    dark_alpha: 'power without restraint',
+    beta: 'second choice',
+    beta_iota: 'good-hearted, not taken seriously',
+    beta_kappa: 'agrees to belong',
+    beta_nu: 'settles into duty',
+    beta_rho: 'mothering with control baked in',
+    gamma: "sees the game, can't convert it",
+    gamma_nu: 'loves the idea of love',
+    gamma_theta: 'talks to God, struggles with people',
+    gamma_pi: 'rides luck instead of building power',
+    dark_gamma: 'sees through everything, believes in nothing',
+    delta: 'keeps the world running, never leads it',
+    delta_mu: 'dad energy without dominance',
+    dark_delta: 'self-sacrifice turned resentment',
+    sigma: 'lone wolf',
+    sigma_kappa: 'quiet strategist, moves pieces unseen',
+    sigma_lambda: 'creates in isolation',
+    dark_sigma_zeta: 'burns the system instead of mastering it',
+    omega: 'always missing out',
+    dark_omega: 'drags others down with him',
+    phi: 'myth, not a demographic',
+
+    // Female
+    alpha_female: 'I choose.',
+    alpha_xi_female: 'cuts through men with standards',
+    alpha_unicorn_female: 'idealized loyalty fantasy',
+    alpha_iota_female: 'balanced, rare, stable',
+    dark_alpha_female: 'control disguised as empowerment',
+    beta_female: 'trades access for security',
+    beta_nu_female: 'settles into tradition',
+    beta_kappa_female: 'leverages attention, plays angles',
+    beta_rho_female: 'mothering with control baked in',
+    gamma_female: 'smart, disagreeable, hard to pair',
+    gamma_theta_female: 'intense, visionary, confrontational',
+    gamma_feminist_female: 'career-first, relationship-fractured',
+    dark_gamma_female: 'withdrawn, disillusioned',
+    delta_female: 'home, stability, support',
+    delta_mu_female: 'warmth, joy, life energy',
+    dark_delta_female: 'self-sacrifice turned resentment',
+    sigma_female: 'independent, hard to lock down',
+    sigma_feminist_female: 'self-sufficient, low compromise',
+    dark_sigma_zeta_female: 'rejects the system entirely',
+    omega_female: 'excluded from the game',
+    dark_omega_female: 'weaponizes destruction',
+    phi_female: 'myth, not a demographic'
+  };
+  if (byId[id]) return byId[id];
+
+  const byParent = {
+    alpha: 'dominates the game',
+    beta: 'plays for approval',
+    gamma: 'analyzes the game, stuck outside',
+    delta: 'keeps the game running',
+    sigma: 'refuses the game, still wins',
+    omega: 'quits the game',
+    phi: 'myth, not a demographic'
+  };
+  return byParent[parentType] || '';
+}
+
 /**
  * @returns {{ title: string, subtitle?: string, frame: { meaning: string, helps: string, costs: string }, nextMoveCandidates?: string[], href: string, hrefLabel: string }}
  */
@@ -369,7 +483,9 @@ export function buildArchetypeLayer(ad) {
   const optimizationCopy = ARCHETYPE_OPTIMIZATION?.[p.id] || null;
   const traitsSummary = summarizeArchetypeTraits(p);
   const canon = ARCHETYPES?.[p.id] || null;
-  const subtitle = p.socialRole ? String(p.socialRole).trim() : '';
+  const memeticRaw = archetypeSloganForId(p.id, p.parentType);
+  const subtitle = memeticRaw || (p.socialRole ? String(p.socialRole).trim() : '');
+  const subtitleIsMemetic = Boolean(memeticRaw);
 
   let qualitiesIntro = takeSentences(p.description || '', 3);
   if (p.explanation) {
@@ -493,6 +609,9 @@ export function buildArchetypeLayer(ad) {
   return {
     title: `Red-Pill Archetype — ${p.name || 'Primary pattern'}`,
     subtitle,
+    subtitleIsMemetic,
+    /** Quoted + capitalized memetic line for UI; empty when not memetic. */
+    memeticSubtitleQuoted: subtitleIsMemetic ? quotedMemeticSummary(memeticRaw) : '',
     frame: { meaning, helps, costs },
     nextMoveCandidates,
     href,
@@ -604,7 +723,7 @@ export function buildPolarityLayer(ad) {
   }
 
   const helpsLead = helpsBullets.length
-    ? 'These spike traits are your clearest pull signals and create stronger attraction when complementary intensity is matched.'
+    ? 'These spike traits are your clearest polarising pull signals, creating stronger attraction when complementary intensity is matched or shaping a complementary opposite in your partner through embodiment.'
     : 'No strongly emphasized poles in this snapshot; expression appears more blended across situations.';
   const helps = safeSentence(helpsLead);
 
@@ -621,10 +740,40 @@ export function buildPolarityLayer(ad) {
       .filter(Boolean),
     10
   );
+  const complementaryBullets = dedupeKeepOrder(
+    anomalyKeys
+      .map((dimKey) => {
+        const net = scores?.[dimKey]?.net;
+        const norm = typeof net === 'number' ? (net + 1) / 2 : 0.5;
+        const dominantSide = norm >= 0.5 ? 'masc' : 'fem';
+        const oppositeSide = dominantSide === 'masc' ? 'fem' : 'masc';
+        return capitalizeTrait(getEmphasizedPoleTrait(dimKey, oppositeSide, norm));
+      })
+      .filter(Boolean),
+    8
+  );
 
   const hyperHazard = hyperHazardSummary(ad, reportedGender);
   const costsLead = costsBullets.length
-    ? 'These anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.'
+    ? (() => {
+        const base =
+          'These anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.';
+        if (reportedGender === 'man') {
+          const comp =
+            complementaryBullets.length > 0
+              ? ` In this profile, they can inhibit access to complementary poles such as ${complementaryBullets.join(', ')}.`
+              : '';
+          return `For a male respondent, these poles sit outside the typical dimensional temperament range and can become polarity fracture points.${base ? ` ${base}` : ''}${comp} This pattern can sometimes form as adaptive coping under prolonged stress, so read it as a structural signal to address, not a character verdict.`;
+        }
+        if (reportedGender === 'woman') {
+          const comp =
+            complementaryBullets.length > 0
+              ? ` They can also suppress access to complementary poles such as ${complementaryBullets.join(', ')}.`
+              : '';
+          return `For a female respondent, these poles sit outside the typical dimensional temperament range and can become polarity fracture points.${base ? ` ${base}` : ''}${comp} This pattern can sometimes form as adaptive coping under prolonged stress, so read it as a structural signal to address, not a character verdict.`;
+        }
+        return base;
+      })()
     : 'No anomaly flags in this snapshot.';
   const costs = safeSentence([costsLead, hyperHazard].filter(Boolean).join(' '));
 

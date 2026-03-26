@@ -2051,6 +2051,9 @@ h3[style*="text-align:center"][style*="border-bottom"] {
 .integrated-map-layer-intro {
     color: var(--text, inherit);
 }
+.integrated-map-memetic-summary {
+    font-style: italic;
+}
 .integrated-map-layer ul,
 .integrated-map-layer-list {
     margin: 0.5rem 0 0;
