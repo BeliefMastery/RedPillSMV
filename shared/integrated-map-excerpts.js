@@ -195,7 +195,9 @@ function buildAttractionCostsConcise(smv, rec, gender) {
   }
   const rad = smv.subcategories?.axisOfAttraction?.radActivity;
   if (gender === 'male' && typeof rad === 'number' && rad < 40) {
-    bits.push('Radical Activity low—outside romance looks low-signal.');
+    bits.push(
+      "'Radical Activity' is low— behaviour outside of romance and work is absent or looks low status."
+    );
   }
   const joined = bits.filter(Boolean).join(' ');
   return clipIntegratedMapText(joined, 320);
@@ -239,6 +241,50 @@ function spectrumQualityPhrase(dimKey, normalizedDimScore) {
   if (masc && fem) {
     if (normalizedDimScore >= 0.55) return phraseToShortQuality(masc);
     if (normalizedDimScore <= 0.45) return phraseToShortQuality(fem);
+  }
+  return '';
+}
+
+/**
+ * Emphasized pole-side trait text for a dimension.
+ * @param {string} dimKey
+ * @param {'masc'|'fem'|'auto'} side
+ * @param {number} [normalizedDimScore]
+ */
+function getEmphasizedPoleTrait(dimKey, side = 'auto', normalizedDimScore) {
+  const dim = getTemperamentDimensionMeta(dimKey);
+  if (!dim) return '';
+  const label = String(dim.spectrumLabel || '').trim();
+  const fromScore =
+    typeof normalizedDimScore === 'number'
+      ? (normalizedDimScore >= 0.5 ? 'masc' : 'fem')
+      : 'masc';
+  const resolved = side === 'auto' ? fromScore : side;
+
+  if (label && /\bvs\.?\b/i.test(label)) {
+    const parts = label.split(/\bvs\.?\b/i).map((s) => s.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const fem = phraseToShortQuality(parts[0]);
+      const masc = phraseToShortQuality(parts.slice(1).join(' vs '));
+      return resolved === 'fem' ? fem : masc;
+    }
+  }
+  const masc = dim.masculinePoleLabel ? phraseToShortQuality(String(dim.masculinePoleLabel).replace(/^oriented to\s+/i, '').trim()) : '';
+  const fem = dim.femininePoleLabel ? phraseToShortQuality(String(dim.femininePoleLabel).replace(/^oriented to\s+/i, '').trim()) : '';
+  return resolved === 'fem' ? (fem || masc) : (masc || fem);
+}
+
+function hyperHazardSummary(ad, reportedGender) {
+  const hasHyperMasc = (Array.isArray(ad.hypermascBandDimensionKeys) ? ad.hypermascBandDimensionKeys.length : 0) > 0;
+  const hasHyperFemme = (Array.isArray(ad.hyperfemmeBandDimensionKeys) ? ad.hyperfemmeBandDimensionKeys.length : 0) > 0;
+  if (reportedGender === 'man' && hasHyperMasc) {
+    return 'Hyper-masc spikes can overrun attunement and read as neglectful or controlling when partner complement is weak.';
+  }
+  if (reportedGender === 'woman' && hasHyperFemme) {
+    return 'Hyper-femme spikes can tip into anxiety or chaotic emotional cycling when stabilising complement is weak.';
+  }
+  if (hasHyperMasc && hasHyperFemme) {
+    return 'Hyper spikes raise both pull and instability risk; without balancing complement, intensity can collapse into control or chaos.';
   }
   return '';
 }
@@ -314,51 +360,124 @@ export function buildArchetypeLayer(ad) {
 
   const optimizationCopy = ARCHETYPE_OPTIMIZATION?.[p.id] || null;
   const traitsSummary = summarizeArchetypeTraits(p);
+  const canon = ARCHETYPES?.[p.id] || null;
+  const subtitle = p.socialRole ? String(p.socialRole).trim() : '';
 
   let qualitiesIntro = takeSentences(p.description || '', 3);
   if (p.explanation) {
     const ex = takeSentences(p.explanation, 2);
     qualitiesIntro = qualitiesIntro ? `${qualitiesIntro} ${ex}` : ex;
   }
-  // Bulleted traits and deeper narrative live in the full archetype report; the combined card stays concise.
 
-  const concerns = [];
-  if (optimizationCopy?.likelyBlindSpot) {
-    concerns.push(`Likely blind spot: ${ensurePeriod(optimizationCopy.likelyBlindSpot)}`);
+  // Avoid repeating the same “keyword” trait bundle shown in the subtitle/social-role line.
+  // If the earliest sentences overlap strongly with subtitle tokens, start meaning after them.
+  const subtitleTokens = subtitle
+    ? new Set(
+        normalizeForDedupe(subtitle)
+          .split(' ')
+          .map((t) => t.trim())
+          .filter((t) => t.length >= 4)
+      )
+    : new Set();
+
+  const qualitiesSentences = String(qualitiesIntro || '').match(/[^.!?]+[.!?]*/g) || [];
+  // Be conservative: only treat a sentence as redundant when it shares at least
+  // two of the subtitle keyword tokens (avoid chopping meaning for partial
+  // lexical overlap).
+  const requiredOverlap = subtitleTokens.size >= 2 ? 2 : 0;
+  const picked = [];
+  for (const s of qualitiesSentences) {
+    if (picked.length >= 2) break;
+    const sTokens = normalizeForDedupe(s)
+      .split(' ')
+      .map((t) => t.trim())
+      .filter((t) => t.length >= 4);
+
+    if (requiredOverlap > 0) {
+      let overlap = 0;
+      for (const tk of sTokens) {
+        if (subtitleTokens.has(tk)) overlap += 1;
+        if (overlap >= requiredOverlap) break;
+      }
+      if (overlap >= requiredOverlap) continue; // likely redundant with subtitle keyword bundle
+    }
+    picked.push(s.trim());
+  }
+
+  let meaningCore = picked.length ? picked.join(' ').trim() : '';
+  if (!meaningCore) meaningCore = takeSentences(qualitiesIntro || '', 2);
+  if (!meaningCore) meaningCore = takeSentences(canon?.description || '', 2);
+  if (!meaningCore) meaningCore = 'Primary archetype loaded; open full report for detail.';
+  const meaning = safeSentence(meaningCore);
+
+  let helpsCore = '';
+  // “Where it helps” should describe strengths/capacities, not action advice.
+  if (traitsSummary) {
+    helpsCore = `Strength markers: ${traitsSummary}.`;
+  } else if (p.description) {
+    const descS = takeSentences(String(p.description || ''), 2);
+    helpsCore = descS || '';
+  } else if (p.explanation) {
+    const expS = takeSentences(String(p.explanation || ''), 1);
+    helpsCore = expS || '';
+  }
+  if (!helpsCore) helpsCore = 'This pattern brings a consistent set of strengths; the full report maps how that strength expresses under stress.';
+  const helps = safeSentence(helpsCore);
+
+  const costClauses = [];
+  // Prefer “brutal truth” as the limitation source; it contains the real failure mode.
+  const brutalNarrative = String(BRUTAL_TRUTHS?.[p.id]?.narrative || '').trim();
+  let chosenBrutalNorm = '';
+  if (brutalNarrative) {
+    const sents = brutalNarrative.match(/[^.!?]+[.!?]*/g) || [];
+    const filtered = sents.filter((s) => /\b(the truth|truth)\b/i.test(s) || /\b(the cost|cost)\b/i.test(s) || /\bdeepest cost\b/i.test(s));
+    const costSents = filtered.length ? filtered : sents;
+    const chosen = costSents.slice(0, 2).join(' ').trim();
+    if (chosen) {
+      chosenBrutalNorm = normalizeForDedupe(chosen);
+      costClauses.push(clipIntegratedMapText(chosen, 360));
+    }
+  }
+
+  // Backfill with optimization blind spot / stress response when brutal truth is missing.
+  if (!costClauses.length) {
+    if (optimizationCopy?.likelyBlindSpot) {
+      costClauses.push(clipIntegratedMapText(String(optimizationCopy.likelyBlindSpot).trim(), 260));
+    } else if (p.stressResponse) {
+      costClauses.push(clipIntegratedMapText(String(p.stressResponse).trim(), 260));
+    }
+  } else if (optimizationCopy?.likelyBlindSpot) {
+    // If brutal truth exists, append one short “blind spot” clause for sharper mapping.
+    const blind = String(optimizationCopy.likelyBlindSpot).trim();
+    const blindNorm = normalizeForDedupe(blind);
+    if (!chosenBrutalNorm || !(chosenBrutalNorm.includes(blindNorm) || blindNorm.includes(chosenBrutalNorm))) {
+      costClauses.push(clipIntegratedMapText(blind, 170));
+    }
   } else if (p.stressResponse) {
-    concerns.push(`Likely blind spot: ${ensurePeriod(p.stressResponse)}`);
+    costClauses.push(clipIntegratedMapText(String(p.stressResponse).trim(), 170));
   }
 
   const shadows = ad?.phase3Results?.shadowIndicators;
-  if (Array.isArray(shadows)) {
-    shadows.slice(0, 2).forEach((sh) => {
-      const id = sh.id || sh;
-      const name = sh.name || ARCHETYPES?.[id]?.name || id;
-      const desc = takeSentences(ARCHETYPES?.[id]?.description || '', 1);
-      concerns.push(desc ? `${name}: ${desc}` : `${name}: pattern to explore under stress (see full report).`);
-    });
+  if (Array.isArray(shadows) && shadows.length > 0) {
+    const sh = shadows[0];
+    const sid = sh.id || sh;
+    const sname = sh.name || ARCHETYPES?.[sid]?.name || sid;
+    const sdesc = takeSentences(ARCHETYPES?.[sid]?.description || '', 1);
+    const shadowLine = sdesc
+      ? `${sname}: ${sdesc}`
+      : `${sname}: pattern to explore under stress (see full report).`;
+    costClauses.push(clipIntegratedMapText(shadowLine, 150));
   }
 
-  const meaning = safeSentence(
-    p.name
-      ? 'You operate on your own terms and avoid structured hierarchies. You prefer autonomy over status positioning.'
-      : (takeSentences(qualitiesIntro || '', 1) || 'You operate on your own terms and avoid structured hierarchies.')
-  );
-
-  const helps = safeSentence('You’re hard to control, think for yourself, and adapt quickly without relying on group approval.');
-
-  const costs = safeSentence(
-    optimizationCopy?.likelyBlindSpot || p.stressResponse
-      ? clipIntegratedMapText(
-          'Outside visible hierarchies: less recognition and reach; independence can read as low visibility.',
-          140
-        )
-      : clipIntegratedMapText('Outside hierarchies: less compound status visibility than insiders get.', 120)
-  );
+  const costsText = costClauses.length
+    ? costClauses.join(' ')
+    : clipIntegratedMapText(
+        'Pressure can amplify unhelpful patterns; the full report maps shadows, blind spots, and stress loops.',
+        160
+      );
+  const costs = safeSentence(costsText);
 
   const nextMoveCandidates = [];
-
-  const subtitle = p.socialRole ? String(p.socialRole).trim() : '';
 
   return {
     title: `Red-Pill Archetype — ${p.name || 'Primary pattern'}`,
@@ -375,59 +494,47 @@ export function buildArchetypeLayer(ad) {
  */
 function buildPolarityStrengthsHelps(ad, reportedGender) {
   if (reportedGender === 'man') {
-    const hyp = Array.isArray(ad.hypermascBandDimensionNames) ? ad.hypermascBandDimensionNames : [];
-    const str = Array.isArray(ad.stronglyMascBandDimensionNames) ? ad.stronglyMascBandDimensionNames : [];
+    const hypKeys = Array.isArray(ad.hypermascBandDimensionKeys) ? ad.hypermascBandDimensionKeys : [];
+    const strKeys = Array.isArray(ad.stronglyMascBandDimensionKeys) ? ad.stronglyMascBandDimensionKeys : [];
+    const hypTraits = dedupeKeepOrder(hypKeys.map((k) => getEmphasizedPoleTrait(k, 'masc')), 5);
+    const strTraits = dedupeKeepOrder(strKeys.map((k) => getEmphasizedPoleTrait(k, 'masc')), 6);
     const parts = [];
-    if (str.length) {
-      parts.push(
-        `Strongly Masc on ${str.join(', ')}: a clear masculine pole signal that tends to pull complementary feminine-leaning expression when intensity is matched.`
-      );
-    }
-    if (hyp.length) {
-      parts.push(
-        `Hyper-masc on ${hyp.join(', ')}: very strong pole signal; partner-fit friction shows up most when the complementary side is weak or absent.`
-      );
-    }
+    if (strTraits.length) parts.push(`Signal (Strongly Masc): ${strTraits.join(', ')}.`);
+    if (hypTraits.length) parts.push(`Signal (Hyper-masc): ${hypTraits.join(', ')}.`);
+    if (parts.length) parts.push('Implication: these spikes create stronger pull when matched by complementary feminine-leaning intensity.');
     return parts.join(' ');
   }
   if (reportedGender === 'woman') {
-    const hyp = Array.isArray(ad.hyperfemmeBandDimensionNames) ? ad.hyperfemmeBandDimensionNames : [];
-    const str = Array.isArray(ad.stronglyFemmeBandDimensionNames) ? ad.stronglyFemmeBandDimensionNames : [];
+    const hypKeys = Array.isArray(ad.hyperfemmeBandDimensionKeys) ? ad.hyperfemmeBandDimensionKeys : [];
+    const strKeys = Array.isArray(ad.stronglyFemmeBandDimensionKeys) ? ad.stronglyFemmeBandDimensionKeys : [];
+    const hypTraits = dedupeKeepOrder(hypKeys.map((k) => getEmphasizedPoleTrait(k, 'fem')), 5);
+    const strTraits = dedupeKeepOrder(strKeys.map((k) => getEmphasizedPoleTrait(k, 'fem')), 6);
     const parts = [];
-    if (str.length) {
-      parts.push(
-        `Strongly femme on ${str.join(', ')}: clear feminine pole signal; polarity chemistry tends to track whether a partner meets you with matched masculine-leaning strength.`
-      );
-    }
-    if (hyp.length) {
-      parts.push(
-        `Hyper femme on ${hyp.join(', ')}: very strong feminine pole signal; when the complementary pole is missing or soft, tension and attraction can flatten in these areas.`
-      );
-    }
+    if (hypTraits.length) parts.push(`Signal (Hyper-femme): ${hypTraits.join(', ')}.`);
+    if (strTraits.length) parts.push(`Signal (Strongly Femme): ${strTraits.join(', ')}.`);
+    if (parts.length) parts.push('Implication: these spikes create stronger pull when matched by complementary masculine-leaning intensity.');
     return parts.join(' ');
-  }
-  const legacy = Array.isArray(ad.stronglyAlignedDimensionNames) ? ad.stronglyAlignedDimensionNames : [];
-  if (legacy.length) {
-    return `Strong alignment on ${legacy.join(', ')} can increase polarity pull when a partner meets you with complementary intensity.`;
   }
   return '';
 }
 
 function buildPolarityAnomalyCosts(ad) {
-  const parts = [];
-  if (ad.crossPolarityDetected && ad.crossPolarityNote) {
-    parts.push(String(ad.crossPolarityNote).trim());
-  }
-  const anom = ad.anomalousDimensionNames;
-  if (Array.isArray(anom) && anom.length) {
-    parts.push(
-      clipIntegratedMapText(
-        `Anomaly: ${anom.join(', ')} — off typical norms; polarity needs an opposite pole at matched strength, or same-pole pairing can flatten pull.`,
-        220
-      )
-    );
-  }
-  return clipIntegratedMapText(parts.filter(Boolean).join(' '), 280);
+  const anomKeys = Array.isArray(ad.anomalousDimensionKeys) ? ad.anomalousDimensionKeys : [];
+  if (!anomKeys.length) return '';
+  const scores = ad?.dimensionScores || {};
+  const anomalyTraits = dedupeKeepOrder(
+    anomKeys.map((dimKey) => {
+      const net = scores[dimKey] && typeof scores[dimKey].net === 'number' ? scores[dimKey].net : 0;
+      const norm = (net + 1) / 2;
+      return getEmphasizedPoleTrait(dimKey, 'auto', norm);
+    }),
+    8
+  );
+  if (!anomalyTraits.length) return '';
+  return clipIntegratedMapText(
+    `Anomaly traits: ${anomalyTraits.join(', ')}. These poles sit outside typical range; without opposite-pole match at similar strength, chemistry can flatten or destabilise.`,
+    240
+  );
 }
 
 export function buildPolarityLayer(ad) {
@@ -449,9 +556,15 @@ export function buildPolarityLayer(ad) {
   const reportedGender = ad.gender;
   const qualityPhrases = buildTopQualityPhrases(ad, 4);
   const desc = takeSentences(interp.description || '', 2);
+  const hasStrongSpike =
+    ((Array.isArray(ad.stronglyMascBandDimensionKeys) ? ad.stronglyMascBandDimensionKeys.length : 0) > 0) ||
+    ((Array.isArray(ad.hypermascBandDimensionKeys) ? ad.hypermascBandDimensionKeys.length : 0) > 0) ||
+    ((Array.isArray(ad.stronglyFemmeBandDimensionKeys) ? ad.stronglyFemmeBandDimensionKeys.length : 0) > 0) ||
+    ((Array.isArray(ad.hyperfemmeBandDimensionKeys) ? ad.hyperfemmeBandDimensionKeys.length : 0) > 0);
+  const bridge = hasStrongSpike ? 'Composite sits near center; individual dimensions still show strong directional spikes.' : '';
   const meaningCore =
     qualityPhrases.length > 0
-      ? `${desc} Qualities that lean clearest in your data: ${qualityPhrases.join('; ')}.`
+      ? `${desc} ${bridge} Qualities that lean clearest in your data: ${qualityPhrases.join('; ')}.`
       : desc;
   const meaning = safeSentence(meaningCore || interp.label || 'Polarity profile loaded.');
 
@@ -462,7 +575,7 @@ export function buildPolarityLayer(ad) {
         'No dimensions hit the strongest polarity bands in this snapshot; expression may be more blended across situations. See the full report for per-dimension detail.'
       );
 
-  const costText = buildPolarityAnomalyCosts(ad);
+  const costText = [buildPolarityAnomalyCosts(ad), hyperHazardSummary(ad, reportedGender)].filter(Boolean).join(' ');
   const costs = costText
     ? safeSentence(costText)
     : safeSentence('No anomaly flags in this snapshot.');
@@ -602,51 +715,36 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
 
   const archPrimary = ad?.primaryArchetype;
   const archetypeName = archPrimary?.name || 'your archetype lead';
-  const optimizationCopy = archPrimary?.id ? ARCHETYPE_OPTIMIZATION?.[archPrimary.id] || null : null;
-  const withinStrategy = optimizationCopy?.optimizationStrategy || archPrimary?.growthEdge || '';
-  const blindSpot = optimizationCopy?.likelyBlindSpot || archPrimary?.stressResponse || '';
-
   const cat = pd?.overallTemperament?.category;
   const interp = cat ? TEMPERAMENT_SCORING?.interpretation?.[cat] : null;
-  const tempDesc = interp?.description ? takeSentences(interp.description, 1) : (interp?.label ? String(interp.label).trim() : '');
+  const tempLabel = interp?.label ? String(interp.label).trim() : '';
 
   let smvPrimaryRead = '';
-  let interpretation = '';
+  let smvAccess = '';
   if (smv) {
     const overall = typeof smv.overall === 'number' ? smv.overall : 0;
-    interpretation = getSMVInterpretation(overall);
+    smvAccess = getSMVInterpretation(overall);
     if (gender === 'male' && smv.badBoyGoodGuy?.label) smvPrimaryRead = smv.badBoyGoodGuy.label;
     else if (gender === 'female' && smv.keeperSweeper?.label) smvPrimaryRead = smv.keeperSweeper.label;
     else smvPrimaryRead = smv.marketPosition ? String(smv.marketPosition).trim() : '';
   }
 
   const rec = smv?.recommendation || {};
-  const weakest = (rec.weakestGuidance || [])[0];
-  const weakestLabel = weakest?.label ? String(weakest.label).trim() : '';
-
-  // Summary: no stitched “you operate from… and…” phrasing; translate into lived tension.
   const archLine = archetypeName
     ? `You run an independent path and avoid being placed inside hierarchies. That gives you freedom, but it also keeps you out of arenas where status, visibility, and opportunity compound.`
     : `You protect autonomy and resist being placed inside hierarchies. That gives you freedom, but it can also reduce visibility and opportunity.`;
 
   const tempQualities = buildTopQualityPhrases(pd, 3);
-  const tempLine = tempDesc
-    ? tempQualities.length
-      ? `${tempDesc} Clearest quality leans: ${tempQualities.join('; ')}.`
-      : tempDesc
+  const tempLine = tempQualities.length
+    ? tempLabel
+      ? `${tempLabel}. Clearest quality leans: ${tempQualities.join('; ')}.`
+      : `Clearest quality leans: ${tempQualities.join('; ')}.`
     : `Polarity data was thin in the saved snapshot; open the full polarity report for detail.`;
 
-  const smvLine = smv
+  const marketLine = smv
     ? (() => {
         const o = Math.round(smv.overall ?? 0);
         const mp = smv.marketPosition ? String(smv.marketPosition).trim() : '';
-        const gq =
-          gender === 'male' && smv.badBoyGoodGuy?.label
-            ? getQualificationExplanation(smv.badBoyGoodGuy.label, 'badBoyGoodGuy')
-            : gender === 'female' && smv.keeperSweeper?.label
-              ? getQualificationExplanation(smv.keeperSweeper.label, 'keeperSweeper')
-              : '';
-        const access = getSMVInterpretation(smv.overall);
         const label =
           gender === 'male' && smv.badBoyGoodGuy?.label
             ? smv.badBoyGoodGuy.label
@@ -661,27 +759,29 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
               : mp
                 ? `SMV ~${o}th percentile — ${mp}.`
                 : `SMV ~${o}th percentile.`;
-        return [head, gq, access].filter(Boolean).join(' ');
+        const lever =
+          (Array.isArray(rec.tactical) && rec.tactical[0]) ||
+          rec.strategic ||
+          'Target one visible signal upgrade and track response quality over a short cycle.';
+        const risk =
+          smv?.delusionBand && smv.delusionBand !== 'low'
+            ? integratedMapDelusionCostLine(smv.delusionBand)
+            : (typeof smv?.subcategories?.axisOfAttraction?.radActivity === 'number' &&
+              smv.subcategories.axisOfAttraction.radActivity < 40
+                ? 'Low out-of-domain activity signal can read low-status and narrow attraction pull.'
+                : '');
+        return [head, smvAccess, `Improvement lever: ${trimTrailingPunctuation(String(lever || ''))}.`, risk].filter(Boolean).join(' ');
       })()
     : `Attraction snapshot missing; complete the assessment for an SMV line in this summary.`;
 
-  const fastestShift = weakestLabel
-    ? `The fastest shift comes from building visible competence and tightening your direction — so others can read you clearly and respond accordingly.`
-    : `The fastest shift comes from building visible competence and tightening your direction — so others can read you clearly and respond accordingly.`;
+  const marketLead = smvPrimaryRead
+    ? `Market read: “${smvPrimaryRead}”.`
+    : '';
 
-  // Optional subtle hooks if present, but never as stitched meta labels.
-  const blind = blindSpot ? trimTrailingPunctuation(String(blindSpot).trim()) : '';
-  const strategy = withinStrategy ? trimTrailingPunctuation(String(withinStrategy).trim()) : '';
-  const extra = dedupeKeepOrder(
-    [
-      blind ? `This works until it doesn’t: ${blind}.` : '',
-      strategy ? `This gives you leverage when you apply it consistently: ${strategy}.` : '',
-      smvPrimaryRead ? `Market read: outcomes currently align with an “${smvPrimaryRead}” pattern (${trimTrailingPunctuation(interpretation)}).` : ''
-    ],
-    1
-  );
-
-  return [archLine, tempLine, smvLine, fastestShift, ...extra].filter(Boolean).join(' ');
+  return {
+    identity: [archLine, tempLine].filter(Boolean).join(' '),
+    market: [marketLead, marketLine].filter(Boolean).join(' ')
+  };
 }
 
 /**
@@ -725,7 +825,9 @@ export function buildNextMoveCandidates(archetypeSnap, polaritySnap, attractionS
     (pd.gender === 'man' &&
       ((pd.stronglyMascBandDimensionNames?.length || 0) > 0 || (pd.hypermascBandDimensionNames?.length || 0) > 0)) ||
     (pd.gender === 'woman' &&
-      ((pd.stronglyFemmeBandDimensionNames?.length || 0) > 0 || (pd.hyperfemmeBandDimensionNames?.length || 0) > 0))
+      ((pd.stronglyFemmeBandDimensionNames?.length || 0) > 0 ||
+        (pd.hyperfemmeBandDimensionNames?.length || 0) > 0 ||
+        (pd.femmeBandDimensionNames?.length || 0) > 0))
   ) {
     polText =
       'Use your strongest polarity poles as a filter—confirm partners can meet complementary intensity, not just chemistry in the moment.';
@@ -806,7 +908,7 @@ export function buildCrossIntegrationBullets(archetypeLayer, polarityLayer, attr
 }
 
 /**
- * How the three assessments compound: joint frame, stacked pressures, then where to lead.
+ * How the three assessments compound: headline, then meaning / helps / costs from each layer, then an integration cue.
  * @param {{ analysisData?: object }} archetypeSnap
  * @param {{ analysisData?: object }} polaritySnap
  * @param {{ smv?: object, currentGender?: string, preferences?: object }} attractionSnap
@@ -824,6 +926,9 @@ export function buildPatternConvergenceParagraph(archetypeSnap, polaritySnap, at
   const attL = opts.layers?.attL ?? buildAttractionLayer({ smv, currentGender: gender, preferences: prefs });
 
   const archName = ad.primaryArchetype?.name || 'your archetype pattern';
+  const secName = ad.secondaryArchetype?.name ? String(ad.secondaryArchetype.name).trim() : '';
+  const archHeadline = secName ? `${archName} (secondary pull: ${secName})` : archName;
+
   const cat = pd?.overallTemperament?.category;
   const interp = cat ? TEMPERAMENT_SCORING?.interpretation?.[cat] : null;
   const tempLabel = interp?.label ? String(interp.label).trim() : 'your polarity profile';
@@ -840,20 +945,30 @@ export function buildPatternConvergenceParagraph(archetypeSnap, polaritySnap, at
 
   const opener =
     pct != null
-      ? `Together, ${archName}, ${tempLabel}, and a ~${pct}th percentile SMV read (“${smvRead}”) map habit, chemistry fit, and who selects you—not the same problem stated three times.`
-      : `Together, ${archName}, ${tempLabel}, and “${smvRead}” map habit, chemistry fit, and who selects you—not the same problem stated three times.`;
+      ? `Three saved reports converge: Archetype (${archHeadline}) governs how you show up, Polarity (${tempLabel}) governs attraction fit and tension, and Attraction (~${pct}th percentile, “${smvRead}”) governs access and selection outcomes.`
+      : `Three saved reports converge: Archetype (${archHeadline}) shapes behaviour, Polarity (${tempLabel}) shapes attraction fit, and Attraction (“${smvRead}”) shapes access and selection outcomes.`;
 
-  const aCosts = String(archL?.frame?.costs || '').trim();
-  const pCosts = String(polL?.frame?.costs || '').trim();
-  const mCosts = String(attL?.frame?.costs || '').trim();
-  const costJoin = [aCosts, pCosts, mCosts].filter(Boolean).join(' ');
-  const mid = costJoin
-    ? clipIntegratedMapText(`Where each lens bites: ${clipIntegratedMapText(costJoin, 230)}`, 280)
-    : 'Where each lens bites: this snapshot shows no heavy cross-lens mismatch flags; friction may still be situational.';
+  const hasHyperHazard = Boolean(hyperHazardSummary(pd, pd?.gender));
+  const hasAnom = Array.isArray(pd.anomalousDimensionNames) && pd.anomalousDimensionNames.length > 0;
+  const hasSmvRisk = Boolean(smv?.delusionBand && smv.delusionBand !== 'low');
+  const hasArchetypeFriction = Boolean(String(archL?.frame?.costs || '').trim());
+
+  const mechanism = hasHyperHazard
+    ? 'When archetype habits, polarity spikes, and market constraints align, response quality and retention improve; when they clash, magnetism can coexist with instability.'
+    : 'When archetype habits, polarity fit, and market signal align, response quality and retention improve; when they clash, effort rises while outcomes flatten.';
+
+  const frictionSignals = [];
+  if (hasArchetypeFriction) frictionSignals.push('archetype limitation loops');
+  if (hasAnom) frictionSignals.push('anomalous polarity dimensions');
+  if (hasHyperHazard) frictionSignals.push('hyper-state instability risk');
+  if (hasSmvRisk) frictionSignals.push('standards-to-signal mismatch');
+
+  const synthesis = frictionSignals.length
+    ? `Current friction concentrates around ${frictionSignals.join(', ')}; resolve the strongest one first to unlock leverage across the other two layers.`
+    : 'Current layers are reasonably aligned; protect that alignment by keeping one behaviour change and one signal upgrade running in parallel.';
 
   const delusion = smv?.delusionBand && smv.delusionBand !== 'low';
   const overall = typeof smv?.overall === 'number' ? smv.overall : 50;
-  const hasAnom = Array.isArray(pd.anomalousDimensionNames) && pd.anomalousDimensionNames.length > 0;
   let closer = '';
   if (delusion || overall < 42) {
     closer =
@@ -870,5 +985,11 @@ export function buildPatternConvergenceParagraph(archetypeSnap, polaritySnap, at
   }
   closer = clipIntegratedMapText(closer, 175);
 
-  return clipIntegratedMapText(`${opener} ${mid} ${closer}`.replace(/\s+/g, ' ').trim(), 560);
+  const assembled = [opener, mechanism, synthesis, closer]
+    .filter(Boolean)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return clipIntegratedMapText(assembled, 620);
 }

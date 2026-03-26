@@ -190,7 +190,7 @@ export const ATTRACTION_RESPONSIVENESS = {
   
   responsiveness_patterns: {
     name: 'Responsiveness Patterns',
-    spectrumLabel: 'Being pursued vs Pursuing',
+    spectrumLabel: 'Connection: being pursued vs pursuing',
     description: 'How you respond to attraction and pursue or receive connection',
     masculinePoleLabel: 'oriented to pursuing and initiating connection',
     femininePoleLabel: 'oriented to being pursued and responding',

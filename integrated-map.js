@@ -80,10 +80,13 @@ function renderLayer(layer) {
 
 function renderCurrentPatternSummary(summary) {
   if (!summary) return '';
+  const identity = typeof summary === 'object' ? summary.identity : String(summary || '');
+  const market = typeof summary === 'object' ? summary.market : '';
   return `
     <section class="integrated-map-current-pattern" aria-labelledby="integrated-current-pattern-heading">
       <h2 id="integrated-current-pattern-heading" class="integrated-map-frame-heading">Your Current Pattern (Summary)</h2>
-      <p>${esc(summary)}</p>
+      ${identity ? `<p><strong>Identity Pattern:</strong> ${esc(identity)}</p>` : ''}
+      ${market ? `<p><strong>Market Read:</strong> ${esc(market)}</p>` : ''}
     </section>`;
 }
 

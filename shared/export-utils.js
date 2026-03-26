@@ -7,6 +7,9 @@ import {
   TEMPERAMENT_REPORT_TIER2_SUMMARY,
   TEMPERAMENT_REPORT_TIER2_PARAS
 } from '../temperament-data/temperament-report-copy.js';
+import { TEMPERAMENT_DIMENSIONS } from '../temperament-data/temperament-dimensions.js';
+import { INTIMATE_DYNAMICS } from '../temperament-data/intimate-dynamics.js';
+import { ATTRACTION_RESPONSIVENESS } from '../temperament-data/attraction-responsiveness.js';
 
 const EXPORT_VERSION = '1.1.0';
 
@@ -973,6 +976,7 @@ function reportDocHead(title, systemName) {
     .card { background: #f8f9fa; border-left: 4px solid #0d6efd; border-radius: 4px; padding: 1rem; margin: 1rem 0; }
     .muted { color: #666; font-size: 0.9rem; }
     .strong { font-weight: 600; }
+    .dimension-pole-bias { text-decoration: underline; text-decoration-thickness: 0.09em; text-underline-offset: 0.15em; font-weight: inherit; }
     @media print { body { max-width: 100%; } }
   </style>
 </head>
@@ -1099,9 +1103,245 @@ function dimensionKeyToDisplayName(key) {
   return String(key).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
-/** Mirrors on-screen Tier 1 + Tier 2 polarity education (static copy). */
+function getTemperamentSpectrumBandKey(normalizedDimScore) {
+  const x = Math.min(1, Math.max(0, Number(normalizedDimScore) || 0));
+  if (x < 13.33 / 100) return 'hyper_femme';
+  if (x < 26.66 / 100) return 'strongly_femme';
+  if (x < 40 / 100) return 'femme';
+  if (x < 60 / 100) return 'balanced';
+  if (x < 73.33 / 100) return 'masc';
+  if (x < 86.66 / 100) return 'strongly_masc';
+  return 'hyper_masc';
+}
+
+const TEMPERAMENT_BAND_LABELS_EXPORT = {
+  hyper_femme: 'Hyper-femme',
+  strongly_femme: 'Strongly Femme',
+  femme: 'Femme',
+  balanced: 'Balanced',
+  masc: 'Masc',
+  strongly_masc: 'Strongly Masc',
+  hyper_masc: 'Hyper-masc'
+};
+
+const TEMPERAMENT_BAND_ORDER_EXPORT = [
+  'hyper_femme',
+  'strongly_femme',
+  'femme',
+  'balanced',
+  'masc',
+  'strongly_masc',
+  'hyper_masc'
+];
+
+function getDimensionMetaForExport(dimKey) {
+  return (TEMPERAMENT_DIMENSIONS && TEMPERAMENT_DIMENSIONS[dimKey])
+    || (INTIMATE_DYNAMICS && INTIMATE_DYNAMICS[dimKey])
+    || (ATTRACTION_RESPONSIVENESS && ATTRACTION_RESPONSIVENESS[dimKey]);
+}
+
+/** Aligns with temperament-engine getDimensionDisplayName (5A Option B: clear labels for pursuit dims). */
+function getTemperamentDimensionExportLabel(dimKey) {
+  const dim = getDimensionMetaForExport(dimKey);
+  if (
+    (dimKey === 'arousal_and_responsiveness' || dimKey === 'responsiveness_patterns') &&
+    dim?.name &&
+    dim?.spectrumLabel
+  ) {
+    return `${dim.name}: ${dim.spectrumLabel}`;
+  }
+  if (dim?.spectrumLabel) return dim.spectrumLabel;
+  return dimensionKeyToDisplayName(dimKey);
+}
+
+function getSpectrumPartPoleBiasHtmlExport(spectrumPart, normalizedDimScore, dimKey) {
+  const label = spectrumPart || '';
+  const parts = label.split(/\s+vs\s+/i);
+  if (parts.length >= 2) {
+    const fem = escapeHtml(parts[0].trim());
+    const masc = escapeHtml(parts.slice(1).join(' vs ').trim());
+    const vs = ' vs ';
+    const x = normalizedDimScore;
+    if (x > 0.52) return `${fem}${vs}<span class="dimension-pole-bias">${masc}</span>`;
+    if (x < 0.48) return `<span class="dimension-pole-bias">${fem}</span>${vs}${masc}`;
+    return `${fem}${vs}${masc}`;
+  }
+  const dim = dimKey ? getDimensionMetaForExport(dimKey) : null;
+  const masculineLabel = dim?.masculinePoleLabel || '';
+  const feminineLabel = dim?.femininePoleLabel || '';
+  const x = normalizedDimScore;
+  if (x > 0.52 && masculineLabel) {
+    return `<span class="dimension-pole-bias">${escapeHtml(masculineLabel)}</span>`;
+  }
+  if (x < 0.48 && feminineLabel) {
+    return `<span class="dimension-pole-bias">${escapeHtml(feminineLabel)}</span>`;
+  }
+  return escapeHtml(label || feminineLabel || masculineLabel || '');
+}
+
+/** Matches on-screen getDimensionTitleHtml; rawDisplayFromSave optional (saved dimensionDisplayNames). */
+function buildTemperamentDimensionTitleHtmlExport(dimKey, normalizedDimScore, rawDisplayFromSave) {
+  const rawDisplay =
+    rawDisplayFromSave != null && String(rawDisplayFromSave).trim() !== ''
+      ? String(rawDisplayFromSave).trim()
+      : getTemperamentDimensionExportLabel(dimKey);
+  const emSep = ' — ';
+  if (rawDisplay.includes(emSep)) {
+    const i = rawDisplay.indexOf(emSep);
+    const prefix = rawDisplay.slice(0, i).trim();
+    const spectrumPart = rawDisplay.slice(i + emSep.length).trim();
+    return `${escapeHtml(prefix)}${emSep}${getSpectrumPartPoleBiasHtmlExport(spectrumPart, normalizedDimScore, dimKey)}`;
+  }
+  const colonSep = ': ';
+  const ci = rawDisplay.indexOf(colonSep);
+  if (ci > 0 && /\s+vs\s+/i.test(rawDisplay.slice(ci + colonSep.length))) {
+    const prefix = rawDisplay.slice(0, ci).trim();
+    const spectrumPart = rawDisplay.slice(ci + colonSep.length).trim();
+    return `${escapeHtml(prefix)}${colonSep}${getSpectrumPartPoleBiasHtmlExport(spectrumPart, normalizedDimScore, dimKey)}`;
+  }
+  return getSpectrumPartPoleBiasHtmlExport(rawDisplay, normalizedDimScore, dimKey);
+}
+
+function formatMagnetDimensionKeysHtmlExport(data, dimKeys, maxShown = 3) {
+  if (!Array.isArray(dimKeys) || dimKeys.length === 0) return '';
+  const scores = data.dimensionScores || {};
+  const displayNames = data.dimensionDisplayNames && typeof data.dimensionDisplayNames === 'object' ? data.dimensionDisplayNames : {};
+  const n = maxShown;
+  const slice = dimKeys.slice(0, n);
+  const parts = slice.map((dimKey) => {
+    const net = scores[dimKey]?.net;
+    const norm = typeof net === 'number' ? (net + 1) / 2 : 0.5;
+    const raw = displayNames[dimKey];
+    return buildTemperamentDimensionTitleHtmlExport(dimKey, norm, raw);
+  });
+  let out = parts.join(', ');
+  if (dimKeys.length > n) {
+    out += `, +${dimKeys.length - n} more`;
+  }
+  return out;
+}
+
+function getDimensionDescriptorCompactExport(dimKey, normalizedDimScore) {
+  const dim = getDimensionMetaForExport(dimKey);
+  const label = dim?.spectrumLabel || '';
+  const parts = label.split(/\s+vs\s+/i);
+  if (parts.length >= 2) {
+    const femSide = parts[0].trim();
+    const mascSide = parts.slice(1).join(' vs ').trim();
+    const x = normalizedDimScore;
+    if (x > 0.52) return mascSide.length > 52 ? `${mascSide.slice(0, 49)}…` : mascSide;
+    if (x < 0.48) return femSide.length > 52 ? `${femSide.slice(0, 49)}…` : femSide;
+    return 'Near midpoint on this axis';
+  }
+  const masculineLabel = dim?.masculinePoleLabel || 'structured';
+  const feminineLabel = dim?.femininePoleLabel || 'receptive';
+  if (normalizedDimScore > 0.52) return masculineLabel.length > 52 ? `${masculineLabel.slice(0, 49)}…` : masculineLabel;
+  if (normalizedDimScore < 0.48) return feminineLabel.length > 52 ? `${feminineLabel.slice(0, 49)}…` : feminineLabel;
+  return 'Near midpoint on this axis';
+}
+
+function formatMagnetListExport(names, maxShown = 3) {
+  if (!names || names.length === 0) return '';
+  if (names.length <= maxShown) return names.map(n => escapeHtml(n)).join(', ');
+  return `${names.slice(0, maxShown).map(n => escapeHtml(n)).join(', ')}, +${names.length - maxShown} more`;
+}
+
+function buildTemperamentDimensionBreakdownExportHtml(data) {
+  const scores = data.dimensionScores;
+  if (!scores || Object.keys(scores).length === 0) return '';
+  const displayNames = data.dimensionDisplayNames && typeof data.dimensionDisplayNames === 'object' ? data.dimensionDisplayNames : {};
+  const anomalousSet = new Set(Array.isArray(data.anomalousDimensionKeys) ? data.anomalousDimensionKeys : []);
+  const grouped = {};
+  TEMPERAMENT_BAND_ORDER_EXPORT.forEach(b => { grouped[b] = []; });
+  Object.entries(scores).forEach(([dimKey, score]) => {
+    if (!score || typeof score.net !== 'number') return;
+    const normalized = (score.net + 1) / 2;
+    const band = getTemperamentSpectrumBandKey(normalized);
+    grouped[band].push({ dimKey, normalized });
+  });
+  let h = '<div class="card"><h3>Dimension breakdown</h3>';
+  h += '<p class="muted">Cross-dimensional variation is expected: strong structure in some areas and expressive flow in others.</p>';
+  TEMPERAMENT_BAND_ORDER_EXPORT.forEach(bandKey => {
+    const items = grouped[bandKey];
+    if (!items.length) return;
+    items.sort((a, b) => a.dimKey.localeCompare(b.dimKey));
+    h += `<h4>${escapeHtml(TEMPERAMENT_BAND_LABELS_EXPORT[bandKey] || bandKey)}</h4><ul>`;
+    items.forEach(({ dimKey, normalized }) => {
+      const titleHtml = buildTemperamentDimensionTitleHtmlExport(dimKey, normalized, displayNames[dimKey]);
+      const ann = anomalousSet.has(dimKey) ? ' <strong>(Temperament anomaly)</strong>' : '';
+      const compact = escapeHtml(getDimensionDescriptorCompactExport(dimKey, normalized));
+      h += `<li>${titleHtml}${ann} — ${compact}</li>`;
+    });
+    h += '</ul>';
+  });
+  h += '</div>';
+  return h;
+}
+
+/**
+ * Plain-text paragraphs reconciling weighted composite category with dimension-level
+ * anomaly and magnetism flags. Used on-screen and in HTML export.
+ * @param {Object} data - assessment / analysisData snapshot
+ * @returns {string[]}
+ */
+export function buildTemperamentSynthesisPlainParagraphs(data) {
+  const cat = data?.overallTemperament?.category || 'balanced';
+  const compositeIntro = {
+    balanced:
+      'Your weighted composite sits near the center of the spectrum—masculine and feminine pulls average out across dimensions.',
+    balanced_masculine:
+      'Your weighted composite leans modestly masculine on average, with substantial feminine-leaning integration in the mix.',
+    balanced_feminine:
+      'Your weighted composite leans modestly feminine on average, with substantial masculine-leaning integration in the mix.',
+    predominantly_masculine:
+      'Your weighted composite reads clearly masculine-leaning—that is the centre of gravity across dimensions.',
+    highly_masculine:
+      'Your weighted composite reads strongly masculine-leaning—that is the centre of gravity across dimensions.',
+    predominantly_feminine:
+      'Your weighted composite reads clearly feminine-leaning—that is the centre of gravity across dimensions.',
+    highly_feminine:
+      'Your weighted composite reads strongly feminine-leaning—that is the centre of gravity across dimensions.'
+  };
+  const intro = compositeIntro[cat] || compositeIntro.balanced;
+
+  const nA = Array.isArray(data?.anomalousDimensionNames) ? data.anomalousDimensionNames.length : 0;
+  const hasCross = !!data?.crossPolarityDetected;
+
+  let nM = 0;
+  if (data?.gender === 'man') {
+    nM =
+      (Array.isArray(data.stronglyMascBandDimensionNames) ? data.stronglyMascBandDimensionNames.length : 0) +
+      (Array.isArray(data.hypermascBandDimensionNames) ? data.hypermascBandDimensionNames.length : 0);
+  } else if (data?.gender === 'woman') {
+    nM =
+      (Array.isArray(data.stronglyFemmeBandDimensionNames) ? data.stronglyFemmeBandDimensionNames.length : 0) +
+      (Array.isArray(data.hyperfemmeBandDimensionNames) ? data.hyperfemmeBandDimensionNames.length : 0) +
+      (Array.isArray(data.femmeBandDimensionNames) ? data.femmeBandDimensionNames.length : 0);
+  } else if (Array.isArray(data?.stronglyAlignedDimensionNames)) {
+    nM = data.stronglyAlignedDimensionNames.length;
+  }
+
+  let second = '';
+  if (nA > 0 && nM > 0) {
+    second = `That average coexists with a textured map: ${nA} dimension${nA === 1 ? '' : 's'} ${nA === 1 ? 'is' : 'are'} flagged as temperament anomalies for your context, and ${nM} dimension${nM === 1 ? '' : 's'} ${nM === 1 ? 'shows' : 'show'} strong pole magnetism. Those are the axes where strain or spark concentrates; they do not cancel the composite—they show where the average hides real spread.`;
+  } else if (nA > 0) {
+    second = `Dimension-level, ${nA} dimension${nA === 1 ? '' : 's'} ${nA === 1 ? 'sits' : 'sit'} outside typical range for your context (see partner-fit note above). The headline still describes the blend across all dimensions.`;
+  } else if (nM > 0) {
+    second = `${nM} dimension${nM === 1 ? '' : 's'} ${nM === 1 ? 'shows' : 'show'} strong pole magnetism (see above). The composite is an average; those pulls mark where complementary opposite strength matters most for fit.`;
+  } else if (hasCross) {
+    second =
+      'Your overall position relative to typical norms for your context is flagged above; individual dimensions may still look moderate on the sliders. Read the composite line together with that note for headline partner-fit.';
+  } else {
+    second =
+      'No dimensions triggered anomaly or strong pole magnetism flags in this scoring pass; the band groups above still show ordinary spread—use them to see where you borrow structure or flow.';
+  }
+
+  return [intro, second];
+}
+
+/** Mirrors on-screen primer: how to read + spectrum caveat + Tier 2 copy. */
 function buildTemperamentReportPrimerExportHtml() {
-  let h = '<div class="card"><h3>Reading this report: polarity and couples</h3>';
+  let h = '<div class="card"><h3>How to read this</h3>';
   TEMPERAMENT_REPORT_TIER1_PARAS.forEach(p => {
     h += `<p>${escapeHtml(p)}</p>`;
   });
@@ -1123,74 +1363,147 @@ function buildTemperamentReportBody(data) {
     html += `<p>Normalized: ${(ot.normalizedScore != null ? (ot.normalizedScore * 100).toFixed(1) : '—')}% · Masculine: ${(ot.masculineScore != null ? (ot.masculineScore * 100).toFixed(1) : '—')}% · Feminine: ${(ot.feminineScore != null ? (ot.feminineScore * 100).toFixed(1) : '—')}% · Net: ${(ot.netScore != null ? (ot.netScore * 100).toFixed(1) : '—')}%</p>`;
     html += buildTemperamentReportPrimerExportHtml();
   }
+  const ti = data.temperamentInterpretation;
+  if (ti && (ti.label || ti.description)) {
+    html += '<div class="card temperament-expression-headline"><h3>' + escapeHtml(ti.label || 'Expression summary') + '</h3>';
+    if (ti.description) html += `<p>${escapeHtml(ti.description)}</p>`;
+    html += '</div>';
+  }
+  html += '<p class="muted">Your overall position is a weighted blend across dimensions; grouped rows below show where that blend comes from.</p>';
   if (data.crossPolarityDetected && data.crossPolarityNote) {
     html += `<div class="card"><h3>Cross-polarity finding</h3><p>${escapeHtml(data.crossPolarityNote)}</p></div>`;
   }
-  const hasPolarityConsideration = data.crossPolarityDetected || (Array.isArray(data.anomalousDimensionNames) && data.anomalousDimensionNames.length > 0);
+  html += buildTemperamentDimensionBreakdownExportHtml(data);
+  const hasHyperMascRisk = Array.isArray(data.hypermascBandDimensionNames) && data.hypermascBandDimensionNames.length > 0;
+  const hasHyperFemmeRisk = Array.isArray(data.hyperfemmeBandDimensionNames) && data.hyperfemmeBandDimensionNames.length > 0;
+  const hasPolarityConsideration =
+    data.crossPolarityDetected ||
+    (Array.isArray(data.anomalousDimensionNames) && data.anomalousDimensionNames.length > 0) ||
+    hasHyperMascRisk ||
+    hasHyperFemmeRisk;
   if (hasPolarityConsideration) {
-    html += '<div class="card"><h3>Temperament anomaly</h3>';
+    html += '<div class="card"><h3>Potential polarity failure — partner fit</h3>';
     if (Array.isArray(data.anomalousDimensionNames) && data.anomalousDimensionNames.length > 0) {
-      html += `<p>One or more dimensions show a significant swing from typical gender norms: <strong>${data.anomalousDimensionNames.map(n => escapeHtml(n)).join(', ')}</strong>.</p>`;
+      html += `<p><strong>What this flags:</strong> Dimension-level leans outside typical range for your context: <strong>${data.anomalousDimensionNames.map(n => escapeHtml(n)).join(', ')}</strong>.</p>`;
     } else {
-      html += '<p>One or more dimensions show a significant swing from typical gender norms.</p>';
+      html += '<p><strong>What this flags:</strong> Overall pattern outside typical range for your context.</p>';
     }
-    html += '<p>These dimensions can create a <strong>non-standard polarity dynamic</strong> or, depending on your partner, a <strong>polarity breakdown</strong>. If your partner has a <strong>complementary opposite at similar intensity</strong> (other pole, matched strength), the dynamic can work and polarity is restored in a non-standard way. If your partner <strong>shares the same pole</strong> in this dimension, the relationship can still be functional but may have reduced hormonal leverage (less tension and attraction in that area). This is not inherently destabilizing but worth investigating — often connected to trauma response, unhealed wounds, or context-dependent adaptation.</p></div>';
+    html += '<p><strong>What it is:</strong> Structural signal for partner fit, not a character verdict.</p>';
+    html += '<p><strong>If partner is mismatched:</strong> Same pole with a weak opposite flattens tension here; an opposite pole at <strong>similar strength</strong> restores polarity.</p>';
+    html += '<p><strong>What restores it:</strong> Complementary opposite at matched intensity or intentional calibration—often worth exploring with stress, history, and context in view.</p>';
+    if (data.gender === 'man' && hasHyperMascRisk) {
+      html += '<p><strong>Hyper-state concern:</strong> Hyper-masc intensity can become neglectful, rigid, or over-controlling without steady complementary feminine-leaning balance.</p>';
+    } else if (data.gender === 'woman' && hasHyperFemmeRisk) {
+      html += '<p><strong>Hyper-state concern:</strong> Hyper-femme intensity can become anxious, chaotic, or over-merged without stabilising complementary masculine-leaning structure.</p>';
+    } else if (hasHyperMascRisk || hasHyperFemmeRisk) {
+      html += '<p><strong>Hyper-state concern:</strong> Hyper-pole intensity can amplify attraction and instability together when complementary balance is missing.</p>';
+    }
+    html += '</div>';
   }
   const strongMascBand = Array.isArray(data.stronglyMascBandDimensionNames) ? data.stronglyMascBandDimensionNames : [];
   const hypermascBand = Array.isArray(data.hypermascBandDimensionNames) ? data.hypermascBandDimensionNames : [];
   const strongFemmeBand = Array.isArray(data.stronglyFemmeBandDimensionNames) ? data.stronglyFemmeBandDimensionNames : [];
   const hyperfemmeBand = Array.isArray(data.hyperfemmeBandDimensionNames) ? data.hyperfemmeBandDimensionNames : [];
+  const femmeBand = Array.isArray(data.femmeBandDimensionNames) ? data.femmeBandDimensionNames : [];
+  const strongMascKeys = Array.isArray(data.stronglyMascBandDimensionKeys) ? data.stronglyMascBandDimensionKeys : [];
+  const hypermascKeys = Array.isArray(data.hypermascBandDimensionKeys) ? data.hypermascBandDimensionKeys : [];
+  const strongFemmeKeys = Array.isArray(data.stronglyFemmeBandDimensionKeys) ? data.stronglyFemmeBandDimensionKeys : [];
+  const hyperfemmeKeys = Array.isArray(data.hyperfemmeBandDimensionKeys) ? data.hyperfemmeBandDimensionKeys : [];
+  const femmeKeys = Array.isArray(data.femmeBandDimensionKeys) ? data.femmeBandDimensionKeys : [];
+  const alignedKeys = Array.isArray(data.stronglyAlignedDimensionKeys) ? data.stronglyAlignedDimensionKeys : [];
   const anyStrongAlign =
     (Array.isArray(data.stronglyAlignedDimensionNames) && data.stronglyAlignedDimensionNames.length > 0) ||
     strongMascBand.length > 0 ||
     hypermascBand.length > 0 ||
     strongFemmeBand.length > 0 ||
-    hyperfemmeBand.length > 0;
+    hyperfemmeBand.length > 0 ||
+    femmeBand.length > 0;
   if (anyStrongAlign) {
     const complementLabel = data.gender === 'man' ? 'feminine-leaning' : data.gender === 'woman' ? 'masculine-leaning' : 'complementary';
     if (data.gender === 'man' && (strongMascBand.length > 0 || hypermascBand.length > 0)) {
-      html += '<div class="card"><h3>Masculine polarity alignment</h3>';
+      html += '<div class="card"><h3>Polarity magnetism</h3>';
       if (strongMascBand.length > 0) {
-        html += `<h4>Strongly Masc (60–80%)</h4><p><strong>${strongMascBand.map(n => escapeHtml(n)).join(', ')}</strong></p>`;
+        const preview =
+          strongMascKeys.length > 0
+            ? formatMagnetDimensionKeysHtmlExport(data, strongMascKeys)
+            : formatMagnetListExport(strongMascBand);
+        html += `<p><strong>Strongly Masc (${strongMascBand.length}):</strong> ${preview}</p>`;
       }
       if (hypermascBand.length > 0) {
-        html += `<h4>Hyper-masc (80%+)</h4><p><strong>${hypermascBand.map(n => escapeHtml(n)).join(', ')}</strong></p>`;
+        const preview =
+          hypermascKeys.length > 0
+            ? formatMagnetDimensionKeysHtmlExport(data, hypermascKeys)
+            : formatMagnetListExport(hypermascBand);
+        html += `<p><strong>Hyper-masc (${hypermascBand.length}):</strong> ${preview}</p>`;
       }
-      html += `<p>These dimensions can increase polarity pull when a partner occupies the <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+      html += `<p>Pull is strongest on these axes—in each title above, the emphasized fragment is the masculine side of that dimension where you lean. It lands when a partner holds the <strong>${escapeHtml(complementLabel)}</strong> side with enough strength; weak complement reads as strain or over-functioning.</p></div>`;
     } else if (data.gender === 'man' && Array.isArray(data.stronglyAlignedDimensionNames) && data.stronglyAlignedDimensionNames.length > 0) {
-      html += `<div class="card"><h3>Masculine polarity alignment</h3>`;
-      html += `<p>Aligned dimensions: <strong>${data.stronglyAlignedDimensionNames.map(n => escapeHtml(n)).join(', ')}</strong>.</p>`;
-      html += `<p>These dimensions can increase polarity pull when a partner occupies the <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
-    } else if (data.gender === 'woman' && (strongFemmeBand.length > 0 || hyperfemmeBand.length > 0)) {
-      html += `<div class="card"><h3>${escapeHtml('Feminine polarity alignment')}</h3>`;
-      if (strongFemmeBand.length > 0) {
-        html += `<h4>Strongly femme (20–40%)</h4><p><strong>${strongFemmeBand.map(n => escapeHtml(n)).join(', ')}</strong></p>`;
-      }
+      html += `<div class="card"><h3>Polarity magnetism</h3>`;
+      const preview =
+        alignedKeys.length > 0
+          ? formatMagnetDimensionKeysHtmlExport(data, alignedKeys)
+          : formatMagnetListExport(data.stronglyAlignedDimensionNames);
+      html += `<p><strong>Aligned (${data.stronglyAlignedDimensionNames.length}):</strong> ${preview}</p>`;
+      html += `<p>Pull is strongest on these axes—in each title above, the emphasized fragment is the masculine side of that dimension where you lean. It lands when a partner holds the <strong>${escapeHtml(complementLabel)}</strong> side with enough strength; weak complement reads as strain or over-functioning.</p></div>`;
+    } else if (data.gender === 'woman' && (strongFemmeBand.length > 0 || hyperfemmeBand.length > 0 || femmeBand.length > 0)) {
+      html += `<div class="card"><h3>${escapeHtml('Polarity magnetism')}</h3>`;
       if (hyperfemmeBand.length > 0) {
-        html += `<h4>Hyper femme (0–20%)</h4><p><strong>${hyperfemmeBand.map(n => escapeHtml(n)).join(', ')}</strong></p>`;
+        const preview =
+          hyperfemmeKeys.length > 0
+            ? formatMagnetDimensionKeysHtmlExport(data, hyperfemmeKeys)
+            : formatMagnetListExport(hyperfemmeBand);
+        html += `<p><strong>Hyper-femme (${hyperfemmeBand.length}):</strong> ${preview}</p>`;
       }
-      html += `<p>These dimensions can increase polarity pull when a partner occupies the <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+      if (strongFemmeBand.length > 0) {
+        const preview =
+          strongFemmeKeys.length > 0
+            ? formatMagnetDimensionKeysHtmlExport(data, strongFemmeKeys)
+            : formatMagnetListExport(strongFemmeBand);
+        html += `<p><strong>Strongly Femme (${strongFemmeBand.length}):</strong> ${preview}</p>`;
+      }
+      if (femmeBand.length > 0) {
+        const preview =
+          femmeKeys.length > 0 ? formatMagnetDimensionKeysHtmlExport(data, femmeKeys) : formatMagnetListExport(femmeBand);
+        html += `<p><strong>Femme (${femmeBand.length}):</strong> ${preview}</p>`;
+      }
+      html += `<p>Pull is strongest on these axes—in each title above, the emphasized fragment is the feminine side of that dimension where you lean. It lands when a partner holds the <strong>${escapeHtml(complementLabel)}</strong> side with enough strength; weak complement reads as strain or over-functioning.</p></div>`;
     } else if (data.gender === 'woman' && Array.isArray(data.stronglyAlignedDimensionNames) && data.stronglyAlignedDimensionNames.length > 0) {
-      html += `<div class="card"><h3>${escapeHtml('Feminine polarity alignment')}</h3>`;
-      html += `<p>Aligned dimensions: <strong>${data.stronglyAlignedDimensionNames.map(n => escapeHtml(n)).join(', ')}</strong>.</p>`;
-      html += `<p>These dimensions can increase polarity pull when a partner occupies the <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+      html += `<div class="card"><h3>${escapeHtml('Polarity magnetism')}</h3>`;
+      const preview =
+        alignedKeys.length > 0
+          ? formatMagnetDimensionKeysHtmlExport(data, alignedKeys)
+          : formatMagnetListExport(data.stronglyAlignedDimensionNames);
+      html += `<p><strong>Aligned (${data.stronglyAlignedDimensionNames.length}):</strong> ${preview}</p>`;
+      html += `<p>Pull is strongest on these axes—in each title above, the emphasized fragment is the feminine side of that dimension where you lean. It lands when a partner holds the <strong>${escapeHtml(complementLabel)}</strong> side with enough strength; weak complement reads as strain or over-functioning.</p></div>`;
     } else if (Array.isArray(data.stronglyAlignedDimensionNames) && data.stronglyAlignedDimensionNames.length > 0) {
-      html += `<div class="card"><h3>Strongly aligned polarity expression</h3>`;
-      html += `<p>Aligned dimensions: <strong>${data.stronglyAlignedDimensionNames.map(n => escapeHtml(n)).join(', ')}</strong>.</p>`;
-      html += `<p>These dimensions can increase polarity pull when a partner occupies a <strong>${escapeHtml(complementLabel)}</strong> pole with enough matched intensity. Without that complement, these same areas may feel like role strain or over-functioning.</p></div>`;
+      html += `<div class="card"><h3>Polarity magnetism</h3>`;
+      const preview =
+        alignedKeys.length > 0
+          ? formatMagnetDimensionKeysHtmlExport(data, alignedKeys)
+          : formatMagnetListExport(data.stronglyAlignedDimensionNames);
+      html += `<p><strong>Aligned (${data.stronglyAlignedDimensionNames.length}):</strong> ${preview}</p>`;
+      html += `<p>Pull lands best when a partner holds a <strong>${escapeHtml(complementLabel)}</strong> side with enough strength; weak complement reads as strain or over-functioning.</p></div>`;
     }
   }
-  if (data.dimensionScores && Object.keys(data.dimensionScores).length > 0) {
-    const displayNames = data.dimensionDisplayNames && typeof data.dimensionDisplayNames === 'object' ? data.dimensionDisplayNames : {};
-    html += '<h3>Dimension scores</h3><ul>';
-    Object.entries(data.dimensionScores).forEach(([dim, score]) => {
-      if (score && typeof score.net === 'number') {
-        const displayName = displayNames[dim] || dimensionKeyToDisplayName(dim);
-        html += `<li>${escapeHtml(displayName)}: net ${(score.net * 100).toFixed(1)}%</li>`;
-      }
+  const synthParas =
+    Array.isArray(ti?.synthesisParagraphs) && ti.synthesisParagraphs.length
+      ? ti.synthesisParagraphs
+      : buildTemperamentSynthesisPlainParagraphs(data);
+  html += '<div class="card temperament-profile-synthesis"><h3>Reading your profile together</h3>';
+  synthParas.forEach(p => {
+    if (p) html += `<p>${escapeHtml(p)}</p>`;
+  });
+  if (ti && Array.isArray(ti.characteristics) && ti.characteristics.length) {
+    html += '<h4>Aggregate themes (average across dimensions)</h4><ul>';
+    ti.characteristics.forEach(c => {
+      html += `<li>${escapeHtml(c)}</li>`;
     });
     html += '</ul>';
   }
+  if (ti?.variations) {
+    html += `<p class="muted"><strong>Note:</strong> ${escapeHtml(ti.variations)}</p>`;
+  }
+  html += '</div>';
   if (data.contextSensitivity && data.contextSensitivity.detected && data.contextSensitivity.message) {
     html += `<p class="muted"><strong>Context-responsive:</strong> ${escapeHtml(data.contextSensitivity.message)}</p>`;
   }

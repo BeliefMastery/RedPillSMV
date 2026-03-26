@@ -386,38 +386,68 @@ export const TEMPERAMENT_DIMENSIONS = {
 
   aesthetic_orientation: {
     name: 'Aesthetic Orientation',
-    spectrumLabel: 'Intuitive, flow-based presentation vs Deliberate, consistent presentation',
-    description: 'Approach to physical self-presentation — structured, disciplined, and goal-directed vs. intuitive, expressive, and flow-based',
-    masculinePoleLabel: 'oriented to deliberate, consistent self-presentation',
-    femininePoleLabel: 'oriented to intuitive, flow-based self-presentation',
+    spectrumLabel:
+      'Intuitive, mood-led grooming and style vs Deliberate, consistent, or purely functional grooming and style',
+    description:
+      'How you compose grooming and dress: one pole is mood-led self-expression through look; the other is not mood-orchestrated—either a deliberate, repeatable standard, manufacturing an outcome (including polished or “power” looks), or a deprioritised / purely functional baseline with little day-to-day variation driven by feeling.',
+    masculinePoleLabel:
+      'deliberate, consistent, functional, or deprioritised grooming—not mood-orchestrated',
+    femininePoleLabel: 'intuitive, mood-led grooming and style as expression',
     questions: [
       {
         id: 'aes_1',
-        question: 'When it comes to your physical presentation — how you dress, groom, and carry yourself — which feels more natural: following a deliberate, consistent approach with specific standards, or dressing and styling according to how you feel on a given day?',
+        question:
+          'When it comes to how you dress, groom, and carry yourself, which feels more like you: your look often expresses mood and inner state and shifts with how you feel (0), or you keep a steady approach that is not driven by day-to-day feeling—either a clear personal standard you maintain, or a simple functional baseline with minimal investment beyond what situations require (10)?',
         masculineWeight: 1.0,
         feminineWeight: -0.8,
-        poleLabels: { low: 'Styling according to how I feel on the day', high: 'Deliberate, consistent approach with standards' }
+        poleLabels: {
+          low: 'Mood-led—look expresses how I feel',
+          high: 'Deliberate standard or minimal/functional—not mood-orchestrated'
+        }
       },
       {
         id: 'aes_2',
-        question: 'If you decided to improve your fitness or physical appearance, which approach would feel more like you: building a structured programme with specific targets and milestones, or moving your body and caring for yourself in ways that feel enjoyable and natural in the moment?',
+        question:
+          'If you decided to improve or maintain your fitness or physical appearance, which would feel more like you: caring for yourself in ways that feel enjoyable, intuitive, and in-the-moment (0), or a structured programme with targets—or, if you rarely prioritise this, doing only what is pragmatic or obligatory with little “how I feel today” in the mix (10)?',
         masculineWeight: 1.0,
         feminineWeight: -0.7,
-        poleLabels: { low: 'Moving in ways that feel enjoyable and natural', high: 'Structured programme with targets and milestones' }
+        poleLabels: {
+          low: 'Intuitive and enjoyable in the moment',
+          high: 'Structured plan, or pragmatic / minimal engagement'
+        }
       },
       {
         id: 'aes_3',
-        question: 'When you change your aesthetic — new style, new fitness phase, new look — is that change typically the result of a deliberate decision and plan, or does it tend to emerge naturally as your mood, circumstances, or interests shift?',
+        question:
+          'When your aesthetic changes—new style, fitness phase, or look—is that usually from a deliberate decision, plan, or practical trigger (e.g. new role, need to meet a bar) (0), or does it tend to emerge as mood, interests, or inner state shift (10)?',
         masculineWeight: -0.8,
         feminineWeight: 1.0,
-        poleLabels: { low: 'Deliberate decision and plan', high: 'Emerges naturally as mood and interests shift' }
+        poleLabels: {
+          low: 'Deliberate, planned, or practically triggered',
+          high: 'Emerges with mood, interests, or inner state'
+        }
       },
       {
         id: 'aes_4',
-        question: 'Which description feels closer to how you actually approach your appearance: "I have a consistent standard I maintain regardless of how I feel" or "my presentation reflects my inner state and changes with it"?',
+        question:
+          'Which is closer to how you actually operate: your grooming and clothes track your inner state and change with mood (0), or you hold a stable approach regardless of mood—either a consistent standard you enforce or a fixed functional “good enough” you barely vary (10)?',
         masculineWeight: 0.9,
         feminineWeight: -0.9,
-        poleLabels: { low: 'Presentation reflects inner state and changes with it', high: 'Consistent standard maintained regardless of mood' }
+        poleLabels: {
+          low: 'Look tracks inner state and mood',
+          high: 'Stable standard or functional baseline regardless of mood'
+        }
+      },
+      {
+        id: 'aes_5',
+        question:
+          'Day to day, is how you groom and dress mainly a channel for self-expression tied to how you feel (0), or mainly practical, fixed, or low priority—not something you use to express shifting inner state (10)?',
+        masculineWeight: 1.0,
+        feminineWeight: -0.75,
+        poleLabels: {
+          low: 'Expression tied to mood and inner state',
+          high: 'Practical, fixed, or deprioritised—not a mood channel'
+        }
       }
     ]
   }

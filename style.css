@@ -6203,6 +6203,20 @@ img[data-src].loaded {
     margin: 0.75rem 0;
     line-height: 1.6;
 }
+
+.temperament-profile-synthesis {
+    margin-top: 1.5rem;
+}
+.temperament-profile-synthesis-title {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    color: var(--brand);
+    font-size: 1.2rem;
+}
+.temperament-profile-synthesis .temperament-patterns-aggregate {
+    margin-top: 1.25rem;
+}
+
 .polarity-failure-ref {
     font-size: 0.95rem;
     color: var(--muted);
@@ -6251,6 +6265,14 @@ img[data-src].loaded {
     background: var(--success);
     color: #fff;
     border-radius: 4px;
+}
+/* 0–100 spectrum: feminine (violet) → balanced (slate) → masculine (blue); colours set inline per band */
+.polarity-spectrum-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 .temperament-profile-card h2 {
@@ -6455,6 +6477,22 @@ img[data-src].loaded {
 .dimension-item h4 {
     color: var(--brand);
     margin-bottom: 0.5rem;
+}
+
+/* Dimension breakdown: emphasize the respondent’s pole within each spectrum title */
+.dimension-display-title {
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text, inherit);
+}
+
+.dimension-display-title .dimension-pole-bias,
+.polarity-strongly-aligned-alert .dimension-pole-bias {
+    font-weight: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 0.09em;
+    text-underline-offset: 0.15em;
+    color: var(--brand);
 }
 
 .dimension-spectrum {
