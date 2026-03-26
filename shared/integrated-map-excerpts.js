@@ -199,8 +199,10 @@ function buildAttractionCostsConcise(smv, rec, gender) {
       "'Radical Activity' is low— behaviour outside of romance and work is absent or looks low status."
     );
   }
-  const joined = bits.filter(Boolean).join(' ');
-  return clipIntegratedMapText(joined, 320);
+  const safeBits = bits.filter(Boolean);
+  const joined = safeBits.join(' ');
+  const text = clipIntegratedMapText(joined, 320);
+  return { bits: safeBits, text };
 }
 
 function getTemperamentDimensionMeta(dimKey) {
@@ -421,7 +423,8 @@ export function buildArchetypeLayer(ad) {
     const expS = takeSentences(String(p.explanation || ''), 1);
     helpsCore = expS || '';
   }
-  if (!helpsCore) helpsCore = 'This pattern brings a consistent set of strengths; the full report maps how that strength expresses under stress.';
+  if (!helpsCore) helpsCore = 'This pattern brings a consistent set of strengths; the full report maps how those strengths hold under stress.';
+  helpsCore = `${helpsCore} In practice, these strengths tend to create warmth, trust, and social ease when boundaries stay clear.`;
   const helps = safeSentence(helpsCore);
 
   const costClauses = [];
@@ -475,7 +478,9 @@ export function buildArchetypeLayer(ad) {
         'Pressure can amplify unhelpful patterns; the full report maps shadows, blind spots, and stress loops.',
         160
       );
-  const costs = safeSentence(costsText);
+  const costs = safeSentence(
+    `${costsText} Weakness pattern: generosity without discernment can invite overreach, dependency, or one-sided dynamics.`
+  );
 
   const nextMoveCandidates = [];
 
@@ -556,29 +561,66 @@ export function buildPolarityLayer(ad) {
   const reportedGender = ad.gender;
   const qualityPhrases = buildTopQualityPhrases(ad, 4);
   const desc = takeSentences(interp.description || '', 2);
+
+  const meaningBullets = qualityPhrases.map((q) => capitalizeTrait(q)).slice(0, 4);
   const hasStrongSpike =
     ((Array.isArray(ad.stronglyMascBandDimensionKeys) ? ad.stronglyMascBandDimensionKeys.length : 0) > 0) ||
     ((Array.isArray(ad.hypermascBandDimensionKeys) ? ad.hypermascBandDimensionKeys.length : 0) > 0) ||
     ((Array.isArray(ad.stronglyFemmeBandDimensionKeys) ? ad.stronglyFemmeBandDimensionKeys.length : 0) > 0) ||
     ((Array.isArray(ad.hyperfemmeBandDimensionKeys) ? ad.hyperfemmeBandDimensionKeys.length : 0) > 0);
   const bridge = hasStrongSpike ? 'Composite sits near center; individual dimensions still show strong directional spikes.' : '';
-  const meaningCore =
-    qualityPhrases.length > 0
-      ? `${desc} ${bridge} Qualities that lean clearest in your data: ${qualityPhrases.join('; ')}.`
-      : desc;
-  const meaning = safeSentence(meaningCore || interp.label || 'Polarity profile loaded.');
 
-  const strengthHelps = buildPolarityStrengthsHelps(ad, reportedGender);
-  const helps = strengthHelps
-    ? safeSentence(strengthHelps)
-    : safeSentence(
-        'No dimensions hit the strongest polarity bands in this snapshot; expression may be more blended across situations. See the full report for per-dimension detail.'
-      );
+  const meaningLead = meaningBullets.length
+    ? `${desc} Qualities that lean clearest in your data. ${bridge}`.trim()
+    : `${desc} ${bridge}`.trim();
+  const meaning = safeSentence(meaningLead || interp.label || 'Polarity profile loaded.');
 
-  const costText = [buildPolarityAnomalyCosts(ad), hyperHazardSummary(ad, reportedGender)].filter(Boolean).join(' ');
-  const costs = costText
-    ? safeSentence(costText)
-    : safeSentence('No anomaly flags in this snapshot.');
+  // Strong/hyper emphasized pole traits only (underlined side only).
+  let helpsBullets = [];
+  if (reportedGender === 'man') {
+    const hypKeys = Array.isArray(ad.hypermascBandDimensionKeys) ? ad.hypermascBandDimensionKeys : [];
+    const strKeys = Array.isArray(ad.stronglyMascBandDimensionKeys) ? ad.stronglyMascBandDimensionKeys : [];
+    helpsBullets = dedupeKeepOrder(
+      [...strKeys, ...hypKeys]
+        .map((k) => capitalizeTrait(getEmphasizedPoleTrait(k, 'masc')))
+        .filter(Boolean),
+      8
+    );
+  } else if (reportedGender === 'woman') {
+    const hypKeys = Array.isArray(ad.hyperfemmeBandDimensionKeys) ? ad.hyperfemmeBandDimensionKeys : [];
+    const strKeys = Array.isArray(ad.stronglyFemmeBandDimensionKeys) ? ad.stronglyFemmeBandDimensionKeys : [];
+    helpsBullets = dedupeKeepOrder(
+      [...strKeys, ...hypKeys]
+        .map((k) => capitalizeTrait(getEmphasizedPoleTrait(k, 'fem')))
+        .filter(Boolean),
+      8
+    );
+  }
+
+  const helpsLead = helpsBullets.length
+    ? 'Clarification: these spike traits are your clearest pull signals and create stronger attraction when complementary intensity is matched.'
+    : 'No strongly emphasized poles in this snapshot; expression appears more blended across situations.';
+  const helps = safeSentence(helpsLead);
+
+  // Anomaly emphasized pole traits only (underlined side only).
+  const anomalyKeys = Array.isArray(ad.anomalousDimensionKeys) ? ad.anomalousDimensionKeys : [];
+  const scores = ad?.dimensionScores || {};
+  const costsBullets = dedupeKeepOrder(
+    anomalyKeys
+      .map((dimKey) => {
+        const net = scores?.[dimKey]?.net;
+        const norm = typeof net === 'number' ? (net + 1) / 2 : 0.5;
+        return capitalizeTrait(getEmphasizedPoleTrait(dimKey, 'auto', norm));
+      })
+      .filter(Boolean),
+    10
+  );
+
+  const hyperHazard = hyperHazardSummary(ad, reportedGender);
+  const costsLead = costsBullets.length
+    ? 'Clarification: these anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.'
+    : 'No anomaly flags in this snapshot.';
+  const costs = safeSentence([costsLead, hyperHazard].filter(Boolean).join(' '));
 
   const nextMoveCandidates = dedupeKeepOrder(
     [
@@ -594,7 +636,7 @@ export function buildPolarityLayer(ad) {
   return {
     title,
     subtitle: undefined,
-    frame: { meaning, helps, costs },
+    frame: { meaning, helps, costs, meaningBullets, helpsBullets, costsBullets },
     nextMoveCandidates,
     href,
     hrefLabel
@@ -657,7 +699,8 @@ export function buildAttractionLayer(snap) {
     accessPrinciple
   ].filter(Boolean);
 
-  const frameMeaning = safeSentence(meaningParts.join(' '));
+  // Keep the lead summary generic so bullets carry the specific signals.
+  const frameMeaning = safeSentence('Your value (from this snapshot) is a composite of several signals; the clearest ones are below.');
 
   const strengthBits = [];
   if (cr >= 62) strengthBits.push('coalition rank among peers');
@@ -673,16 +716,19 @@ export function buildAttractionLayer(snap) {
     priority ? `Stated priority: ${priority}.` : '',
     strengthBits.length ? `Relative strengths: ${strengthBits.join('; ')}.` : ''
   ].filter(Boolean);
-  const frameHelps = helpsParts.length
-    ? safeSentence(helpsParts.join(' '))
-    : safeSentence(
-        'Leverage is uneven rather than absent; the full report breaks down clusters and weakest subcategories so you can prioritise upgrades.'
-      );
+  const frameHelps = safeSentence(
+    helpsParts.length
+      ? 'Your options are strongest where your leverage signals are clearest; these are the channels most likely to improve access, quality of matches, and retention.'
+      : 'Leverage is uneven rather than absent; the full report breaks down clusters and weakest subcategories so you can prioritise upgrades.'
+  );
 
-  const costsCompact = buildAttractionCostsConcise(smv, rec, gender);
-  const frameCosts = costsCompact
-    ? safeSentence(costsCompact)
-    : safeSentence('No major mismatch flags in this snapshot.');
+  const costsObj = buildAttractionCostsConcise(smv, rec, gender);
+  const frameCosts = safeSentence(
+    costsObj?.bits?.length
+      ? 'Your issues are the constraints currently capping outcomes; left unchanged, they narrow optionality and increase mismatch risk.'
+      : 'No major mismatch flags in this snapshot.'
+  );
+  const costsBullets = Array.isArray(costsObj?.bits) ? costsObj.bits : [];
 
   const weakestGuidanceActions = (rec.weakestGuidance || []).flatMap((w) => w.actions || []).map(cleanActionText);
   const tacticalActions = (rec.tactical || []).map(cleanActionText);
@@ -699,7 +745,10 @@ export function buildAttractionLayer(snap) {
     frame: {
       meaning: frameMeaning,
       helps: frameHelps,
-      costs: frameCosts
+      costs: frameCosts,
+      meaningBullets: meaningParts.filter(Boolean).slice(0, 6),
+      helpsBullets: helpsParts.filter(Boolean).slice(0, 6),
+      costsBullets: costsBullets.filter(Boolean).slice(0, 6)
     },
     nextMoveCandidates,
     href,
@@ -711,23 +760,12 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
   const ad = archetypeSnap?.analysisData || {};
   const pd = polaritySnap?.analysisData || {};
   const smv = attractionSnap?.smv;
-  const gender = attractionSnap?.currentGender;
 
   const archPrimary = ad?.primaryArchetype;
   const archetypeName = archPrimary?.name || 'your archetype lead';
   const cat = pd?.overallTemperament?.category;
   const interp = cat ? TEMPERAMENT_SCORING?.interpretation?.[cat] : null;
-  const tempLabel = interp?.label ? String(interp.label).trim() : '';
-
-  let smvPrimaryRead = '';
-  let smvAccess = '';
-  if (smv) {
-    const overall = typeof smv.overall === 'number' ? smv.overall : 0;
-    smvAccess = getSMVInterpretation(overall);
-    if (gender === 'male' && smv.badBoyGoodGuy?.label) smvPrimaryRead = smv.badBoyGoodGuy.label;
-    else if (gender === 'female' && smv.keeperSweeper?.label) smvPrimaryRead = smv.keeperSweeper.label;
-    else smvPrimaryRead = smv.marketPosition ? String(smv.marketPosition).trim() : '';
-  }
+  // Summary is intentionally “label-light”; we only use temperament qualities (not the temperament label) here.
 
   const rec = smv?.recommendation || {};
   const archLine = archetypeName
@@ -736,29 +774,13 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
 
   const tempQualities = buildTopQualityPhrases(pd, 3);
   const tempLine = tempQualities.length
-    ? tempLabel
-      ? `${tempLabel}. Clearest quality leans: ${tempQualities.join('; ')}.`
-      : `Clearest quality leans: ${tempQualities.join('; ')}.`
+    ? `Clearest quality leans: ${tempQualities.join('; ')}.`
     : `Polarity data was thin in the saved snapshot; open the full polarity report for detail.`;
 
   const marketLine = smv
     ? (() => {
         const o = Math.round(smv.overall ?? 0);
         const mp = smv.marketPosition ? String(smv.marketPosition).trim() : '';
-        const label =
-          gender === 'male' && smv.badBoyGoodGuy?.label
-            ? smv.badBoyGoodGuy.label
-            : gender === 'female' && smv.keeperSweeper?.label
-              ? smv.keeperSweeper.label
-              : '';
-        const head =
-          label && mp
-            ? `SMV ~${o}th percentile — ${mp}. Market read: “${label}”.`
-            : label
-              ? `SMV ~${o}th percentile. Market read: “${label}”.`
-              : mp
-                ? `SMV ~${o}th percentile — ${mp}.`
-                : `SMV ~${o}th percentile.`;
         const lever =
           (Array.isArray(rec.tactical) && rec.tactical[0]) ||
           rec.strategic ||
@@ -770,17 +792,15 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
               smv.subcategories.axisOfAttraction.radActivity < 40
                 ? 'Low out-of-domain activity signal can read low-status and narrow attraction pull.'
                 : '');
-        return [head, smvAccess, `Improvement lever: ${trimTrailingPunctuation(String(lever || ''))}.`, risk].filter(Boolean).join(' ');
+        return [`Improvement lever: ${trimTrailingPunctuation(String(lever || ''))}.`, risk]
+          .filter(Boolean)
+          .join(' ');
       })()
     : `Attraction snapshot missing; complete the assessment for an SMV line in this summary.`;
 
-  const marketLead = smvPrimaryRead
-    ? `Market read: “${smvPrimaryRead}”.`
-    : '';
-
   return {
     identity: [archLine, tempLine].filter(Boolean).join(' '),
-    market: [marketLead, marketLine].filter(Boolean).join(' ')
+    market: marketLine
   };
 }
 

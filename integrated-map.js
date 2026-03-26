@@ -57,14 +57,45 @@ function renderGate(c) {
 function renderLayer(layer) {
   const subtitle = layer.subtitle ? `<p class="integrated-map-layer-subtitle">${esc(layer.subtitle)}</p>` : '';
   const frame = layer.frame || { meaning: '', helps: '', costs: '' };
-  const meaning = frame.meaning
-    ? `<h3 class="integrated-map-subhead">What it means</h3><p class="integrated-map-layer-intro">${esc(frame.meaning)}</p>`
+  const renderBullets = (bullets) => {
+    if (!Array.isArray(bullets) || !bullets.length) return '';
+    const items = bullets.map((b) => `<li>${esc(b)}</li>`).join('');
+    return `<ul class="integrated-map-layer-list">${items}</ul>`;
+  };
+
+  const isArchetype = layer.href === 'archetype.html' || String(layer.title || '').includes('Red-Pill Archetype');
+  const isPolarity = layer.href === 'temperament.html' || String(layer.title || '').includes('Temperament');
+  const isSmv = layer.href === 'attraction.html' || String(layer.title || '').includes('Sexual Market Value');
+
+  const meaningTitle = isArchetype ? 'Character implications' : isSmv ? 'Your value' : 'What it means';
+  const helpsTitle = isArchetype ? 'Strengths' : isSmv ? 'Your options' : 'Where it helps';
+  const costsTitle = isArchetype ? 'Weaknesses' : isSmv ? 'Your issues' : 'Where it costs';
+
+  const suppressMeaning = isArchetype || isPolarity || isSmv;
+  const meaningLead = frame.meaning ? frame.meaning : '';
+  const meaningBullets = renderBullets(frame.meaningBullets);
+  const meaning = suppressMeaning
+    ? ''
+    : (meaningLead || meaningBullets
+      ? `<h3 class="integrated-map-subhead">${esc(meaningTitle)}</h3>${
+          meaningLead ? `<p class="integrated-map-layer-intro">${esc(meaningLead)}</p>` : ''
+        }${meaningBullets}`
+      : '');
+
+  const helpsLead = frame.helps ? frame.helps : '';
+  const helpsBullets = renderBullets(frame.helpsBullets);
+  const helps = helpsLead || helpsBullets
+    ? `<h3 class="integrated-map-subhead">${esc(helpsTitle)}</h3>${
+        helpsLead ? `<p class="integrated-map-layer-intro">${esc(helpsLead)}</p>` : ''
+      }${helpsBullets}`
     : '';
-  const helps = frame.helps
-    ? `<h3 class="integrated-map-subhead">Where it helps</h3><p class="integrated-map-layer-intro">${esc(frame.helps)}</p>`
-    : '';
-  const costs = frame.costs
-    ? `<h3 class="integrated-map-subhead">Where it costs</h3><p class="integrated-map-layer-intro">${esc(frame.costs)}</p>`
+
+  const costsLead = frame.costs ? frame.costs : '';
+  const costsBullets = renderBullets(frame.costsBullets);
+  const costs = costsLead || costsBullets
+    ? `<h3 class="integrated-map-subhead">${esc(costsTitle)}</h3>${
+        costsLead ? `<p class="integrated-map-layer-intro">${esc(costsLead)}</p>` : ''
+      }${costsBullets}`
     : '';
 
   return `
