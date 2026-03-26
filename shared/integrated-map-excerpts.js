@@ -190,7 +190,13 @@ function buildAttractionCostsConcise(smv, rec, gender) {
   if (w) {
     const lab = stripIntegratedMapModifierTitle(String(w.label || '').trim());
     const mean = clipIntegratedMapText(takeSentences(String(w.meaning || '').trim(), 1), 95);
-    if (lab && mean) bits.push(`${lab}: ${mean}`);
+    if (lab && mean) {
+      const labN = normalizeForDedupe(lab);
+      const meanN = normalizeForDedupe(mean);
+      // Avoid bullets like “Competence: Competence”.
+      if (labN && meanN && labN === meanN) bits.push(lab);
+      else bits.push(`${lab}: ${mean}`);
+    }
     else if (mean) bits.push(mean);
   }
   const rad = smv.subcategories?.axisOfAttraction?.radActivity;
@@ -415,7 +421,7 @@ export function buildArchetypeLayer(ad) {
   let helpsCore = '';
   // “Where it helps” should describe strengths/capacities, not action advice.
   if (traitsSummary) {
-    helpsCore = `Strength markers: ${traitsSummary}.`;
+    helpsCore = `Your key strengths include ${traitsSummary}.`;
   } else if (p.description) {
     const descS = takeSentences(String(p.description || ''), 2);
     helpsCore = descS || '';
@@ -598,7 +604,7 @@ export function buildPolarityLayer(ad) {
   }
 
   const helpsLead = helpsBullets.length
-    ? 'Clarification: these spike traits are your clearest pull signals and create stronger attraction when complementary intensity is matched.'
+    ? 'These spike traits are your clearest pull signals and create stronger attraction when complementary intensity is matched.'
     : 'No strongly emphasized poles in this snapshot; expression appears more blended across situations.';
   const helps = safeSentence(helpsLead);
 
@@ -618,7 +624,7 @@ export function buildPolarityLayer(ad) {
 
   const hyperHazard = hyperHazardSummary(ad, reportedGender);
   const costsLead = costsBullets.length
-    ? 'Clarification: these anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.'
+    ? 'These anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.'
     : 'No anomaly flags in this snapshot.';
   const costs = safeSentence([costsLead, hyperHazard].filter(Boolean).join(' '));
 
@@ -718,14 +724,14 @@ export function buildAttractionLayer(snap) {
   ].filter(Boolean);
   const frameHelps = safeSentence(
     helpsParts.length
-      ? 'Your options are strongest where your leverage signals are clearest; these are the channels most likely to improve access, quality of matches, and retention.'
+      ? 'Strongest where your leverage signals are clearest; these are the channels most likely to improve access, quality of matches, and retention.'
       : 'Leverage is uneven rather than absent; the full report breaks down clusters and weakest subcategories so you can prioritise upgrades.'
   );
 
   const costsObj = buildAttractionCostsConcise(smv, rec, gender);
   const frameCosts = safeSentence(
     costsObj?.bits?.length
-      ? 'Your issues are the constraints currently capping outcomes; left unchanged, they narrow optionality and increase mismatch risk.'
+      ? 'Constraints currently capping outcomes; left unchanged, they narrow optionality and increase mismatch risk.'
       : 'No major mismatch flags in this snapshot.'
   );
   const costsBullets = Array.isArray(costsObj?.bits) ? costsObj.bits : [];
