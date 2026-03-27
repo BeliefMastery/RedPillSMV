@@ -6,14 +6,14 @@
 export function getClusterSummary(clusterId, male) {
   const summaries = {
     coalitionRank: male
-      ? 'Coalition Rank reflects where you sit in the male–male hierarchy: status, resources, and social proof as perceived by the market. The bars below show how you score on the subcomponents (e.g. status, competence, influence) that feed into this rank.'
-      : 'Coalition Rank reflects where you sit in the female–female hierarchy: status, social proof, and how you are perceived by peers. The bars below show the subcomponents (e.g. selectivity, nurturing, collaboration) that feed into this rank.',
+      ? 'Bars score the subcomponents (status, competence, influence, etc.) that feed your male–male coalition rank.'
+      : 'Bars score the subcomponents (selectivity, nurturing, collaboration, etc.) that feed your female–female coalition rank.',
     reproductiveConfidence: male
-      ? 'Reproductive Confidence is the long-term commitment signal you project: provision, stability, and willingness to invest. It drives how seriously you are taken as a potential partner. The bars below break down the factors (provider, parental investor, etc.) that contribute.'
-      : 'Reproductive Confidence is the commitment and nesting signal you project: how seriously you are taken as a long-term option. The bars below break down the factors (nurturing, paternity certainty, collaborative trust, etc.) that contribute.',
+      ? 'Bars score long-term commitment signals: provision, protection, parental intent, and related cues.'
+      : 'Bars score commitment and nesting signals men use to size you up as a long-term option.',
     axisOfAttraction: male
-      ? 'Attraction Opportunity (male axis) blends wealth/finance/status/performance/productivity/talent/popularity; looks/physical/genetic/aesthetic; and humour/intelligence/companionship—plus game-execution signals that shape first pull and progression. Radical Activity stays a modifier: cool or novel life outside the relationship so a mate competes for your time and boredom is less likely—not a fourth core bar.'
-      : 'Axis of Attraction captures initiation and access: how you are perceived on the dimensions that drive first pull and progression. In practice this includes game-execution quality (social calibration, pacing/escalation judgment, and low-friction logistics), integrated through existing subdimensions.'
+      ? 'Bars map wealth/status/performance, looks/physical, and humour/intelligence; Radical Activity is a modifier, not a fourth core bar.'
+      : 'Bars map initiation, access, and progression signals men respond to on first pull and beyond.'
   };
   return summaries[clusterId] || '';
 }

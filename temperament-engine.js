@@ -1748,50 +1748,88 @@ export class TemperamentEngine {
       html += '<p style="color: var(--muted); font-size: 0.9rem; margin: 0 0 1rem;">Rows marked <strong>Temperament anomaly</strong> are explained in the partner-fit note below.</p>';
     }
 
-    SPECTRUM_BAND_DISPLAY_ORDER.forEach(bandKey => {
-      const items = groupedByBand[bandKey];
-      if (!items.length) return;
-      items.sort((a, b) => a.dimKey.localeCompare(b.dimKey));
-      const bandTitle = getSpectrumBandLabel(bandKey);
-      html += `<div class="dimension-band-group" style="margin-top:1.15rem;">`;
-      html += `<h4 style="margin-bottom:0.45rem;">${SecurityUtils.sanitizeHTML(bandTitle)}</h4>`;
-      html += '<ul class="dimension-band-list" style="list-style:none;padding-left:0;margin:0;">';
-      items.forEach(({ dimKey, normalizedDimScore }) => {
-        const dimensionTitleHtml = this.getDimensionTitleHtml(dimKey, normalizedDimScore);
-        const rowSpectrumBand = getSpectrumBandKey(normalizedDimScore);
-        const rowBandLabel = getSpectrumBandLabel(rowSpectrumBand);
-        const { bg: specBg, fg: specFg } = getSpectrumBandBadgeColors(rowSpectrumBand);
-        const spectrumBadgeHtml = ` <span class="polarity-spectrum-badge" style="background:${specBg};color:${specFg};" title="Spectrum position (${(normalizedDimScore * 100).toFixed(0)}%)">${SecurityUtils.sanitizeHTML(rowBandLabel)}</span>`;
-        const isAnomalous = anomalousKeys.has(dimKey);
-        const isStronglyAligned = stronglyAlignedKeys.has(dimKey);
-        const anomalyColor = isAnomalous ? this.getAnomalySeverityColor(normalizedDimScore, reportedGender, maleTrend, femaleTrend) : null;
-        const anomalyBadgeHtml = isAnomalous && anomalyColor
-          ? ` <span class="polarity-notable-badge" style="background:${anomalyColor};color:#fff;">Temperament anomaly</span>`
-          : (isAnomalous ? ' <span class="polarity-notable-badge">Temperament anomaly</span>' : '');
-        const compact = this.getDimensionDescriptorCompact(dimKey, normalizedDimScore);
-        const fullDetailLabel = this.getDimensionLabel(dimKey, normalizedDimScore, reportedGender, maleTrend, femaleTrend);
-        const fullDetailTitle = SecurityUtils.sanitizeHTML(fullDetailLabel).replace(/"/g, '&quot;');
-        const selectionCriteriaNote = dimKey === 'selection_criteria' && (reportedGender === 'man' || reportedGender === 'woman')
-          ? `<p style="color: var(--muted); margin: 0.35rem 0 0; font-size: 0.85rem;">Selection criteria adjusted for ${reportedGender === 'man' ? 'male' : 'female'} standards.</p>`
-          : '';
-        html += `
-        <li class="dimension-item${isAnomalous ? ' dimension-polarity-notable' : ''}${isStronglyAligned ? ' dimension-polarity-strongly-aligned' : ''}" style="margin-bottom:1rem;">
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem;margin-bottom:0.35rem;" class="dimension-title-row">
-            <span class="dimension-display-title">${dimensionTitleHtml}</span>${spectrumBadgeHtml}${anomalyBadgeHtml}
-          </div>
-          <div class="dimension-spectrum">
-            <div class="temperament-trend-dot temperament-trend-male" style="left: ${maleTrend * 100}%;"></div>
-            <div class="temperament-trend-dot temperament-trend-female" style="left: ${femaleTrend * 100}%;"></div>
-            <div class="dimension-marker" style="left: ${normalizedDimScore * 100}%;"></div>
-          </div>
-          <p class="dimension-score-text dimension-score-text-compact" style="margin:0.35rem 0 0;font-size:0.9rem;color:var(--muted);line-height:1.5;" title="${fullDetailTitle}">
-            ${SecurityUtils.sanitizeHTML(compact)}
-          </p>
-          ${selectionCriteriaNote}
-        </li>`;
-      });
-      html += '</ul></div>';
+    const getDimensionClarifierSentence = (dimKey, normalizedDimScore) => {
+      const expectedRef = reportedGender === 'man' ? maleTrend : femaleTrend;
+      const deltaToExpected = normalizedDimScore - expectedRef;
+      const nearExpected = Math.abs(deltaToExpected) <= 0.08;
+
+      const genderNoun = reportedGender === 'man' ? 'males' : 'women';
+      const emphasisLean = normalizedDimScore >= 0.5 ? 'masculine-leaning' : 'feminine-leaning';
+
+      if (nearExpected) {
+        return `Near typical for ${genderNoun}.`;
+      }
+      return `Notably more ${emphasisLean} than typical for ${genderNoun}.`;
+    };
+
+    const dimScores = this.analysisData.dimensionScores || {};
+    const domainKeys = [];
+    const pushKeysInOrder = (obj) => {
+      if (!obj) return;
+      Object.keys(obj).forEach((k) => domainKeys.push(k));
+    };
+    pushKeysInOrder(TEMPERAMENT_DIMENSIONS);
+    pushKeysInOrder(INTIMATE_DYNAMICS);
+    pushKeysInOrder(ATTRACTION_RESPONSIVENESS);
+
+    const orderedKeys = [];
+    const seen = new Set();
+    for (const k of domainKeys) {
+      if (!seen.has(k) && typeof dimScores[k]?.net === 'number') {
+        orderedKeys.push(k);
+        seen.add(k);
+      }
+    }
+    const unknownKeys = Object.keys(dimScores)
+      .filter((k) => typeof dimScores[k]?.net === 'number' && !seen.has(k))
+      .sort((a, b) => a.localeCompare(b));
+    orderedKeys.push(...unknownKeys);
+
+    html += '<ul class="dimension-band-list" style="list-style:none;padding-left:0;margin:0;">';
+    orderedKeys.forEach((dimKey) => {
+      const dimScore = dimScores[dimKey];
+      if (!dimScore || typeof dimScore.net !== 'number') return;
+      const normalizedDimScore = (dimScore.net + 1) / 2;
+      const dimensionTitleHtml = this.getDimensionTitleHtml(dimKey, normalizedDimScore);
+      const rowSpectrumBand = getSpectrumBandKey(normalizedDimScore);
+      const rowBandLabel = getSpectrumBandLabel(rowSpectrumBand);
+      const { bg: specBg, fg: specFg } = getSpectrumBandBadgeColors(rowSpectrumBand);
+      const spectrumBadgeHtml = ` <span class="polarity-spectrum-badge" style="background:${specBg};color:${specFg};" title="Spectrum position (${(normalizedDimScore * 100).toFixed(0)}%)">${SecurityUtils.sanitizeHTML(rowBandLabel)}</span>`;
+      const isAnomalous = anomalousKeys.has(dimKey);
+      const isStronglyAligned = stronglyAlignedKeys.has(dimKey);
+      const anomalyColor = isAnomalous ? this.getAnomalySeverityColor(normalizedDimScore, reportedGender, maleTrend, femaleTrend) : null;
+      const anomalyBadgeHtml = isAnomalous && anomalyColor
+        ? ` <span class="polarity-notable-badge" style="background:${anomalyColor};color:#fff;">Temperament anomaly</span>`
+        : (isAnomalous ? ' <span class="polarity-notable-badge">Temperament anomaly</span>' : '');
+
+      const compact = this.getDimensionDescriptorCompact(dimKey, normalizedDimScore);
+      const fullDetailLabel = this.getDimensionLabel(dimKey, normalizedDimScore, reportedGender, maleTrend, femaleTrend);
+      const fullDetailTitle = SecurityUtils.sanitizeHTML(fullDetailLabel).replace(/"/g, '&quot;');
+
+      const clarifierSentence = getDimensionClarifierSentence(dimKey, normalizedDimScore);
+
+      const selectionCriteriaNote = dimKey === 'selection_criteria' && (reportedGender === 'man' || reportedGender === 'woman')
+        ? `<p style="color: var(--muted); margin: 0.35rem 0 0; font-size: 0.85rem;">Selection criteria adjusted for ${reportedGender === 'man' ? 'male' : 'female'} standards.</p>`
+        : '';
+
+      html += `
+      <li class="dimension-item${isAnomalous ? ' dimension-polarity-notable' : ''}${isStronglyAligned ? ' dimension-polarity-strongly-aligned' : ''}" style="margin-bottom:1rem;">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem;margin-bottom:0.35rem;" class="dimension-title-row">
+          <span class="dimension-display-title">${dimensionTitleHtml}</span>${spectrumBadgeHtml}${anomalyBadgeHtml}
+        </div>
+        <div class="dimension-spectrum">
+          <div class="temperament-trend-dot temperament-trend-male" style="left: ${maleTrend * 100}%;"></div>
+          <div class="temperament-trend-dot temperament-trend-female" style="left: ${femaleTrend * 100}%;"></div>
+          <div class="dimension-marker" style="left: ${normalizedDimScore * 100}%;"></div>
+        </div>
+        <p class="dimension-score-text dimension-score-text-compact" style="margin:0.35rem 0 0;font-size:0.9rem;color:var(--muted);line-height:1.5;" title="${fullDetailTitle}">
+          ${SecurityUtils.sanitizeHTML(compact)}
+        </p>
+        ${clarifierSentence ? `<p style="margin:0.25rem 0 0;color:var(--muted);font-size:0.85rem;line-height:1.45;">${SecurityUtils.sanitizeHTML(clarifierSentence)}</p>` : ''}
+        ${selectionCriteriaNote}
+      </li>`;
     });
+    html += '</ul>';
 
     html += '</div>';
     html += polarityFailureAlertHtml;

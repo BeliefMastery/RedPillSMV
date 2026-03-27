@@ -2069,30 +2069,6 @@ h3[style*="text-align:center"][style*="border-bottom"] {
     font-weight: 600;
     color: var(--accent);
 }
-.integrated-map-cross {
-    margin-top: 1.5rem;
-    padding: 1.1rem;
-    border-radius: var(--radius, 8px);
-    background: var(--glass, rgba(255, 255, 255, 0.06));
-    border-left: 4px solid var(--accent);
-}
-.integrated-map-cross h2 {
-    font-size: 1.1rem;
-    margin: 0 0 0.5rem;
-}
-.integrated-map-cross ul {
-    margin: 0;
-    padding-left: 1.2rem;
-    color: var(--muted);
-    line-height: 1.55;
-    font-size: 0.92rem;
-}
-.integrated-map-cross-paragraph {
-    margin: 0;
-    color: var(--muted);
-    line-height: 1.55;
-    font-size: 0.92rem;
-}
 .integrated-map-gate {
     text-align: center;
     padding: 1rem 0.5rem 2rem;
@@ -5319,6 +5295,18 @@ img[data-src].loaded {
     font-size: 0.75rem;
     color: var(--muted);
     margin-top: 0.25rem;
+}
+
+.results-dashboard .attraction-badge-cluster-metric .attraction-badge-desc {
+    margin-top: 0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--text, inherit);
+}
+
+.results-dashboard .tactical-synthesis {
+    margin: 0 0 0.5rem;
+    line-height: 1.55;
 }
 
 .results-dashboard .attraction-result-badge,

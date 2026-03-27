@@ -598,7 +598,7 @@ export class AttractionEngine {
       if (smv.overall >= 80) { m.realistic = 'Top 20-30% of women (7-9/10 range)'; m.aspirational = 'Top 10% possible'; }
       else if (smv.overall >= 60) { m.realistic = 'Top 40-60% of women (5-7/10 range)'; m.aspirational = 'Top 30% with optimization'; }
       else if (smv.overall >= 40) { m.realistic = 'Average to below average (4-6/10)'; m.aspirational = 'Top 50% with improvement'; }
-      else { m.realistic = 'Bottom 40%'; m.aspirational = 'Average with major self-improvement'; }
+      else { m.realistic = 'Bottom 40%'; m.aspirational = 'Average (only with major self-improvement)'; }
     } else {
       if (smv.overall >= 80) { m.realistic = 'Top 10-20% of men'; m.aspirational = 'Top 5% accessible'; }
       else if (smv.overall >= 60) { m.realistic = 'Top 30-50% of men'; m.aspirational = 'Top 20% with optimization'; }
@@ -640,9 +640,9 @@ export class AttractionEngine {
     const r = { priority: '', tactical: [], strategic: '', warning: '', weakestGuidance: [] };
     const weakest = smv.weakestSubcategories || {};
     if (this.currentGender === 'male') {
-      if (smv.overall < 40) { r.priority = 'CRITICAL DEVELOPMENT NEEDED'; r.strategic = 'Sexual Market Value below average. Focus on fundamentals before pursuing high-value women.'; }
-      else if (smv.overall < 60) { r.priority = 'Optimization Phase'; r.strategic = 'Average Sexual Market Value. Strategic improvements can move you into keeper territory.'; }
-      else { r.priority = 'Refinement and Leverage'; r.strategic = 'Strong Sexual Market Value. Focus on finding the right match.'; }
+      if (smv.overall < 40) { r.priority = 'CRITICAL DEVELOPMENT NEEDED'; r.strategic = 'Lift the weakest sub-bars in each pillar before chasing higher-tier matches.'; }
+      else if (smv.overall < 60) { r.priority = 'Optimization Phase'; r.strategic = 'Prioritize the highest-leverage sub-bars in each pillar to widen keeper-tier access.'; }
+      else { r.priority = 'Refinement and Leverage'; r.strategic = 'Selection and calibration matter more than raw gain—vet fit, not only attraction.'; }
       if (weakest.coalitionRank) {
         const guid = this.getWeakestSubcategoryGuidance(weakest.coalitionRank.id, 'coalitionRank');
         r.weakestGuidance.push({ cluster: '3C\'s (Coalition Rank)', label: weakest.coalitionRank.label, ...guid });
@@ -657,9 +657,9 @@ export class AttractionEngine {
       }
       if (smv.delusionBand === 'high' || smv.delusionBand === 'severe') r.warning = 'WARNING: Your standards significantly exceed your market value. Adjust expectations or commit to major self-improvement.';
     } else {
-      if (smv.overall < 40) { r.priority = 'CRITICAL DEVELOPMENT NEEDED'; r.strategic = 'Sexual Market Value below average. Without improvement, high-value men will not commit long-term.'; }
-      else if (smv.overall < 60) { r.priority = 'Optimization Phase'; r.strategic = 'Average Sexual Market Value. Improvements can access above-average men.'; }
-      else { r.priority = 'Leverage and Selection'; r.strategic = 'Strong Sexual Market Value. Focus on selecting the right high-value man.'; }
+      if (smv.overall < 40) { r.priority = 'CRITICAL DEVELOPMENT NEEDED'; r.strategic = 'Lift the weakest sub-bars in each pillar before expecting commitment from high-value men.'; }
+      else if (smv.overall < 60) { r.priority = 'Optimization Phase'; r.strategic = 'Target the weakest sub-bars first to access a wider band of commitment-minded men.'; }
+      else { r.priority = 'Leverage and Selection'; r.strategic = 'Use leverage to select for fit and character—not only headline status.'; }
       if (weakest.coalitionRank) {
         const guid = this.getWeakestSubcategoryGuidance(weakest.coalitionRank.id, 'coalitionRank');
         r.weakestGuidance.push({ cluster: '3S\'s (Coalition Rank)', label: weakest.coalitionRank.label, ...guid });
@@ -674,8 +674,11 @@ export class AttractionEngine {
       }
       if (smv.delusionBand === 'high' || smv.delusionBand === 'severe') r.warning = 'WARNING: Your standards (height/income/status) significantly exceed your market value. Adjust standards or dramatically improve Sexual Market Value.';
     }
-    r.tactical = r.weakestGuidance.flatMap(w => w.actions);
-    if (r.tactical.length === 0) r.tactical = this.currentGender === 'male' ? ['Maintain current trajectory', 'Continue refining highest-leverage areas'] : ['Maintain Sexual Market Value through health and presentation', 'Continue vetting for commitment-capable men'];
+    if (r.weakestGuidance.length > 0) {
+      r.tactical = ['Pick one action from each pillar\'s guidance above; run a short cycle and re-test in 2-4 weeks.'];
+    } else {
+      r.tactical = this.currentGender === 'male' ? ['Maintain current trajectory', 'Continue refining highest-leverage areas'] : ['Maintain Sexual Market Value through health and presentation', 'Continue vetting for commitment-capable men'];
+    }
     return r;
   }
 
@@ -696,9 +699,9 @@ export class AttractionEngine {
       ? this.getReproConfSentenceMale(reproConf)
       : `Ranging above ~${reproConf}% of women on the male commitment signal you project (willingness to nest / long-term invest).`;
     const attractOppSentence = `Ranging above ~${attractOpp}% of peers on initiation and access.`;
-    const peerRankBadge = `<div class="attraction-badge" style="background:${this.getPercentileColor(peerRank)}20;border-color:${this.getPercentileColor(peerRank)}"><span class="attraction-badge-label">Peer Rank</span><span class="attraction-badge-desc">${SecurityUtils.sanitizeHTML(peerRankSentence)}</span></div>`;
-    const reproConfBadge = `<div class="attraction-badge" style="background:${this.getPercentileColor(reproConf)}20;border-color:${this.getPercentileColor(reproConf)}"><span class="attraction-badge-label">Reproductive Confidence</span><span class="attraction-badge-desc">${SecurityUtils.sanitizeHTML(reproConfSentence)}</span></div>`;
-    const attractOppBadge = `<div class="attraction-badge" style="background:${this.getPercentileColor(attractOpp)}20;border-color:${this.getPercentileColor(attractOpp)}"><span class="attraction-badge-label">Attraction Opportunity</span><span class="attraction-badge-desc">${SecurityUtils.sanitizeHTML(attractOppSentence)}</span></div>`;
+    const peerRankBadge = `<div class="attraction-badge attraction-badge-cluster-metric" role="group" aria-label="Peer Rank" style="background:${this.getPercentileColor(peerRank)}20;border-color:${this.getPercentileColor(peerRank)}"><span class="attraction-badge-desc">${SecurityUtils.sanitizeHTML(peerRankSentence)}</span></div>`;
+    const reproConfBadge = `<div class="attraction-badge attraction-badge-cluster-metric" role="group" aria-label="Reproductive Confidence" style="background:${this.getPercentileColor(reproConf)}20;border-color:${this.getPercentileColor(reproConf)}"><span class="attraction-badge-desc">${SecurityUtils.sanitizeHTML(reproConfSentence)}</span></div>`;
+    const attractOppBadge = `<div class="attraction-badge attraction-badge-cluster-metric" role="group" aria-label="Attraction Opportunity" style="background:${this.getPercentileColor(attractOpp)}20;border-color:${this.getPercentileColor(attractOpp)}"><span class="attraction-badge-desc">${SecurityUtils.sanitizeHTML(attractOppSentence)}</span></div>`;
 
     const gridLabel = this.currentGender === 'male' && s.badBoyGoodGuy ? s.badBoyGoodGuy.label : this.currentGender === 'female' && s.keeperSweeper ? s.keeperSweeper.label : '';
     const gridExpl = this.currentGender === 'male' && s.badBoyGoodGuy ? this.getQualificationExplanation(s.badBoyGoodGuy.label, 'badBoyGoodGuy') : this.currentGender === 'female' && s.keeperSweeper ? this.getQualificationExplanation(s.keeperSweeper.label, 'keeperSweeper') : '';
@@ -733,7 +736,13 @@ export class AttractionEngine {
       }).join('');
       const badge = badgeByCluster[clusterId] || '';
       const clusterSummary = this.getClusterSummary(clusterId);
-      return `<section class="report-section"><h2 class="report-section-title">${this.getReportClusterHeading(clusterId)}</h2><div class="attraction-cluster-section"><div class="attraction-cluster-badge">${badge}</div><div class="cluster-subcategory-block">${clusterSummary ? `<p class="cluster-summary" style="font-size:0.95rem;color:var(--brand);margin:0.5rem 0 0.5rem;line-height:1.6;">${SecurityUtils.sanitizeHTML(clusterSummary)}</p>` : ''}<p class="tier-logic" style="font-size:0.9rem;color:var(--muted);margin:0.25rem 0 0.75rem;font-style:italic;">${SecurityUtils.sanitizeHTML(tierInfo.logic)}</p>${subHtml}</div></div></section>`;
+      const clusterGuidance = weakest?.id ? this.getWeakestSubcategoryGuidance(weakest.id, clusterId) : null;
+      const weakLabel = weakest?.id ? (subLabels[weakest.id] || weakest.id) : '';
+      const tierLineHtml = `<p class="tier-logic" style="font-size:0.9rem;color:var(--muted);margin:0.25rem 0 0.75rem;font-style:italic;">${SecurityUtils.sanitizeHTML(tierInfo.logic)}</p>`;
+      const clusterGuidanceHtml = clusterGuidance
+        ? `<div class="weakest-guidance" style="margin-top:1rem;"><h4>Focus: ${SecurityUtils.sanitizeHTML(weakLabel)}</h4><div class="guidance-block"><p class="guidance-meaning">${SecurityUtils.sanitizeHTML(clusterGuidance.meaning || '')}</p><p class="guidance-actions"><strong>How to improve:</strong></p><ol>${(clusterGuidance.actions || []).map(a => `<li>${SecurityUtils.sanitizeHTML(a)}</li>`).join('')}</ol></div></div>`
+        : '';
+      return `<section class="report-section"><h2 class="report-section-title">${this.getReportClusterHeading(clusterId)}</h2><div class="attraction-cluster-section"><div class="attraction-cluster-badge">${badge}</div><div class="cluster-subcategory-block">${subHtml}${clusterSummary ? `<p class="cluster-summary" style="font-size:0.95rem;color:var(--brand);margin:0.5rem 0 0.5rem;line-height:1.6;">${SecurityUtils.sanitizeHTML(clusterSummary)}</p>` : ''}${tierLineHtml}${clusterGuidanceHtml}</div></div></section>`;
     }).join('');
 
     const radScore = this.currentGender === 'male' && s.subcategories?.axisOfAttraction?.radActivity;
@@ -745,7 +754,7 @@ export class AttractionEngine {
 
     let html = `
       <div class="results-dashboard">
-        <div class="results-header"><h2>Your Sexual Market Value Profile</h2><p class="results-subtitle">${this.currentGender === 'male' ? 'Male' : 'Female'} Sexual Market Value Assessment</p></div>
+        <div class="results-header"><h2>Your Sexual Market Value Profile</h2><p class="results-subtitle">${this.currentGender === 'male' ? 'Male' : 'Female'} SMV</p></div>
 
         <section class="report-section attraction-exec-summary">
           <div class="attraction-exec-badges">${combinedCard}</div>
@@ -754,16 +763,15 @@ export class AttractionEngine {
         <div class="subcategory-breakdown">${subcategoryBlock}</div>
 
         ${radBlock}
-        <section class="report-section"><h2 class="report-section-title">Market Position</h2>
+        <section class="report-section"><h2 class="report-section-title">Sexual Market Options</h2>
         ${s.delusionBand !== 'low' ? `<div class="delusion-warning"><h3>⚠️ Standards-Market Mismatch: ${SecurityUtils.sanitizeHTML(s.delusionBand.toUpperCase())}</h3><p>${this.getDelusionWarning(s.delusionBand)}</p></div>` : ''}
         ${this.currentGender === 'male' ? this.getMaleStandardsContextNote(s) : this.getFemaleStandardsContextNote(s)}
-        <div class="market-analysis"><div class="market-grid"><div class="market-card"><h4>Realistic Target</h4><p>${s.targetMarket?.realistic || ''}</p></div><div class="market-card"><h4>Aspirational</h4><p>${s.targetMarket?.aspirational || ''}</p></div></div></div></section>
+        <div class="market-analysis"><div class="market-grid"><div class="market-card"><h4>Realistic Target:</h4><p>${s.targetMarket?.realistic || ''}</p></div><div class="market-card"><h4>Aspirational Potential Mate Quality:</h4><p>${s.targetMarket?.aspirational || ''}</p></div></div></div></section>
 
         <section class="report-section"><h2 class="report-section-title">Strategic Recommendations</h2>
         <div class="recommendations"><div class="priority-box ${rec.priority?.includes('CRITICAL') ? 'critical' : 'normal'}"><h4>${rec.priority || ''}</h4><p>${rec.strategic || ''}</p></div>
         ${rec.warning ? `<div class="warning-box"><strong>⚠️ Reality Check:</strong><p>${rec.warning}</p></div>` : ''}
-        ${(rec.weakestGuidance || []).length ? `<div class="weakest-guidance"><h4>Targeted Guidance — Weakest Subcategories</h4>${(rec.weakestGuidance || []).map(w => `<div class="guidance-block"><h5>${SecurityUtils.sanitizeHTML(w.label)} <span class="guidance-cluster">(${SecurityUtils.sanitizeHTML(w.cluster)})</span></h5><p class="guidance-meaning"><strong>What it means:</strong> ${SecurityUtils.sanitizeHTML(w.meaning)}</p><p class="guidance-actions"><strong>How to improve:</strong></p><ol>${(w.actions || []).map(a => `<li>${SecurityUtils.sanitizeHTML(a)}</li>`).join('')}</ol></div>`).join('')}</div>` : ''}
-        <div class="tactical-actions"><h4>Immediate Actions</h4><ol>${(rec.tactical || []).map(a => `<li>${SecurityUtils.sanitizeHTML(a)}</li>`).join('')}</ol></div>
+        <div class="tactical-actions">${(rec.weakestGuidance || []).length && (rec.tactical || []).length === 1 ? `<h4>Next step</h4><p class="tactical-synthesis">${SecurityUtils.sanitizeHTML((rec.tactical || [])[0] || '')}</p>` : `<h4>Immediate Actions</h4><ol>${(rec.tactical || []).map(a => `<li>${SecurityUtils.sanitizeHTML(a)}</li>`).join('')}</ol>`}</div>
         </div></section>
 
         <div class="panel-brand-left" style="background: var(--glass); border-radius: var(--radius); padding: 1.25rem; margin-top: 2rem; border-left: 4px solid var(--accent);">
@@ -773,6 +781,7 @@ export class AttractionEngine {
         <section class="report-section" style="margin-top: 2rem;">
           <h2 class="report-section-title">Opportunity to improve quality of life</h2>
           <div class="panel-brand-left" style="background: var(--glass); border-radius: var(--radius); padding: 1.25rem; border-left: 4px solid var(--accent);">
+            <p class="muted" style="margin:0 0 0.75rem;font-size:0.9rem;font-style:italic;">Separate from the SMV scores above — this reflects internal operating mode, not market position.</p>
             <p style="margin: 0;">${levelExpl ? SecurityUtils.sanitizeHTML(levelExpl) : `Your responses suggest you're operating from ${SecurityUtils.sanitizeHTML(s.levelClassification)}.`}</p>
           </div>
         </section>

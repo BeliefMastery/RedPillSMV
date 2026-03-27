@@ -8,8 +8,7 @@ import {
   buildPolarityLayer,
   buildAttractionLayer,
   buildCurrentPatternSummary,
-  buildNextMoveCandidates,
-  buildPatternConvergenceParagraph
+  buildNextMoveCandidates
 } from './shared/integrated-map-excerpts.js';
 
 function esc(s) {
@@ -121,8 +120,8 @@ function renderCurrentPatternSummary(summary) {
   return `
     <section class="integrated-map-current-pattern" aria-labelledby="integrated-current-pattern-heading">
       <h2 id="integrated-current-pattern-heading" class="integrated-map-frame-heading">Your Current Pattern (Summary)</h2>
-      ${identity ? `<p><strong>Identity Pattern:</strong> ${esc(identity)}</p>` : ''}
-      ${market ? `<p><strong>Market Read:</strong> ${esc(market)}</p>` : ''}
+      ${identity ? `<p>${esc(identity)}</p>` : ''}
+      ${market ? `<p>${esc(market)}</p>` : ''}
     </section>`;
 }
 
@@ -158,19 +157,11 @@ function renderContent(snapshots) {
       ${renderLayer(attL)}
     </div>`;
 
-  const convergence = buildPatternConvergenceParagraph(a, t, r, { layers: layerBundle });
-  const cross = `
-    <section class="integrated-map-cross" aria-labelledby="integrated-cross-heading">
-      <h2 id="integrated-cross-heading">Pattern Convergence</h2>
-      <p class="integrated-map-cross-paragraph">${esc(convergence)}</p>
-    </section>`;
-
   return `
     <h1 class="section-title-btn" style="text-align:center;margin-bottom:0.5rem;">Integrated map</h1>
     ${renderCurrentPatternSummary(summary)}
     ${layers}
     ${renderNextMove(nextMoves)}
-    ${cross}
     <p style="text-align:center;margin-top:1.5rem;color:var(--muted);font-size:0.9rem;"><a href="index.html">Home</a> · <a href="relationship.html">Relationships</a> (separate lens)</p>`;
 }
 

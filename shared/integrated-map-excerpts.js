@@ -756,23 +756,21 @@ export function buildPolarityLayer(ad) {
   const hyperHazard = hyperHazardSummary(ad, reportedGender);
   const costsLead = costsBullets.length
     ? (() => {
-        const base =
-          'These anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.';
         if (reportedGender === 'man') {
           const comp =
             complementaryBullets.length > 0
               ? ` In this profile, they can inhibit access to complementary poles such as ${complementaryBullets.join(', ')}.`
               : '';
-          return `For a male respondent, these poles sit outside the typical dimensional temperament range and can become polarity fracture points.${base ? ` ${base}` : ''}${comp} This pattern can sometimes form as adaptive coping under prolonged stress, so read it as a structural signal to address, not a character verdict.`;
+          return `For a male respondent, these anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.${comp} This pattern can sometimes form as adaptive coping under prolonged stress, so read it as a structural signal to address, not a character verdict.`;
         }
         if (reportedGender === 'woman') {
           const comp =
             complementaryBullets.length > 0
               ? ` They can also suppress access to complementary poles such as ${complementaryBullets.join(', ')}.`
               : '';
-          return `For a female respondent, these poles sit outside the typical dimensional temperament range and can become polarity fracture points.${base ? ` ${base}` : ''}${comp} This pattern can sometimes form as adaptive coping under prolonged stress, so read it as a structural signal to address, not a character verdict.`;
+          return `For a female respondent, these anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.${comp} This pattern can sometimes form as adaptive coping under prolonged stress, so read it as a structural signal to address, not a character verdict.`;
         }
-        return base;
+        return 'These anomaly poles are the main friction points; without opposite-pole match at similar strength, chemistry can flatten, misattune, or destabilise over time.';
       })()
     : 'No anomaly flags in this snapshot.';
   const costs = safeSentence([costsLead, hyperHazard].filter(Boolean).join(' '));
@@ -928,14 +926,60 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
     : `You protect autonomy and resist being placed inside hierarchies. That gives you freedom, but it can also reduce visibility and opportunity.`;
 
   const tempQualities = buildTopQualityPhrases(pd, 3);
-  const tempLine = tempQualities.length
-    ? `Clearest quality leans: ${tempQualities.join('; ')}.`
-    : `Polarity data was thin in the saved snapshot; open the full polarity report for detail.`;
+  const anomalyKeys = Array.isArray(pd?.anomalousDimensionKeys) ? pd.anomalousDimensionKeys : [];
+  const dimScores = pd?.dimensionScores || {};
+  const lowerFirst = (s) => {
+    const v = String(s || '').trim();
+    return v ? v.charAt(0).toLowerCase() + v.slice(1) : '';
+  };
+  const anomalyTendencies = dedupeKeepOrder(
+    anomalyKeys
+      .map((dimKey) => {
+        const net = dimScores?.[dimKey]?.net;
+        const norm = typeof net === 'number' ? (net + 1) / 2 : 0.5;
+        return lowerFirst(getEmphasizedPoleTrait(dimKey, 'auto', norm));
+      })
+      .filter(Boolean),
+    4
+  );
+  const complementaryPoles = dedupeKeepOrder(
+    anomalyKeys
+      .map((dimKey) => {
+        const net = dimScores?.[dimKey]?.net;
+        const norm = typeof net === 'number' ? (net + 1) / 2 : 0.5;
+        const dominantSide = norm >= 0.5 ? 'masc' : 'fem';
+        const oppositeSide = dominantSide === 'masc' ? 'fem' : 'masc';
+        return capitalizeTrait(getEmphasizedPoleTrait(dimKey, oppositeSide, norm));
+      })
+      .filter(Boolean),
+    4
+  );
+  const anomalyTempLine = (() => {
+    if (!anomalyTendencies.length) return '';
+    const tendencies = anomalyTendencies.join('; ');
+    const comp = complementaryPoles.length
+      ? ` unless a partner has matching complementary poles such as ${complementaryPoles.join('; ')}`
+      : '';
+    if (pd?.gender === 'man') {
+      return `In this male profile, the key temperament anomalies are an inclination toward feminine tendencies of '${tendencies}', creating potential polarity fractures${comp}.`;
+    }
+    if (pd?.gender === 'woman') {
+      return `In this female profile, the key temperament anomalies are an inclination toward masculine tendencies of '${tendencies}', creating potential polarity fractures${comp}.`;
+    }
+    return `Key temperament anomalies in this profile are '${tendencies}', creating potential polarity fractures${comp}.`;
+  })();
+  const tempLine = anomalyTempLine || (tempQualities.length
+    ? `Temperament emphasis: ${tempQualities.join('; ')}.`
+    : `Polarity data was thin in the saved snapshot; open the full polarity report for detail.`);
 
   const marketLine = smv
     ? (() => {
         const o = Math.round(smv.overall ?? 0);
         const mp = smv.marketPosition ? String(smv.marketPosition).trim() : '';
+        const accessTier = o >= 80 ? 'high-access'
+          : o >= 60 ? 'above-average access'
+          : o >= 40 ? 'mid-access'
+          : 'constrained access';
         const lever =
           (Array.isArray(rec.tactical) && rec.tactical[0]) ||
           rec.strategic ||
@@ -947,9 +991,9 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
               smv.subcategories.axisOfAttraction.radActivity < 40
                 ? 'Low out-of-domain activity signal can read low-status and narrow attraction pull.'
                 : '');
-        return [`Improvement lever: ${trimTrailingPunctuation(String(lever || ''))}.`, risk]
-          .filter(Boolean)
-          .join(' ');
+        const pos = `SMV ~${o}th percentile${mp ? ` — ${mp}` : ''}. Access reads as ${accessTier}.`;
+        const leverLine = `Improvement lever: ${trimTrailingPunctuation(String(lever || ''))}.`;
+        return [pos, leverLine, risk].filter(Boolean).join(' ');
       })()
     : `Attraction snapshot missing; complete the assessment for an SMV line in this summary.`;
 
@@ -1080,91 +1124,4 @@ export function buildCrossIntegrationBullets(archetypeLayer, polarityLayer, attr
     );
   }
   return out;
-}
-
-/**
- * How the three assessments compound: headline, then meaning / helps / costs from each layer, then an integration cue.
- * @param {{ analysisData?: object }} archetypeSnap
- * @param {{ analysisData?: object }} polaritySnap
- * @param {{ smv?: object, currentGender?: string, preferences?: object }} attractionSnap
- * @param {{ layers?: { archL?: object, polL?: object, attL?: object } }} [opts]
- */
-export function buildPatternConvergenceParagraph(archetypeSnap, polaritySnap, attractionSnap, opts = {}) {
-  const ad = archetypeSnap?.analysisData || {};
-  const pd = polaritySnap?.analysisData || {};
-  const smv = attractionSnap?.smv;
-  const gender = attractionSnap?.currentGender;
-  const prefs = attractionSnap?.preferences || {};
-
-  const archL = opts.layers?.archL ?? buildArchetypeLayer(ad);
-  const polL = opts.layers?.polL ?? buildPolarityLayer(pd);
-  const attL = opts.layers?.attL ?? buildAttractionLayer({ smv, currentGender: gender, preferences: prefs });
-
-  const archName = ad.primaryArchetype?.name || 'your archetype pattern';
-  const secName = ad.secondaryArchetype?.name ? String(ad.secondaryArchetype.name).trim() : '';
-  const archHeadline = secName ? `${archName} (secondary pull: ${secName})` : archName;
-
-  const cat = pd?.overallTemperament?.category;
-  const interp = cat ? TEMPERAMENT_SCORING?.interpretation?.[cat] : null;
-  const tempLabel = interp?.label ? String(interp.label).trim() : 'your polarity profile';
-  const smvReadRaw =
-    gender === 'male' && smv?.badBoyGoodGuy?.label
-      ? smv.badBoyGoodGuy.label
-      : gender === 'female' && smv?.keeperSweeper?.label
-        ? smv.keeperSweeper.label
-        : smv?.marketPosition
-          ? String(smv.marketPosition).trim()
-          : 'your market band';
-  const smvRead = clipIntegratedMapText(smvReadRaw, 56);
-  const pct = smv?.overall != null ? Math.round(smv.overall) : null;
-
-  const opener =
-    pct != null
-      ? `Three saved reports converge: Archetype (${archHeadline}) governs how you show up, Polarity (${tempLabel}) governs attraction fit and tension, and Attraction (~${pct}th percentile, “${smvRead}”) governs access and selection outcomes.`
-      : `Three saved reports converge: Archetype (${archHeadline}) shapes behaviour, Polarity (${tempLabel}) shapes attraction fit, and Attraction (“${smvRead}”) shapes access and selection outcomes.`;
-
-  const hasHyperHazard = Boolean(hyperHazardSummary(pd, pd?.gender));
-  const hasAnom = Array.isArray(pd.anomalousDimensionNames) && pd.anomalousDimensionNames.length > 0;
-  const hasSmvRisk = Boolean(smv?.delusionBand && smv.delusionBand !== 'low');
-  const hasArchetypeFriction = Boolean(String(archL?.frame?.costs || '').trim());
-
-  const mechanism = hasHyperHazard
-    ? 'When archetype habits, polarity spikes, and market constraints align, response quality and retention improve; when they clash, magnetism can coexist with instability.'
-    : 'When archetype habits, polarity fit, and market signal align, response quality and retention improve; when they clash, effort rises while outcomes flatten.';
-
-  const frictionSignals = [];
-  if (hasArchetypeFriction) frictionSignals.push('archetype limitation loops');
-  if (hasAnom) frictionSignals.push('anomalous polarity dimensions');
-  if (hasHyperHazard) frictionSignals.push('hyper-state instability risk');
-  if (hasSmvRisk) frictionSignals.push('standards-to-signal mismatch');
-
-  const synthesis = frictionSignals.length
-    ? `Current friction concentrates around ${frictionSignals.join(', ')}; resolve the strongest one first to unlock leverage across the other two layers.`
-    : 'Current layers are reasonably aligned; protect that alignment by keeping one behaviour change and one signal upgrade running in parallel.';
-
-  const delusion = smv?.delusionBand && smv.delusionBand !== 'low';
-  const overall = typeof smv?.overall === 'number' ? smv.overall : 50;
-  let closer = '';
-  if (delusion || overall < 42) {
-    closer =
-      'Integration cue: tighten standards realism and one visible SMV upgrade first—access and choice quality usually gate everything else.';
-  } else if (hasAnom) {
-    closer =
-      'Integration cue: treat polarity partner-fit on flagged dimensions as primary—market upgrades rarely fix a pole mismatch you repeat.';
-  } else if (overall < 58) {
-    closer =
-      'Integration cue: stack one credible signal upgrade with one polarity behaviour change so partners can read you consistently.';
-  } else {
-    closer =
-      'Integration cue: your archetype habits still govern how you deploy strength—use polarity awareness so high SMV doesn’t read ambiguous in person.';
-  }
-  closer = clipIntegratedMapText(closer, 175);
-
-  const assembled = [opener, mechanism, synthesis, closer]
-    .filter(Boolean)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  return clipIntegratedMapText(assembled, 620);
 }

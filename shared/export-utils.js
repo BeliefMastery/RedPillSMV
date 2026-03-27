@@ -1061,12 +1061,15 @@ function buildAttractionReportBody(data) {
     html += `<div class="card" style="border-left-color: #dc3545;"><h3>Delusion Index: ${delusionIndex}%</h3><p class="muted">Expectations vs. reality mismatch — consider adjusting standards or improving SMV.</p></div>`;
   }
 
-  if (data.levelClassification) html += `<p><strong>Developmental level:</strong> ${escapeHtml(data.levelClassification)}</p>`;
+  if (data.levelClassification) {
+    html += '<p class="muted"><em>Separate from percentile scores above — this reflects internal operating mode, not market position.</em></p>';
+    html += `<p><strong>Developmental level:</strong> ${escapeHtml(data.levelClassification)}</p>`;
+  }
 
   if (data.targetMarket && (data.targetMarket.realistic || data.targetMarket.aspirational)) {
-    html += '<h3>Market Position</h3><ul>';
-    if (data.targetMarket.realistic) html += `<li><strong>Realistic target:</strong> ${escapeHtml(data.targetMarket.realistic)}</li>`;
-    if (data.targetMarket.aspirational) html += `<li><strong>Aspirational:</strong> ${escapeHtml(data.targetMarket.aspirational)}</li>`;
+    html += '<h3>Sexual Market Options</h3><ul>';
+    if (data.targetMarket.realistic) html += `<li><strong>Realistic Target:</strong> ${escapeHtml(data.targetMarket.realistic)}</li>`;
+    if (data.targetMarket.aspirational) html += `<li><strong>Aspirational Potential Mate Quality:</strong> ${escapeHtml(data.targetMarket.aspirational)}</li>`;
     html += '</ul>';
   }
 
@@ -1088,9 +1091,13 @@ function buildAttractionReportBody(data) {
       });
     }
     if (Array.isArray(rec.tactical) && rec.tactical.length) {
-      html += '<p><strong>Immediate actions:</strong></p><ol>';
-      rec.tactical.forEach(a => { html += `<li>${escapeHtml(a)}</li>`; });
-      html += '</ol>';
+      if (Array.isArray(rec.weakestGuidance) && rec.weakestGuidance.length && rec.tactical.length === 1) {
+        html += `<p><strong>Next step:</strong> ${escapeHtml(rec.tactical[0])}</p>`;
+      } else {
+        html += '<p><strong>Immediate actions:</strong></p><ol>';
+        rec.tactical.forEach(a => { html += `<li>${escapeHtml(a)}</li>`; });
+        html += '</ol>';
+      }
     }
   }
 
