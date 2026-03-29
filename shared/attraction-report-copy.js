@@ -2,20 +2,9 @@
  * Static report copy for Attraction / SMV (shared by attraction-engine.js and integrated-map).
  */
 
-/** @param {string} clusterId @param {boolean} male */
-export function getClusterSummary(clusterId, male) {
-  const summaries = {
-    coalitionRank: male
-      ? 'Bars score the subcomponents (status, competence, influence, etc.) that feed your male–male coalition rank.'
-      : 'Bars score the subcomponents (selectivity, nurturing, collaboration, etc.) that feed your female–female coalition rank.',
-    reproductiveConfidence: male
-      ? 'Bars score long-term commitment signals: provision, protection, parental intent, and related cues.'
-      : 'Bars score commitment and nesting signals men use to size you up as a long-term option.',
-    axisOfAttraction: male
-      ? 'Bars map wealth/status/performance, looks/physical, and humour/intelligence; Radical Activity is a modifier, not a fourth core bar.'
-      : 'Bars map initiation, access, and progression signals men respond to on first pull and beyond.'
-  };
-  return summaries[clusterId] || '';
+/** @param {string} _clusterId @param {boolean} _male */
+export function getClusterSummary(_clusterId, _male) {
+  return '';
 }
 
 /** Reframe developmental level as opportunity to reorient one stage higher (not a fixed label). */
@@ -36,9 +25,15 @@ export function getDevelopmentalOpportunity(currentLabel) {
   };
   const idx = order.indexOf(currentLabel);
   if (idx === -1) return '';
-  if (idx === order.length - 1) return nextDescriptions[currentLabel] || '';
+  if (idx === order.length - 1) {
+    const apex = nextDescriptions[currentLabel] || '';
+    return apex
+      ? `Your responses suggest you're operating as ${currentLabel}. ${apex}`
+      : '';
+  }
   const nextLabel = order[idx + 1];
-  return `Your responses suggest you're operating from ${currentLabel}. The opportunity is to adjust consciousness toward the next stage: ${nextDescriptions[currentLabel] || nextLabel}.`;
+  const toward = nextDescriptions[currentLabel] || nextLabel;
+  return `Your responses suggest you're operating as ${currentLabel}. An opportunity to improve quality of life may be accessible through adjusting consciousness toward: ${toward}`;
 }
 
 /** Brief explanations for qualifications — respondent may not know the terms */

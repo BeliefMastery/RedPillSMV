@@ -781,8 +781,7 @@ export class AttractionEngine {
         <section class="report-section" style="margin-top: 2rem;">
           <h2 class="report-section-title">Opportunity to improve quality of life</h2>
           <div class="panel-brand-left" style="background: var(--glass); border-radius: var(--radius); padding: 1.25rem; border-left: 4px solid var(--accent);">
-            <p class="muted" style="margin:0 0 0.75rem;font-size:0.9rem;font-style:italic;">Separate from the SMV scores above — this reflects internal operating mode, not market position.</p>
-            <p style="margin: 0;">${levelExpl ? SecurityUtils.sanitizeHTML(levelExpl) : `Your responses suggest you're operating from ${SecurityUtils.sanitizeHTML(s.levelClassification)}.`}</p>
+            <p style="margin: 0;">${levelExpl ? SecurityUtils.sanitizeHTML(levelExpl) : `Your responses suggest you're operating as ${SecurityUtils.sanitizeHTML(s.levelClassification)}.`}</p>
           </div>
         </section>
       </div>`;

@@ -1062,7 +1062,6 @@ function buildAttractionReportBody(data) {
   }
 
   if (data.levelClassification) {
-    html += '<p class="muted"><em>Separate from percentile scores above — this reflects internal operating mode, not market position.</em></p>';
     html += `<p><strong>Developmental level:</strong> ${escapeHtml(data.levelClassification)}</p>`;
   }
 
