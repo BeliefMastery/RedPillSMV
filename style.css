@@ -121,9 +121,7 @@ main {
     background: rgba(0, 0, 0, 0.0);
 }
 
-body.home-page main {
-    padding-top: 30px;
-}
+/* Home uses the same main offset as tool pages (see main padding-top above). */
 
 /* Background layer hidden for testing: desktop matches cellphone (no nebula/gradient) */
 .bg-gradient,
@@ -1788,12 +1786,32 @@ h3[style*="text-align:center"][style*="border-bottom"] {
     }
 }
 
-/* Home landing: 2x2 image grid (desktop + mobile), minimal buffer, images shrunk-to-fit */
+/* Home landing: match tool pages — no extra section chrome; same inner/title spacing as main > .section-inner.minimal-section */
+body.home-page .home-grid-section {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+}
+body.home-page .home-grid-section:hover {
+    box-shadow: none;
+    border-color: transparent;
+}
+
 .home-grid-section .section-inner,
 .home-grid-section .minimal-section {
-    padding: 0.25rem;
-    max-width: 100%;
+    /* Align with main > .section-inner.minimal-section on assessment pages */
+    padding: 0.25rem 0.2rem 0.15rem;
+    max-width: 980px;
 }
+
+.home-grid-section .section-inner.minimal-section > .section-title-btn {
+    margin: 0.5rem auto 0.45rem !important;
+}
+
 .home-image-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1801,7 +1819,8 @@ h3[style*="text-align:center"][style*="border-bottom"] {
     grid-auto-rows: auto;
     align-items: start;
     gap: 2px;
-    margin: 0.25rem 0;
+    /* Same vertical rhythm as .hero-image under the pill heading on tool pages */
+    margin: calc(2rem / 3) 0;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
@@ -1828,14 +1847,18 @@ h3[style*="text-align:center"][style*="border-bottom"] {
 @media (min-width: 769px) {
     .home-image-grid {
         max-width: 430px;
-        margin: 0.5rem auto;
+        margin: calc(2rem / 3) auto;
     }
 }
-/* Mobile: tight edge padding */
+/* Mobile: match tool page inner gutters */
 @media (max-width: 768px) {
     .home-grid-section .section-inner,
     .home-grid-section .minimal-section {
-        padding: 0.25rem 4px;
+        padding: 0.35rem var(--mobile-gutter, 12px) 0.15rem;
+    }
+
+    .home-grid-section .section-inner.minimal-section > .section-title-btn {
+        margin: 0.45rem auto 0.4rem !important;
     }
     #tools .section-subtitle {
         display: none;
@@ -4282,6 +4305,12 @@ img[data-src].loaded {
     .home-grid-section .minimal-section {
         padding-left: var(--mobile-gutter);
         padding-right: var(--mobile-gutter);
+    }
+
+    /* Gutters live on .section-inner; keep the home section shell flush like tool main */
+    body.home-page .home-grid-section {
+        padding-left: 0;
+        padding-right: 0;
     }
 
     /* Mobile: tighter badge margins for assessment pages */
