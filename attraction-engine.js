@@ -8,6 +8,7 @@
 import { createDebugReporter } from './shared/debug-reporter.js';
 import { SecurityUtils } from './shared/utils.js';
 import { downloadFile, generateReadableReport } from './shared/export-utils.js';
+import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import {
@@ -754,7 +755,7 @@ export class AttractionEngine {
 
     let html = `
       <div class="results-dashboard">
-        <div class="results-header"><h2>Your Sexual Market Value Profile</h2><p class="results-subtitle">${this.currentGender === 'male' ? 'Male' : 'Female'} SMV</p></div>
+        <div class="results-header"><h2>Your Sexual Market Value Profile</h2>${reportGenderGlyphHtml(this.currentGender)}</div>
 
         <section class="report-section attraction-exec-summary">
           <div class="attraction-exec-badges">${combinedCard}</div>

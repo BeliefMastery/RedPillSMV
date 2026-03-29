@@ -6,12 +6,15 @@ import { loadDataModule, setDebugReporter } from './shared/data-loader.js';
 import { createDebugReporter } from './shared/debug-reporter.js';
 import { ErrorHandler, DataStore, DOMUtils, SecurityUtils } from './shared/utils.js';
 import { downloadFile, generateReadableReport, buildTemperamentSynthesisPlainParagraphs } from './shared/export-utils.js';
+import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
 import {
   TEMPERAMENT_REPORT_TIER1_PARAS,
   TEMPERAMENT_REPORT_SPECTRUM_NOTE,
+  TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE,
   TEMPERAMENT_REPORT_TIER2_SUMMARY,
   TEMPERAMENT_REPORT_TIER2_PARAS
 } from './temperament-data/temperament-report-copy.js';
+import { getDimensionNormativeClarifier } from './shared/temperament-normative-clarifier.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 
@@ -124,6 +127,7 @@ function buildTemperamentReportEducationHtml() {
     block += `<p style="margin:0.55rem 0 0;color:var(--muted);font-size:0.92rem;line-height:1.65;">${SecurityUtils.sanitizeHTML(p)}</p>`;
   });
   block += `<p style="margin:0.55rem 0 0;color:var(--muted);font-size:0.88rem;line-height:1.6;font-style:italic;">${SecurityUtils.sanitizeHTML(TEMPERAMENT_REPORT_SPECTRUM_NOTE)}</p>`;
+  block += `<p style="margin:0.55rem 0 0;color:var(--muted);font-size:0.88rem;line-height:1.6;">${SecurityUtils.sanitizeHTML(TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE)}</p>`;
   block += `<details class="temperament-plasticity-details" style="margin: 0.9rem 0 0;"><summary style="cursor:pointer;color:var(--brand);font-weight:600;font-size:0.9rem;">${SecurityUtils.sanitizeHTML(TEMPERAMENT_REPORT_TIER2_SUMMARY)}</summary><div style="margin-top:0.65rem;">`;
   TEMPERAMENT_REPORT_TIER2_PARAS.forEach(p => {
     block += `<p style="margin:0.45rem 0 0;color:var(--muted);font-size:0.88rem;line-height:1.62;">${SecurityUtils.sanitizeHTML(p)}</p>`;
@@ -1448,11 +1452,6 @@ export class TemperamentEngine {
       if (!this.analysisData.gender && genderValue) {
         this.analysisData.gender = genderValue;
       }
-      const genderLabel = (() => {
-        if (!genderValue) return 'Not specified';
-        const option = GENDER_QUESTION.options.find(opt => opt.value === genderValue);
-        return option ? option.label : 'Not specified';
-      })();
     const reportedGender = this.analysisData.gender;
     const maleTrend = EXPECTED_GENDER_TRENDS.man;
     const femaleTrend = EXPECTED_GENDER_TRENDS.woman;
@@ -1711,7 +1710,7 @@ export class TemperamentEngine {
     html += `
       <div class="temperament-profile-card${crossPolarityClass}">
         <h2>Temperament Expression Profile</h2>
-        <p class="temperament-assessment-context"><strong>Assessment context:</strong> Taken as ${SecurityUtils.sanitizeHTML(genderLabel)}.</p>
+        ${reportGenderGlyphHtml(reportedGender)}
         ${buildTemperamentReportEducationHtml()}
         <div class="temperament-profile-inner temperament-profile-inner-headline">
           <h3>${SecurityUtils.sanitizeHTML(interpretation.label || '')}</h3>
@@ -1747,20 +1746,6 @@ export class TemperamentEngine {
     if (anomalousKeys.size > 0) {
       html += '<p style="color: var(--muted); font-size: 0.9rem; margin: 0 0 1rem;">Rows marked <strong>Temperament anomaly</strong> are explained in the partner-fit note below.</p>';
     }
-
-    const getDimensionClarifierSentence = (dimKey, normalizedDimScore) => {
-      const expectedRef = reportedGender === 'man' ? maleTrend : femaleTrend;
-      const deltaToExpected = normalizedDimScore - expectedRef;
-      const nearExpected = Math.abs(deltaToExpected) <= 0.08;
-
-      const genderNoun = reportedGender === 'man' ? 'males' : 'women';
-      const emphasisLean = normalizedDimScore >= 0.5 ? 'masculine-leaning' : 'feminine-leaning';
-
-      if (nearExpected) {
-        return `Near typical for ${genderNoun}.`;
-      }
-      return `Notably more ${emphasisLean} than typical for ${genderNoun}.`;
-    };
 
     const dimScores = this.analysisData.dimensionScores || {};
     const domainKeys = [];
@@ -1806,11 +1791,13 @@ export class TemperamentEngine {
       const fullDetailLabel = this.getDimensionLabel(dimKey, normalizedDimScore, reportedGender, maleTrend, femaleTrend);
       const fullDetailTitle = SecurityUtils.sanitizeHTML(fullDetailLabel).replace(/"/g, '&quot;');
 
-      const clarifierSentence = getDimensionClarifierSentence(dimKey, normalizedDimScore);
-
-      const selectionCriteriaNote = dimKey === 'selection_criteria' && (reportedGender === 'man' || reportedGender === 'woman')
-        ? `<p style="color: var(--muted); margin: 0.35rem 0 0; font-size: 0.85rem;">Selection criteria adjusted for ${reportedGender === 'man' ? 'male' : 'female'} standards.</p>`
-        : '';
+      const clarifierSentence = getDimensionNormativeClarifier({
+        reportedGender,
+        normalizedDimScore,
+        maleTrend,
+        femaleTrend,
+        spectrumBand: rowSpectrumBand
+      });
 
       html += `
       <li class="dimension-item${isAnomalous ? ' dimension-polarity-notable' : ''}${isStronglyAligned ? ' dimension-polarity-strongly-aligned' : ''}" style="margin-bottom:1rem;">
@@ -1826,7 +1813,6 @@ export class TemperamentEngine {
           ${SecurityUtils.sanitizeHTML(compact)}
         </p>
         ${clarifierSentence ? `<p style="margin:0.25rem 0 0;color:var(--muted);font-size:0.85rem;line-height:1.45;">${SecurityUtils.sanitizeHTML(clarifierSentence)}</p>` : ''}
-        ${selectionCriteriaNote}
       </li>`;
     });
     html += '</ul>';

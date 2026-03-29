@@ -17,6 +17,10 @@ export const TEMPERAMENT_REPORT_TIER1_PARAS = [
 export const TEMPERAMENT_REPORT_SPECTRUM_NOTE =
   'The trend dots for males and females are population references, not targets. Couple fit is about complementary placement and calibrated strength of opposite poles—not both partners matching the same dot.';
 
+/** Explains gender-aware scoring for the Selection Criteria dimension (no per-row jargon). */
+export const TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE =
+  'The Selection Criteria dimension uses gender-aware weighting on some items so partner-preference answers stay on a comparable masculine–feminine signaling frame across male and female respondents; other dimensions are scored the same way as always.';
+
 /** `<details>` summary line */
 export const TEMPERAMENT_REPORT_TIER2_SUMMARY =
   'Shifts over time: exposure, biology, hormones';

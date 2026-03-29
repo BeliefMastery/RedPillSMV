@@ -6,6 +6,7 @@ import { loadDataModule, setDebugReporter } from './shared/data-loader.js';
 import { createDebugReporter } from './shared/debug-reporter.js';
 import { ErrorHandler, DataStore, DOMUtils, SecurityUtils } from './shared/utils.js';
 import { downloadFile, generateReadableReport } from './shared/export-utils.js';
+import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import { ensurePeriod, softenNarrativeTone, summarizeBehavioralAccent } from './shared/archetype-narrative-utils.js';
@@ -2346,11 +2347,6 @@ showGenderSelection() {
     const headerDetail = headerParts.length
       ? `: ${SecurityUtils.sanitizeHTML(headerParts.join(', '))}`
       : '';
-    const genderLabel = this.gender === 'female'
-      ? 'Woman'
-      : this.gender === 'male'
-        ? 'Man'
-        : 'Not specified';
     const getBaseBrutalNarrative = (archetype) => {
       if (!archetype) return '';
       return String(BRUTAL_TRUTHS?.[archetype.id]?.narrative || archetype.archetypalNarrative || '').trim();
@@ -2395,8 +2391,8 @@ showGenderSelection() {
 
     let resultsHTML = `
       <div class="results-container" style="max-width: 900px; margin: 0 auto;">
-        <h2 style="color: var(--brand); text-align: center; margin-bottom: 2rem;">Your Archetype Profile${headerDetail}</h2>
-        <p class="temperament-assessment-context" style="text-align: center;"><strong>You selected:</strong> ${SecurityUtils.sanitizeHTML(genderLabel)}.</p>
+        <h2 style="color: var(--brand); text-align: center; margin-bottom: 0.35rem;">Your Archetype Profile${headerDetail}</h2>
+        ${reportGenderGlyphHtml(this.gender)}
 
         <!-- Primary Archetype -->
         <div class="archetype-card primary" style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; border: 2px solid var(--brand);">

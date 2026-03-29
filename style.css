@@ -1928,6 +1928,26 @@ h3[style*="text-align:center"][style*="border-bottom"] {
     border: 1px solid rgba(255, 137, 212, 0.45);
     background: rgba(255, 137, 212, 0.12);
 }
+
+/* Assessment report: gender marker directly under main report title */
+.assessment-report-gender-glyph {
+    margin: 0 auto 1.25rem;
+    text-align: center;
+    font-size: 2.75rem;
+    line-height: 1;
+    font-weight: 700;
+    user-select: none;
+    letter-spacing: 0.02em;
+}
+.assessment-report-gender-glyph--male {
+    color: #6ec1ff;
+    text-shadow: 0 0 0.35rem rgba(110, 193, 255, 0.35);
+}
+.assessment-report-gender-glyph--female {
+    color: #ff89d4;
+    text-shadow: 0 0 0.35rem rgba(255, 137, 212, 0.35);
+}
+
 .suite-mismatch-note {
     margin: 0.9rem 0 0;
     padding: 0.65rem 0.75rem;
@@ -5229,6 +5249,15 @@ img[data-src].loaded {
     margin: 0 auto;
 }
 
+.results-dashboard .results-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.results-dashboard .results-header h2 {
+    margin: 0 0 0.25rem;
+}
+
 /* Report sections — clear division */
 .results-dashboard .report-section {
     margin-bottom: 2.5rem;
@@ -6268,7 +6297,7 @@ img[data-src].loaded {
 
 .temperament-profile-card h2 {
     color: var(--brand);
-    margin-bottom: 1rem;
+    margin-bottom: 0.35rem;
     font-size: 1.5rem;
 }
 

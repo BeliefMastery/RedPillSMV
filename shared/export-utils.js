@@ -4,12 +4,15 @@
 import {
   TEMPERAMENT_REPORT_TIER1_PARAS,
   TEMPERAMENT_REPORT_SPECTRUM_NOTE,
+  TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE,
   TEMPERAMENT_REPORT_TIER2_SUMMARY,
   TEMPERAMENT_REPORT_TIER2_PARAS
 } from '../temperament-data/temperament-report-copy.js';
+import { getDimensionNormativeClarifier } from './temperament-normative-clarifier.js';
 import { TEMPERAMENT_DIMENSIONS } from '../temperament-data/temperament-dimensions.js';
 import { INTIMATE_DYNAMICS } from '../temperament-data/intimate-dynamics.js';
 import { ATTRACTION_RESPONSIVENESS } from '../temperament-data/attraction-responsiveness.js';
+import { reportGenderGlyphHtml } from './report-gender-glyph.js';
 
 const EXPORT_VERSION = '1.1.0';
 
@@ -958,7 +961,7 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function reportDocHead(title, systemName) {
+function reportDocHead(title, systemName, genderGlyphHtml = '') {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -977,11 +980,15 @@ function reportDocHead(title, systemName) {
     .muted { color: #666; font-size: 0.9rem; }
     .strong { font-weight: 600; }
     .dimension-pole-bias { text-decoration: underline; text-decoration-thickness: 0.09em; text-underline-offset: 0.15em; font-weight: inherit; }
+    .assessment-report-gender-glyph { margin: 0 auto 1rem; text-align: center; font-size: 2.75rem; line-height: 1; font-weight: 700; user-select: none; }
+    .assessment-report-gender-glyph--male { color: #6ec1ff; }
+    .assessment-report-gender-glyph--female { color: #ff89d4; }
     @media print { body { max-width: 100%; } }
   </style>
 </head>
 <body>
   <h1>${escapeHtml(systemName)}</h1>
+  ${genderGlyphHtml}
   <p class="meta">Report saved ${new Date().toLocaleString()} · Version ${EXPORT_VERSION}</p>
 `;
 }
@@ -1045,7 +1052,6 @@ function buildAttractionReportBody(data) {
 
   if (overall != null) {
     html += `<h2>Sexual Market Value Profile</h2><p><strong>Overall:</strong> ~${overall}th percentile${marketPosition ? ` (${escapeHtml(marketPosition)})` : ''}</p>`;
-    if (data.gender) html += `<p class="muted">Gender: ${escapeHtml(data.gender)}</p>`;
   }
 
   if (data.clusters && typeof data.clusters === 'object') {
@@ -1276,7 +1282,13 @@ function buildTemperamentDimensionBreakdownExportHtml(data) {
       const titleHtml = buildTemperamentDimensionTitleHtmlExport(dimKey, normalized, displayNames[dimKey]);
       const ann = anomalousSet.has(dimKey) ? ' <strong>(Temperament anomaly)</strong>' : '';
       const compact = escapeHtml(getDimensionDescriptorCompactExport(dimKey, normalized));
-      h += `<li>${titleHtml}${ann} — ${compact}</li>`;
+      const normative = getDimensionNormativeClarifier({
+        reportedGender: data.gender,
+        normalizedDimScore: normalized,
+        spectrumBand: bandKey
+      });
+      const normativeHtml = normative ? `<br/><span class="muted">${escapeHtml(normative)}</span>` : '';
+      h += `<li>${titleHtml}${ann} — ${compact}${normativeHtml}</li>`;
     });
     h += '</ul>';
   });
@@ -1352,6 +1364,7 @@ function buildTemperamentReportPrimerExportHtml() {
     h += `<p>${escapeHtml(p)}</p>`;
   });
   h += `<p><em>${escapeHtml(TEMPERAMENT_REPORT_SPECTRUM_NOTE)}</em></p>`;
+  h += `<p class="muted">${escapeHtml(TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE)}</p>`;
   h += `<h4>${escapeHtml(TEMPERAMENT_REPORT_TIER2_SUMMARY)}</h4>`;
   TEMPERAMENT_REPORT_TIER2_PARAS.forEach(p => {
     h += `<p>${escapeHtml(p)}</p>`;
@@ -1557,6 +1570,7 @@ function buildArchetypeReportBody(data) {
  */
 export function generateReadableReport(assessmentData, systemType, systemName) {
   const title = `${systemName} — Report`;
+  const genderGlyphHtml = reportGenderGlyphHtml(assessmentData?.gender);
   let body = '';
   const type = systemType === 'temperament-analysis' ? 'temperament' : systemType === 'archetype-analysis' || systemType === 'modern-archetype-identification' ? 'archetype' : systemType;
   if (type === 'relationship') {
@@ -1570,6 +1584,6 @@ export function generateReadableReport(assessmentData, systemType, systemName) {
   } else {
     body = '<p>Report format not available for this assessment type.</p>';
   }
-  return reportDocHead(title, systemName) + body + reportDocFoot();
+  return reportDocHead(title, systemName, genderGlyphHtml) + body + reportDocFoot();
 }
 
