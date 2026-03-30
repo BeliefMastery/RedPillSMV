@@ -532,15 +532,25 @@ header.site-header {
     transition: var(--transition);
     flex-wrap: nowrap;
     align-items: center;
+    justify-content: center;
+    width: 100%;
+    overflow-x: auto; /* Keep one line even at large UI font sizes */
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+.nav-list::-webkit-scrollbar {
+    display: none;
 }
 
 .nav-list a {
     color: var(--brand);
-    padding: .42rem .9rem;
+    padding: .42rem .72rem;
     border-radius: .45rem;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: clamp(0.76rem, 1.15vw, 0.95rem);
     white-space: nowrap;
+    flex: 0 0 auto;
     position: relative;
     transition: var(--transition);
 }
@@ -588,14 +598,14 @@ header.site-header {
 @media (max-width: 768px) {
     .nav-list {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.3rem;
+        flex-wrap: nowrap;
+        gap: 0.2rem;
         justify-content: center;
     }
 
     .nav-list a {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.75rem;
+        padding: 0.36rem 0.5rem;
+        font-size: clamp(0.66rem, 2.2vw, 0.8rem);
         white-space: nowrap;
     }
 
@@ -2011,9 +2021,10 @@ body.home-page .home-grid-section:hover {
 .integrated-map-main {
     position: relative;
     z-index: 2;
-    max-width: 42rem;
+    max-width: 980px;
     margin: 0 auto;
-    padding: 1rem 1rem 3rem;
+    /* Match assessment-page heading/top buffer baseline */
+    padding: 0.25rem 0.2rem 3rem;
 }
 .integrated-map-current-pattern {
     margin: 0 0 1.25rem;
