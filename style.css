@@ -2286,7 +2286,7 @@ body.home-page .home-grid-section:hover {
 .portal-card {
     background: rgba(20, 35, 55, 0.85); /* More opaque for better contrast */
     border: 2px solid var(--border-medium);  /* More visible border */
-    box-shadow: var(--shadow-md);  /* Stronger shadow for depth */
+    box-shadow: var(--shadow-md), 0 0 30px var(--glow-accent);  /* Always-on glow for readability contrast */
     color: var(--brand);  /* Ice blue base text */
     padding: 2rem;
     border-radius: var(--radius);
@@ -2312,7 +2312,7 @@ body.home-page .home-grid-section:hover {
 
 @media (hover: hover) {
 .portal-card:hover {
-    box-shadow: var(--shadow-md), 0 0 30px var(--glow-accent);  /* Gold glow on hover for cosmic pop */
+    box-shadow: var(--shadow-lg), 0 0 36px var(--glow-accent);  /* Slightly stronger desktop emphasis */
     border-color: var(--border-medium);  /* Brighter border */
     transform: translateY(-4px);  /* Lift effect */
 }
@@ -2623,7 +2623,7 @@ figure.image-card {
 .image-card-frame {
     background: rgba(20, 35, 55, 0.85);
     border: 2px solid var(--border-medium);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-md), 0 0 30px var(--glow-accent);
     padding: 1rem;
     border-radius: var(--radius);
     position: relative;
@@ -2644,7 +2644,7 @@ figure.image-card {
 
 @media (hover: hover) {
 .image-card-frame:hover {
-    box-shadow: var(--shadow-md), 0 0 30px var(--glow-accent);
+    box-shadow: var(--shadow-lg), 0 0 36px var(--glow-accent);
     border-color: var(--border-medium);
     transform: translateY(-4px) scale(1.01);
 }
