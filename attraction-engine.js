@@ -39,6 +39,7 @@ import {
   getSMVInterpretation as attractionSmvInterpretation,
   getDelusionWarning as attractionDelusionWarning
 } from './shared/attraction-report-copy.js';
+import { computeTargetMarketSummary } from './shared/attraction-target-market-summary.js';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 
@@ -595,19 +596,7 @@ export class AttractionEngine {
   }
 
   analyzeTargetMarket(smv) {
-    const m = { realistic: '', aspirational: '' };
-    if (this.currentGender === 'male') {
-      if (smv.overall >= 80) { m.realistic = 'Top 20-30% of women (7-9/10 range)'; m.aspirational = 'Top 10% possible'; }
-      else if (smv.overall >= 60) { m.realistic = 'Top 40-60% of women (5-7/10 range)'; m.aspirational = 'Top 30% with optimization'; }
-      else if (smv.overall >= 40) { m.realistic = 'Average to below average (4-6/10)'; m.aspirational = 'Top 50% with improvement'; }
-      else { m.realistic = 'Bottom 40%'; m.aspirational = 'Average (only with major self-improvement)'; }
-    } else {
-      if (smv.overall >= 80) { m.realistic = 'Top 10-20% of men'; m.aspirational = 'Top 5% accessible'; }
-      else if (smv.overall >= 60) { m.realistic = 'Top 30-50% of men'; m.aspirational = 'Top 20% with optimization'; }
-      else if (smv.overall >= 40) { m.realistic = 'Average men'; m.aspirational = 'Above average possible'; }
-      else { m.realistic = 'Below average'; m.aspirational = 'Average with improvement'; }
-    }
-    return m;
+    return computeTargetMarketSummary(smv.overall, this.currentGender === 'male');
   }
 
   /** Targeted guidance for each weakest subcategory: what it means and how to achieve it */
@@ -728,6 +717,21 @@ export class AttractionEngine {
     if (combinedCardDetail) {
       classificationFollowupParts.push(`<p class="attraction-classification-detail">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</p>`);
     }
+    const tm = s.targetMarket || {};
+    if (tm.realisticOptionsPct && tm.potentialMateCore) {
+      const roPlain = String(tm.realisticOptionsPct);
+      const roPct = SecurityUtils.sanitizeHTML(roPlain);
+      const pmc = SecurityUtils.sanitizeHTML(tm.potentialMateCore);
+      const roAria = `Realistic options: ${roPlain}`.replace(/"/g, '&quot;');
+      classificationFollowupParts.push(
+        `<div class="temperament-composite-badge-wrap attraction-realistic-options-badge-wrap">
+          <div class="temperament-composite-badge attraction-realistic-options-badge" role="status" aria-label="${roAria}">
+            Realistic options: ${roPct}
+          </div>
+        </div>
+        <p class="attraction-potential-mate-quality-line">Potential Mate Quality is ${pmc} (with major self-improvement).</p>`
+      );
+    }
     if (gridExpl) {
       classificationFollowupParts.push(`<p class="attraction-classification-expl">${SecurityUtils.sanitizeHTML(gridExpl)}</p>`);
     }
@@ -786,10 +790,16 @@ export class AttractionEngine {
         <div class="subcategory-breakdown">${subcategoryBlock}</div>
 
         ${radBlock}
-        <section class="report-section"><h2 class="report-section-title">Sexual Market Options</h2>
-        ${s.delusionBand !== 'low' ? `<div class="delusion-warning"><h3>⚠️ Standards-Market Mismatch: ${SecurityUtils.sanitizeHTML(s.delusionBand.toUpperCase())}</h3><p>${this.getDelusionWarning(s.delusionBand)}</p></div>` : ''}
-        ${this.currentGender === 'male' ? this.getMaleStandardsContextNote(s) : this.getFemaleStandardsContextNote(s)}
-        <div class="market-analysis"><div class="market-grid"><div class="market-card"><h4>Realistic Target:</h4><p>${s.targetMarket?.realistic || ''}</p></div><div class="market-card"><h4>Aspirational Potential Mate Quality:</h4><p>${s.targetMarket?.aspirational || ''}</p></div></div></div></section>
+        ${(() => {
+          const delusionBlock =
+            s.delusionBand !== 'low'
+              ? `<div class="delusion-warning"><h3>⚠️ Standards-Market Mismatch: ${SecurityUtils.sanitizeHTML(s.delusionBand.toUpperCase())}</h3><p>${this.getDelusionWarning(s.delusionBand)}</p></div>`
+              : '';
+          const standardsBlock =
+            this.currentGender === 'male' ? this.getMaleStandardsContextNote(s) : this.getFemaleStandardsContextNote(s);
+          if (!delusionBlock && !standardsBlock) return '';
+          return `<section class="report-section attraction-standards-calibration">${delusionBlock}${standardsBlock}</section>`;
+        })()}
 
         <section class="report-section"><h2 class="report-section-title">Strategic Recommendations</h2>
         <div class="recommendations"><div class="priority-box ${rec.priority?.includes('CRITICAL') ? 'critical' : 'normal'}"><h4>${rec.priority || ''}</h4><p>${rec.strategic || ''}</p></div>

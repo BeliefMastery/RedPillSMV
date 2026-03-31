@@ -14,6 +14,7 @@ import { INTIMATE_DYNAMICS } from '../temperament-data/intimate-dynamics.js';
 import { ATTRACTION_RESPONSIVENESS } from '../temperament-data/attraction-responsiveness.js';
 import { reportGenderGlyphHtml } from './report-gender-glyph.js';
 import { getQualificationExplanation } from './attraction-report-copy.js';
+import { computeTargetMarketSummary } from './attraction-target-market-summary.js';
 
 const EXPORT_VERSION = '1.1.0';
 
@@ -1095,6 +1096,20 @@ function buildAttractionClassificationExportBlock(data) {
   if (combinedCardDetail) {
     pieces.push(`<p style="margin:0.35rem 0;line-height:1.55;font-size:0.95rem;">${combinedCardDetail}</p>`);
   }
+  const tmSummary =
+    s.targetMarket?.realisticOptionsPct && s.targetMarket?.potentialMateCore
+      ? s.targetMarket
+      : overall != null && gender
+        ? computeTargetMarketSummary(overall, gender === 'male')
+        : null;
+  if (tmSummary?.realisticOptionsPct && tmSummary?.potentialMateCore) {
+    pieces.push(
+      `<p style="font-weight:700;margin:0.85rem 0 0.35rem;font-size:1.05rem;text-align:center;">Realistic options: ${escapeHtml(tmSummary.realisticOptionsPct)}</p>`
+    );
+    pieces.push(
+      `<p class="muted" style="margin:0 0 0.5rem;text-align:center;line-height:1.55;font-size:0.92rem;">Potential Mate Quality is ${escapeHtml(tmSummary.potentialMateCore)} (with major self-improvement).</p>`
+    );
+  }
   if (gridExpl) {
     pieces.push(`<p class="muted" style="margin:0.5rem 0;line-height:1.55;font-size:0.9rem;">${escapeHtml(gridExpl)}</p>`);
   }
@@ -1123,13 +1138,6 @@ function buildAttractionReportBody(data) {
 
   if (data.levelClassification) {
     html += `<p><strong>Developmental level:</strong> ${escapeHtml(data.levelClassification)}</p>`;
-  }
-
-  if (data.targetMarket && (data.targetMarket.realistic || data.targetMarket.aspirational)) {
-    html += '<h3>Sexual Market Options</h3><ul>';
-    if (data.targetMarket.realistic) html += `<li><strong>Realistic Target:</strong> ${escapeHtml(data.targetMarket.realistic)}</li>`;
-    if (data.targetMarket.aspirational) html += `<li><strong>Aspirational Potential Mate Quality:</strong> ${escapeHtml(data.targetMarket.aspirational)}</li>`;
-    html += '</ul>';
   }
 
   if (rec.priority || rec.strategic) {

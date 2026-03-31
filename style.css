@@ -5410,6 +5410,29 @@ img[data-src].loaded {
     text-align: center;
 }
 
+.results-dashboard .attraction-realistic-options-badge-wrap {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.results-dashboard .attraction-realistic-options-badge {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.results-dashboard .attraction-potential-mate-quality-line {
+    margin: 0 auto 0.35rem;
+    max-width: 38rem;
+    text-align: center;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--muted);
+}
+
+.results-dashboard .attraction-standards-calibration .delusion-warning {
+    margin-top: 0;
+}
+
 /* Report sections — clear division */
 .results-dashboard .report-section {
     margin-bottom: 2.5rem;
