@@ -30,7 +30,8 @@ import {
 import {
   calculateRadActivityPercentile,
   computeSmvClustersAndSubs,
-  computeOverallSmv
+  computeOverallSmv,
+  scoreToPercentile
 } from './shared/attraction-smv-core.mjs';
 import {
   getClusterSummary as attractionClusterSummary,
@@ -723,6 +724,7 @@ export class AttractionEngine {
       ? `<span class="qualification-explanation" style="display:block;margin-top:0.5rem;font-style:italic;">Partner-count impact (${s.keeperSweeper.partnerCountDowngrade}): attractiveness mitigates the effect. High partner count more often moves Keepers to Sleepers than Sleepers to Sweepers—the latter typically requires an extremely high partner count. It signals reduced loyalty expectation for long-term commitment. Men won't know initially; it matters if discovered.</span>`
       : '';
     const combinedCard = gridLabel ? `<div class="attraction-result-badge attraction-badge-with-expl attraction-at-glance-card" style="background:${smvColor}12;border-left:4px solid ${smvColor}"><span class="attraction-classification-label">${SecurityUtils.sanitizeHTML(classificationContext)}</span><span class="attraction-classification-value" style="color:${smvColor}">${SecurityUtils.sanitizeHTML(classificationDisplay)}${SecurityUtils.sanitizeHTML(investmentSuffix)}</span><span class="attraction-badge-desc" style="margin-top:0.5rem;">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</span>${gridExpl ? `<span class="qualification-explanation">${SecurityUtils.sanitizeHTML(gridExpl)}</span>` : ''}${partnerCountNote}</div>` : '';
+    const socialProofNote = this.currentGender === 'male' ? this.getMaleSocialProofSignalLine(s.rawResponses || this.responses) : '';
 
     const clusterOrder = ['coalitionRank', 'reproductiveConfidence', 'axisOfAttraction'];
     const badgeByCluster = { coalitionRank: peerRankBadge, reproductiveConfidence: reproConfBadge, axisOfAttraction: attractOppBadge };
@@ -759,6 +761,7 @@ export class AttractionEngine {
 
         <section class="report-section attraction-exec-summary">
           <div class="attraction-exec-badges">${combinedCard}</div>
+          ${socialProofNote ? `<p class="qualification-explanation" style="margin-top:0.7rem;">${SecurityUtils.sanitizeHTML(socialProofNote)}</p>` : ''}
         </section>
 
         <div class="subcategory-breakdown">${subcategoryBlock}</div>
@@ -825,6 +828,32 @@ export class AttractionEngine {
     if (p >= 70) return `High likelihood of reproduction as signalled to women (~${p}% if desired).`;
     if (p >= 40) return `Moderate likelihood of reproduction as signalled to women (~${p}% if desired).`;
     return `Low likelihood of reproduction as signalled to women (~${p}% if desired).`;
+  }
+
+  /** Male-only social-proof read (light-weight signal from perf_9..perf_11). */
+  getMaleSocialProofSignalLine(rawResponses) {
+    if (this.currentGender !== 'male') return '';
+    const responseMap = rawResponses || {};
+    const socialProofItems = [
+      { id: 'perf_9', weight: 0.7 },
+      { id: 'perf_10', weight: 0.7 },
+      { id: 'perf_11', weight: 0.7 }
+    ];
+    const answered = socialProofItems
+      .map(item => ({ value: responseMap[item.id], weight: item.weight }))
+      .filter(entry => typeof entry.value === 'number');
+    if (!answered.length) return '';
+
+    const totalWeight = answered.reduce((sum, entry) => sum + entry.weight, 0);
+    if (totalWeight <= 0) return '';
+    const weightedScore = answered.reduce((sum, entry) => sum + entry.value * entry.weight, 0) / totalWeight;
+    const percentile = Math.round(scoreToPercentile(weightedScore));
+
+    let intensity = 'Low';
+    if (percentile >= 65) intensity = 'High';
+    else if (percentile >= 45) intensity = 'Moderate';
+
+    return `Social proof signal: ${intensity} (~${percentile}th percentile) from recent traction, public conversion, and dating stability indicators. This is included lightly under Wealth/Status/Performance.`;
   }
 
   getPercentileColor(p) { if (p >= 80) return '#2ecc71'; if (p >= 60) return '#3498db'; if (p >= 40) return '#f39c12'; return '#e74c3c'; }

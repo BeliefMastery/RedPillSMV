@@ -43,7 +43,7 @@ export const FEMALE_CLUSTER_WEIGHTS = {
  */
 /** Report bar labels (male Axis of Attraction sub-bars under “Attraction Opportunity”). */
 export const MALE_AXIS_BAR_LABELS = {
-  performanceStatus: 'Wealth/Finance/Status/Performance/Productivity/Talent/Popularity',
+  performanceStatus: 'Wealth/Finance/Status/Performance/Productivity/Talent/Popularity/Social Proof',
   physicalGenetic: 'Looks/Physical/Genetic/Aesthetic',
   humour: 'Humour/Intelligence/Companionship'
 };
@@ -170,7 +170,7 @@ export const RAD_ACTIVITY_TYPE_MODIFIER = {
 /** MALE Axis of Attraction — Wealth/Finance/Status/Performance/Productivity/Talent/Popularity + Looks/Physical/Genetic/Aesthetic + Humour/Intelligence/Companionship + Rad Activity. Maps to Bad Boy / Good Guy grid. */
 const MALE_AXIS_QUESTIONS = [
   ...MALE_RAD_ACTIVITY_QUESTIONS,
-  // Wealth/status/performance pillar (income, savings/debt, credibility, productivity, popularity, talent, generosity)
+  // Wealth/status/performance pillar (income, savings/debt, credibility, productivity, popularity, talent, generosity, social proof)
   { id: 'perf_1', subcategory: 'performanceStatus', text: 'How would you rate your current social status and influence?', weight: 1.0, options: OPTS, optionLabels: ['Low; little influence', 'Below average', 'Average', 'Above average; notable', 'High; significant influence'] },
   { id: 'perf_2', subcategory: 'performanceStatus', text: 'What is your current annual income bracket?', weight: 1.0, options: OPTS, optionLabels: ['Under $30k', '$30k-$60k', '$60k-$100k', '$100k-$200k', 'Over $200k'] },
   { id: 'perf_3', subcategory: 'performanceStatus', text: 'How generous are you with resources (time, money, connections) toward people you care about?', weight: 1.0, options: OPTS, optionLabels: ['Very guarded; rarely share', 'Selective; only close few', 'Moderate; fair when asked', 'Generous; share readily', 'Very generous; invest heavily'] },
@@ -179,6 +179,10 @@ const MALE_AXIS_QUESTIONS = [
   { id: 'perf_6', subcategory: 'performanceStatus', text: 'Do you have a unique or outstanding talent (music, sport, craft, invention, expertise) that signals potential windfall or novelty?', weight: 1.0, options: OPTS, optionLabels: ['None; no standout skill', 'One hobby; not notable', 'Moderate; some recognition', 'Strong; admired in niche', 'Outstanding; widely recognised'] },
   { id: 'perf_7', subcategory: 'performanceStatus', text: 'Beyond income alone, how solid is your financial position (savings, debt control, emergency runway)?', weight: 0.95, options: OPTS, optionLabels: ['Fragile; high debt or no buffer', 'Weak; little savings', 'Moderate; some cushion', 'Strong; healthy buffer', 'Very strong; low stress on money'] },
   { id: 'perf_8', subcategory: 'performanceStatus', text: 'How visible is your professional credibility (credentials, title, track record, or reputation others can verify)?', weight: 0.9, options: OPTS, optionLabels: ['Not visible; no clear signal', 'Weak; unclear to outsiders', 'Moderate; some recognition', 'Strong; clear credentials or wins', 'Very strong; widely known in your arena'] },
+  // Social proof (light weight by design: contributes signal without overpowering core status/finance components)
+  { id: 'perf_9', subcategory: 'performanceStatus', text: 'In the last 12 months, how consistently have you had at least one woman showing clear romantic or sexual interest (messages, dates, invitations)?', weight: 0.7, options: OPTS, optionLabels: ['Rarely or never', 'Infrequent and unstable', 'Periodic and mixed', 'Consistent in most periods', 'Consistently high and reliable'] },
+  { id: 'perf_10', subcategory: 'performanceStatus', text: 'In public social settings (events, bars, clubs, parties), how often can you convert an approach into a number, follow-up chat, or date when you choose to engage?', weight: 0.7, options: OPTS, optionLabels: ['Rarely convert', 'Occasional conversion', 'Moderate conversion', 'Often convert', 'High conversion consistency'] },
+  { id: 'perf_11', subcategory: 'performanceStatus', text: 'Over the past year, how steady has your dating traction been (not getting stuck involuntarily single for long stretches)?', weight: 0.7, options: OPTS, optionLabels: ['Long dry stretches are common', 'Often stuck single despite trying', 'Mixed stability', 'Mostly steady traction', 'Very steady traction year-round'] },
   // Looks/physical/genetic/aesthetic — ordered: face → body → strength → detail cues → optional market-read → frame → polish → style → vitality → net
   { id: 'phys_1', subcategory: 'physicalGenetic', text: 'How would you honestly rate your facial attractiveness (face, features—separate from body below)?', weight: 1.2, options: OPTS, optionLabels: ['Below average', 'Slightly below average', 'Average', 'Above average', 'Top tier'] },
   { id: 'phys_6', subcategory: 'physicalGenetic', text: 'How would you rate your body composition and shape as seen by others (muscle, leanness, proportions—not the same as strength alone)?', weight: 1.1, options: OPTS, optionLabels: ['Poor shape for my goals', 'Below average', 'Average', 'Above average; clear shape', 'Standout physique'] },
@@ -290,7 +294,7 @@ export const MALE_CLUSTERS = {
     description: 'Wealth, finance, status, productivity, talent, popularity; looks, physical, genetic, and aesthetic signals (face, body, symmetry, skin/hair, voice, height, grooming, vitality, style—weighted within Physical/Genetic; one optional sensitive item); humour, intelligence, and companionship. Drives initiation attraction, time-to-intimacy, investment requirement. Maps to Bad Boy / Good Guy grid.',
     subcategories: {
       radActivity: { label: 'Radical Activity (modifier)', desc: 'Not a core bar: whether your outside-relationship life reads as cool, novel, or radical—so a partner has something real to compete with for your time (boredom mitigation). Passive consumption reads as low signal; visible skill, risk, build, or mission reads high.' },
-      performanceStatus: { label: 'Wealth / status / performance', desc: 'Wealth, finance, status, productivity, talent, popularity—see report bars for full shorthand.' },
+      performanceStatus: { label: 'Wealth / status / performance', desc: 'Wealth, finance, status, productivity, talent, popularity, and social proof—see report bars for full shorthand.' },
       physicalGenetic: { label: 'Looks / physical / aesthetic', desc: 'Face, body, genetic and aesthetic presentation, symmetry, skin/hair/teeth, voice and presence, height, grooming, vitality; one optional market-friction item.' },
       humour: { label: 'Humour / mind / companionship', desc: 'Wit, intelligence signal, and enjoyable companionship—not only jokes.' }
     },
