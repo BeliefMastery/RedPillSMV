@@ -16,12 +16,12 @@ export const TEMPERAMENT_REPORT_SPECTRUM_NOTE =
 
 /** `<details>` summary line */
 export const TEMPERAMENT_REPORT_TIER2_SUMMARY =
-  'Shifts over time: exposure, biology, hormones';
+  'Shifts Over Time: exposure, biology, hormones';
 
 /**
  * Section 3 Option A: biology integrated with polarity (not a separate “second model”).
  */
 export const TEMPERAMENT_REPORT_TIER2_PARAS = [
-  'Strong couple fit comes from complementary placement at matched intensity — not from both partners landing on the same spot.',
-  'Attachment style, personal values, stress levels, and health still play major roles in real-life outcomes. This report focuses specifically on the structural/temperament layer.'
+  'Polarity works best when it stays complementary and both partners’ natural expressions line up. When this happens, biology and hormones can reinforce the dynamic over time — though nothing is guaranteed. A weak or absent complement tends to dull patterns. Matched intensity matters.',
+  'Important notes:\n- Your scores are a snapshot in time. Temperament expression can shift with stress, life phase, beliefs, trauma patterns, and hormonal changes.\n- Mindset and stress levels can make your expressed temperament feel out of sync with your natural “spark” or chemistry. It is worth noticing this gap if you want both structural fit and real-life attraction to align.'
 ];
