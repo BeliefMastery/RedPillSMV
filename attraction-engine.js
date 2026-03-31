@@ -708,7 +708,6 @@ export class AttractionEngine {
     const gridLabel = this.currentGender === 'male' && s.badBoyGoodGuy ? s.badBoyGoodGuy.label : this.currentGender === 'female' && s.keeperSweeper ? s.keeperSweeper.label : '';
     const gridExpl = this.currentGender === 'male' && s.badBoyGoodGuy ? this.getQualificationExplanation(s.badBoyGoodGuy.label, 'badBoyGoodGuy') : this.currentGender === 'female' && s.keeperSweeper ? this.getQualificationExplanation(s.keeperSweeper.label, 'keeperSweeper') : '';
     const overallPercentile = Math.round(s.overall);
-    const smvColor = this.getPercentileColor(s.overall);
     const levelExpl = this.getQualificationExplanation(s.levelClassification, 'developmentalLevel');
 
     const femaleLabelSingular = { Keepers: 'Keeper', Sleepers: 'Sleeper', Sweepers: 'Sweeper' };
@@ -723,8 +722,33 @@ export class AttractionEngine {
     const partnerCountNote = this.currentGender === 'female' && s.keeperSweeper?.partnerCountDowngrade
       ? `<span class="qualification-explanation" style="display:block;margin-top:0.5rem;font-style:italic;">Partner-count impact (${s.keeperSweeper.partnerCountDowngrade}): attractiveness mitigates the effect. High partner count more often moves Keepers to Sleepers than Sleepers to Sweepers—the latter typically requires an extremely high partner count. It signals reduced loyalty expectation for long-term commitment. Men won't know initially; it matters if discovered.</span>`
       : '';
-    const combinedCard = gridLabel ? `<div class="attraction-result-badge attraction-badge-with-expl attraction-at-glance-card" style="background:${smvColor}12;border-left:4px solid ${smvColor}"><span class="attraction-classification-label">${SecurityUtils.sanitizeHTML(classificationContext)}</span><span class="attraction-classification-value" style="color:${smvColor}">${SecurityUtils.sanitizeHTML(classificationDisplay)}${SecurityUtils.sanitizeHTML(investmentSuffix)}</span><span class="attraction-badge-desc" style="margin-top:0.5rem;">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</span>${gridExpl ? `<span class="qualification-explanation">${SecurityUtils.sanitizeHTML(gridExpl)}</span>` : ''}${partnerCountNote}</div>` : '';
+    const badgeValueRaw = (classificationDisplay || s.marketPosition || '').trim();
+    const badgeAria = SecurityUtils.sanitizeHTML(badgeValueRaw || 'Market classification').replace(/"/g, '&quot;');
+    const classificationFollowupParts = [];
+    if (combinedCardDetail) {
+      classificationFollowupParts.push(`<p class="attraction-classification-detail">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</p>`);
+    }
+    if (gridExpl) {
+      classificationFollowupParts.push(`<p class="attraction-classification-expl">${SecurityUtils.sanitizeHTML(gridExpl)}</p>`);
+    }
+    if (partnerCountNote) classificationFollowupParts.push(partnerCountNote);
+    const classificationFollowupHtml = classificationFollowupParts.length
+      ? `<div class="attraction-classification-followup">${classificationFollowupParts.join('')}</div>`
+      : '';
     const socialProofNote = this.currentGender === 'male' ? this.getMaleSocialProofSignalLine(s.rawResponses || this.responses) : '';
+    const attractionHeaderSuiteHtml = `
+        <div class="results-header attraction-report-header-suite">
+          ${reportGenderGlyphHtml(this.currentGender)}
+          <h2 class="suite-results-main-title">Your Sexual Market Value Profile:</h2>
+          <p class="attraction-classification-foreword">${SecurityUtils.sanitizeHTML(classificationContext)}</p>
+          ${badgeValueRaw ? `<div class="temperament-composite-badge-wrap temperament-composite-badge-wrap--lead attraction-classification-badge-wrap">
+            <div class="temperament-composite-badge attraction-market-classification-badge" role="status" aria-label="${badgeAria}">
+              ${SecurityUtils.sanitizeHTML(badgeValueRaw)}
+            </div>
+          </div>` : ''}
+          ${classificationFollowupHtml}
+          ${socialProofNote ? `<p class="qualification-explanation attraction-social-proof-note">${SecurityUtils.sanitizeHTML(socialProofNote)}</p>` : ''}
+        </div>`;
 
     const clusterOrder = ['coalitionRank', 'reproductiveConfidence', 'axisOfAttraction'];
     const badgeByCluster = { coalitionRank: peerRankBadge, reproductiveConfidence: reproConfBadge, axisOfAttraction: attractOppBadge };
@@ -757,12 +781,7 @@ export class AttractionEngine {
 
     let html = `
       <div class="results-dashboard">
-        <div class="results-header"><h2>Your Sexual Market Value Profile</h2>${reportGenderGlyphHtml(this.currentGender)}</div>
-
-        <section class="report-section attraction-exec-summary">
-          <div class="attraction-exec-badges">${combinedCard}</div>
-          ${socialProofNote ? `<p class="qualification-explanation" style="margin-top:0.7rem;">${SecurityUtils.sanitizeHTML(socialProofNote)}</p>` : ''}
-        </section>
+        ${attractionHeaderSuiteHtml}
 
         <div class="subcategory-breakdown">${subcategoryBlock}</div>
 

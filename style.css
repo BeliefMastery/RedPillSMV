@@ -2021,6 +2021,31 @@ body.home-page .home-grid-section:hover {
     text-shadow: 0 0 0.35rem rgba(255, 137, 212, 0.35);
 }
 
+/* Gender symbol above centered suite report title (polarity / attraction / archetype) */
+.suite-results-main-header {
+    text-align: center;
+    margin-bottom: 0.35rem;
+}
+
+.suite-results-main-header .assessment-report-gender-glyph,
+.results-header .assessment-report-gender-glyph,
+.archetype-profile-header > .assessment-report-gender-glyph:first-child {
+    margin: 0 auto 0.4rem;
+}
+
+.suite-results-main-title {
+    text-align: center;
+    margin: 0 0 0.85rem;
+    color: var(--brand);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.results-dashboard .results-header .suite-results-main-title {
+    margin: 0 0 0.85rem;
+}
+
 .suite-mismatch-note {
     margin: 0.9rem 0 0;
     padding: 0.65rem 0.75rem;
@@ -5334,8 +5359,55 @@ img[data-src].loaded {
     margin-bottom: 1.5rem;
 }
 
-.results-dashboard .results-header h2 {
+.results-dashboard .results-header h2:not(.suite-results-main-title) {
     margin: 0 0 0.25rem;
+}
+
+.results-dashboard .attraction-report-header-suite .suite-results-main-title {
+    margin-bottom: 0.45rem;
+}
+
+.results-dashboard .attraction-classification-foreword {
+    margin: 0 auto 0.65rem;
+    max-width: 36rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.results-dashboard .attraction-classification-badge-wrap {
+    margin-top: 0.15rem;
+    margin-bottom: 1rem;
+}
+
+.results-dashboard .attraction-market-classification-badge {
+    font-size: 1.15rem;
+}
+
+.results-dashboard .attraction-classification-followup {
+    max-width: 38rem;
+    margin: 0 auto 0.35rem;
+    text-align: center;
+}
+
+.results-dashboard .attraction-classification-detail,
+.results-dashboard .attraction-classification-expl {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--text);
+}
+
+.results-dashboard .attraction-classification-expl {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.results-dashboard .attraction-social-proof-note {
+    margin: 0.75rem auto 0;
+    max-width: 38rem;
+    text-align: center;
 }
 
 /* Report sections — clear division */
@@ -6444,12 +6516,28 @@ img[data-src].loaded {
     display: none;
 }
 
-.temperament-spectrum-section-title {
-    color: var(--brand);
-    margin: 0 0 1rem;
-    font-size: 1.35rem;
-    font-weight: 700;
-    line-height: 1.25;
+#temperamentResults .results-header.temperament-report-header-suite,
+.results-section #temperamentResults .temperament-report-header-suite {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+#temperamentResults .temperament-report-header-suite .suite-results-main-title {
+    margin-bottom: 0.45rem;
+}
+
+.temperament-composite-chart-suite {
+    max-width: 36rem;
+    margin: 0 auto;
+    padding: 0 0.25rem;
+}
+
+.temperament-report-header-suite.cross-polarity-notable {
+    padding: 0.75rem 1rem 1.1rem;
+    border-radius: var(--radius);
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .temperament-spectrum-large {
@@ -6467,19 +6555,40 @@ img[data-src].loaded {
     margin-top: 1rem;
 }
 
+.temperament-composite-badge-wrap--lead {
+    margin-top: 0;
+    margin-bottom: 1.15rem;
+}
+
 .temperament-composite-badge {
     display: inline-block;
     max-width: 100%;
-    padding: 0.65rem 1.15rem;
+    padding: 0.85rem 1.5rem;
     border-radius: 999px;
-    background: var(--glass);
+    background: linear-gradient(145deg, var(--glass-light), var(--glass));
     border: 2px solid var(--brand);
     color: var(--text);
-    font-weight: 600;
-    font-size: 0.95rem;
-    line-height: 1.35;
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.archetype-profile-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.archetype-profile-qualities {
+    margin: 0.65rem 0 0;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 500;
 }
 
 .temperament-spectrum-labels {

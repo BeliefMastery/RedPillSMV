@@ -1662,17 +1662,6 @@ export class TemperamentEngine {
       groupedByBand[band].push({ dimKey, normalizedDimScore });
     });
 
-    let html = '';
-    if (this.analysisData.contextSensitivity && this.analysisData.contextSensitivity.detected) {
-      html += `
-        <div class="info-box info-box-accent panel-brand-left">
-          <p>
-            <strong>Context-Responsive Temperament:</strong> ${this.analysisData.contextSensitivity.message}
-          </p>
-        </div>
-      `;
-    }
-
     const crossPolarityClass = (reportedGender === 'man' && score < (femaleTrend - CROSS_POLARITY_THRESHOLD)) || (reportedGender === 'woman' && score > (maleTrend + CROSS_POLARITY_THRESHOLD)) ? ' cross-polarity-notable' : '';
     const synthesisParagraphs = buildTemperamentSynthesisPlainParagraphs(this.analysisData);
     if (this.analysisData.temperamentInterpretation) {
@@ -1699,11 +1688,17 @@ export class TemperamentEngine {
         </div>`;
 
     const compositeBadgeText = `Composite position: ${formatCompositePositionDescription(temperament.normalizedScore)}`;
-
-    html += `
-      <div class="temperament-profile-card${crossPolarityClass}">
-        <div class="temperament-spectrum-container">
-          <h3 class="temperament-spectrum-section-title">Temperament Spectrum Position</h3>
+    const compositeBadgeAria = SecurityUtils.sanitizeHTML(compositeBadgeText).replace(/"/g, '&quot;');
+    const temperamentHeaderSuiteHtml = `
+      <div class="results-header temperament-report-header-suite${crossPolarityClass}">
+        ${reportGenderGlyphHtml(reportedGender)}
+        <h2 class="suite-results-main-title">Your Temperament Analysis:</h2>
+        <div class="temperament-composite-chart-suite">
+          <div class="temperament-composite-badge-wrap temperament-composite-badge-wrap--lead">
+            <div class="temperament-composite-badge" role="status" aria-label="${compositeBadgeAria}">
+              ${SecurityUtils.sanitizeHTML(compositeBadgeText)}
+            </div>
+          </div>
           <div class="temperament-spectrum-large">
             <div class="temperament-trend-dot temperament-trend-male" style="left: ${maleTrend * 100}%;" title="Expected trend for males"></div>
             <div class="temperament-trend-dot temperament-trend-female" style="left: ${femaleTrend * 100}%;" title="Expected trend for females"></div>
@@ -1718,15 +1713,20 @@ export class TemperamentEngine {
             <span><span class="temperament-trend-dot temperament-trend-female"></span> Expected trend for females</span>
             <span><span class="temperament-trend-dot temperament-trend-male"></span> Expected trend for males</span>
           </div>
-          <div class="temperament-composite-badge-wrap">
-            <div class="temperament-composite-badge" role="status" aria-label="${SecurityUtils.sanitizeHTML(compositeBadgeText).replace(/"/g, '&quot;')}">
-              ${SecurityUtils.sanitizeHTML(compositeBadgeText)}
-            </div>
-          </div>
         </div>
-        ${buildTemperamentReportEducationHtml()}
-      </div>
-    `;
+      </div>`;
+
+    let html = temperamentHeaderSuiteHtml;
+    if (this.analysisData.contextSensitivity && this.analysisData.contextSensitivity.detected) {
+      html += `
+        <div class="info-box info-box-accent panel-brand-left">
+          <p>
+            <strong>Context-Responsive Temperament:</strong> ${this.analysisData.contextSensitivity.message}
+          </p>
+        </div>
+      `;
+    }
+    html += buildTemperamentReportEducationHtml();
 
     html += '<div class="dimension-breakdown">';
     html += '<h3>Dimension Breakdown</h3>';
@@ -1818,10 +1818,6 @@ export class TemperamentEngine {
 
       // Sanitize HTML before rendering - all dynamic content is already sanitized above
       SecurityUtils.safeInnerHTML(container, html);
-      const genderGlyphSlot = document.getElementById('temperamentResultsGenderGlyph');
-      if (genderGlyphSlot) {
-        SecurityUtils.safeInnerHTML(genderGlyphSlot, reportGenderGlyphHtml(reportedGender));
-      }
       this.saveProgress();
       
       // Display debug report if in development mode
@@ -1937,8 +1933,8 @@ export class TemperamentEngine {
     const actionButtonsSection = document.getElementById('actionButtonsSection');
     const questionnaireSection = document.getElementById('questionnaireSection');
     const resultsSection = document.getElementById('resultsSection');
-    const genderGlyphSlot = document.getElementById('temperamentResultsGenderGlyph');
-    if (genderGlyphSlot) genderGlyphSlot.innerHTML = '';
+    const temperamentResults = document.getElementById('temperamentResults');
+    if (temperamentResults) temperamentResults.innerHTML = '';
 
     if (introSection) introSection.classList.remove('hidden');
     if (actionButtonsSection) actionButtonsSection.classList.remove('hidden');

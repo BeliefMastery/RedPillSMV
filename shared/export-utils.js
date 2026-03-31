@@ -13,6 +13,7 @@ import { TEMPERAMENT_DIMENSIONS } from '../temperament-data/temperament-dimensio
 import { INTIMATE_DYNAMICS } from '../temperament-data/intimate-dynamics.js';
 import { ATTRACTION_RESPONSIVENESS } from '../temperament-data/attraction-responsiveness.js';
 import { reportGenderGlyphHtml } from './report-gender-glyph.js';
+import { getQualificationExplanation } from './attraction-report-copy.js';
 
 const EXPORT_VERSION = '1.1.0';
 
@@ -961,7 +962,15 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function reportDocHead(title, systemName, genderGlyphHtml = '') {
+function reportDocHead(title, mainHeading, genderGlyphHtml = '', headLayout = 'default') {
+  const isSuite = headLayout === 'suite';
+  const titleBlock = isSuite
+    ? `<div class="report-doc-header-suite">
+  ${genderGlyphHtml}
+  <h1 class="report-doc-main-title">${escapeHtml(mainHeading)}</h1>
+</div>`
+    : `<h1>${escapeHtml(mainHeading)}</h1>
+  ${genderGlyphHtml}`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -971,6 +980,8 @@ function reportDocHead(title, systemName, genderGlyphHtml = '') {
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 720px; margin: 0 auto; padding: 1.5rem; background: #fff; }
     h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    h1.report-doc-main-title { text-align: center; margin: 0 0 0.35rem; color: #1a4d8c; }
+    .report-doc-header-suite .assessment-report-gender-glyph { margin: 0 auto 0.45rem; }
     .meta { font-size: 0.875rem; color: #666; margin-bottom: 1.5rem; }
     h2 { font-size: 1.2rem; margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 1px solid #eee; }
     h3 { font-size: 1.05rem; margin-top: 1rem; }
@@ -987,8 +998,7 @@ function reportDocHead(title, systemName, genderGlyphHtml = '') {
   </style>
 </head>
 <body>
-  <h1>${escapeHtml(systemName)}</h1>
-  ${genderGlyphHtml}
+  ${titleBlock}
   <p class="meta">Report saved ${new Date().toLocaleString()} · Version ${EXPORT_VERSION}</p>
 `;
 }
@@ -1043,16 +1053,60 @@ function buildRelationshipReportBody(data) {
   return html || '<p>No report data available. Complete the assessment to generate a full report.</p>';
 }
 
-function buildAttractionReportBody(data) {
+function buildAttractionClassificationExportBlock(data) {
+  const gRaw = (data.gender || '').toLowerCase();
+  const gender = gRaw === 'female' || gRaw === 'woman' ? 'female' : gRaw === 'male' || gRaw === 'man' ? 'male' : '';
   const overall = typeof data.overall === 'number' ? Math.round(data.overall) : null;
-  const marketPosition = data.marketPosition || '';
+  const mp = String(data.marketPosition || '');
+  const marketEsc = escapeHtml(mp);
+
+  if (!gender) {
+    if (overall == null) return '';
+    return `<div class="export-attraction-classification" style="margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #e8e8e8;"><p><strong>Overall:</strong> ~${overall}th percentile${mp ? ` (${marketEsc})` : ''}</p></div>`;
+  }
+
+  const s = data;
+  const gridLabel = gender === 'male' && s.badBoyGoodGuy ? s.badBoyGoodGuy.label : gender === 'female' && s.keeperSweeper ? s.keeperSweeper.label : '';
+  const femaleLabelSingular = { Keepers: 'Keeper', Sleepers: 'Sleeper', Sweepers: 'Sweeper' };
+  const classificationContext = gender === 'male' ? 'How women are likely to categorise you' : 'How men are likely to treat you';
+  const classificationDisplay = gender === 'female' && gridLabel ? (femaleLabelSingular[gridLabel] || gridLabel) : gridLabel;
+  const gg = s.badBoyGoodGuy;
+  const ks = s.keeperSweeper;
+  const pct = v => (typeof v === 'number' ? Math.round(v) : v);
+  const combinedCardDetail =
+    gender === 'male' && gg && overall != null
+      ? `Overall Sexual Market Value ~${overall}th percentile (${marketEsc}). Driven by: manner and provision ~${pct(gg.goodGuyPercentile)}%; attraction ~${pct(gg.badBoyPercentile)}%.`
+      : gender === 'female' && ks && overall != null
+        ? `Overall Sexual Market Value ~${overall}th percentile — ${marketEsc}.${ks.desc ? ` ${escapeHtml(String(ks.desc))}` : ''}`
+        : '';
+  const gridExpl =
+    gender === 'male' && gg ? getQualificationExplanation(gg.label, 'badBoyGoodGuy') : gender === 'female' && ks ? getQualificationExplanation(ks.label, 'keeperSweeper') : '';
+
+  let partnerNote = '';
+  if (gender === 'female' && ks?.partnerCountDowngrade) {
+    partnerNote = `<p class="muted" style="font-style:italic;margin-top:0.5rem;font-size:0.9rem;">Partner-count impact (${escapeHtml(String(ks.partnerCountDowngrade))}): attractiveness mitigates the effect. High partner count more often moves Keepers to Sleepers than Sleepers to Sweepers—the latter typically requires an extremely high partner count. It signals reduced loyalty expectation for long-term commitment. Men won't know initially; it matters if discovered.</p>`;
+  }
+
+  const badgeValueRaw = (classificationDisplay || mp).trim();
+  const pieces = [`<p class="muted" style="margin:0 0 0.35rem;font-size:0.95rem;">${escapeHtml(classificationContext)}</p>`];
+  if (badgeValueRaw) {
+    pieces.push(`<p style="font-weight:700;margin:0.35rem 0 0.65rem;font-size:1.05rem;">${escapeHtml(badgeValueRaw)}</p>`);
+  }
+  if (combinedCardDetail) {
+    pieces.push(`<p style="margin:0.35rem 0;line-height:1.55;font-size:0.95rem;">${combinedCardDetail}</p>`);
+  }
+  if (gridExpl) {
+    pieces.push(`<p class="muted" style="margin:0.5rem 0;line-height:1.55;font-size:0.9rem;">${escapeHtml(gridExpl)}</p>`);
+  }
+  if (partnerNote) pieces.push(partnerNote);
+
+  return `<div class="export-attraction-classification" style="margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #e8e8e8;">${pieces.join('')}</div>`;
+}
+
+function buildAttractionReportBody(data) {
   const delusionIndex = typeof data.delusionIndex === 'number' ? Math.round(data.delusionIndex) : null;
   const rec = data.recommendation || {};
-  let html = '';
-
-  if (overall != null) {
-    html += `<h2>Sexual Market Value Profile</h2><p><strong>Overall:</strong> ~${overall}th percentile${marketPosition ? ` (${escapeHtml(marketPosition)})` : ''}</p>`;
-  }
+  let html = buildAttractionClassificationExportBlock(data);
 
   if (data.clusters && typeof data.clusters === 'object') {
     const clusterNames = { coalitionRank: 'Coalition Rank', reproductiveConfidence: 'Reproductive Confidence', axisOfAttraction: 'Axis of Attraction' };
@@ -1382,7 +1436,9 @@ function buildTemperamentSpectrumPositionExportHtml(data) {
 
   return `
 <div class="temperament-spectrum-container" style="background:#f8f9fb;padding:1.25rem;border-radius:8px;margin:1rem 0;">
-  <h3 style="margin:0 0 1rem;color:#1a4d8c;font-size:1.35rem;font-weight:700;line-height:1.25;">Temperament Spectrum Position</h3>
+  <div style="display:flex;justify-content:center;margin:0 0 1.15rem;">
+    <div role="status" style="display:inline-block;max-width:100%;padding:0.85rem 1.5rem;border-radius:999px;background:linear-gradient(145deg,#f8fafc,#eef2f7);border:2px solid #1a4d8c;color:#1a1a1a;font-weight:700;font-size:1.1rem;line-height:1.3;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12);">${escapeHtml(compositeBadgeText)}</div>
+  </div>
   <div class="temperament-spectrum-large" style="position:relative;height:40px;background:linear-gradient(to right, rgba(80, 140, 255, 0.35), rgba(20, 35, 55, 0.25));border-radius:8px;margin-bottom:0.35rem;border:2px solid #c8d0dc;">
     <div style="position:absolute;top:50%;left:${maleTrend * 100}%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:#4c8bff;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.25);" title="Expected trend for males"></div>
     <div style="position:absolute;top:50%;left:${femaleTrend * 100}%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:#ff7fb1;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.25);" title="Expected trend for females"></div>
@@ -1396,9 +1452,6 @@ function buildTemperamentSpectrumPositionExportHtml(data) {
     &nbsp;&nbsp;
     <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4c8bff;vertical-align:middle;margin-right:0.35rem;"></span> Expected trend for males
   </p>
-  <div style="display:flex;justify-content:center;margin-top:1rem;">
-    <div role="status" style="display:inline-block;max-width:100%;padding:0.65rem 1.15rem;border-radius:999px;background:#f0f4fa;border:2px solid #1a4d8c;color:#1a1a1a;font-weight:600;font-size:0.95rem;line-height:1.35;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">${escapeHtml(compositeBadgeText)}</div>
-  </div>
 </div>`;
 }
 
@@ -1553,14 +1606,41 @@ function buildTemperamentReportBody(data) {
   return html || '<p>No report data available. Complete the assessment to generate a full report.</p>';
 }
 
+function buildArchetypeProfileSummaryExportHtml(data) {
+  const primary = data.primaryArchetype;
+  const secondary = data.secondaryArchetype;
+  const tertiary = data.tertiaryArchetype;
+  if (!primary?.name) return '';
+  const sName = secondary?.name ? String(secondary.name).trim() : '';
+  const tName = tertiary?.name ? String(tertiary.name).trim() : '';
+  let qual = '';
+  if (sName && tName) {
+    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.5;">with qualities of ${escapeHtml(sName)} and ${escapeHtml(tName)}</p>`;
+  } else if (sName) {
+    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.5;">with qualities of ${escapeHtml(sName)}</p>`;
+  } else if (tName) {
+    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.5;">with qualities of ${escapeHtml(tName)}</p>`;
+  }
+  return `
+<div style="text-align:center;margin-bottom:1.5rem;">
+  <div style="display:flex;justify-content:center;margin:0 0 0.5rem;">
+    <div role="status" style="display:inline-block;max-width:100%;padding:0.85rem 1.5rem;border-radius:999px;background:linear-gradient(145deg,#f8fafc,#eef2f7);border:2px solid #1a4d8c;color:#1a1a1a;font-weight:700;font-size:1.1rem;line-height:1.3;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12);">${escapeHtml(primary.name)}</div>
+  </div>
+  ${qual}
+</div>`;
+}
+
 function buildArchetypeReportBody(data) {
   let html = '';
   const primary = data.primaryArchetype;
   const secondary = data.secondaryArchetype;
   const tertiary = data.tertiaryArchetype;
   if (primary) {
+    html += buildArchetypeProfileSummaryExportHtml(data);
     html += '<h2>Primary archetype</h2>';
-    html += `<p><strong>${escapeHtml(primary.name || '')}</strong>${primary.confidence != null ? ` (confidence ${Number(primary.confidence).toFixed(0)}%)` : ''}</p>`;
+    if (primary.confidence != null) {
+      html += `<p><strong>Confidence:</strong> ${Number(primary.confidence).toFixed(0)}%</p>`;
+    }
     if (primary.description) html += `<p>${escapeHtml(primary.description)}</p>`;
     if (primary.socialRole) html += `<p class="muted">Social role: ${escapeHtml(primary.socialRole)}</p>`;
     if (Array.isArray(primary.behavioralTraits) && primary.behavioralTraits.length) {
@@ -1608,6 +1688,18 @@ export function generateReadableReport(assessmentData, systemType, systemName) {
   } else {
     body = '<p>Report format not available for this assessment type.</p>';
   }
-  return reportDocHead(title, systemName, genderGlyphHtml) + body + reportDocFoot();
+  let mainHeading = systemName;
+  let headLayout = 'default';
+  if (type === 'temperament') {
+    mainHeading = 'Your Temperament Analysis:';
+    headLayout = 'suite';
+  } else if (type === 'attraction') {
+    mainHeading = 'Your Sexual Market Value Profile:';
+    headLayout = 'suite';
+  } else if (type === 'archetype') {
+    mainHeading = 'Your Archetype Profile:';
+    headLayout = 'suite';
+  }
+  return reportDocHead(title, mainHeading, genderGlyphHtml, headLayout) + body + reportDocFoot();
 }
 

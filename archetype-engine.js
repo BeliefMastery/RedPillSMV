@@ -2343,10 +2343,16 @@ showGenderSelection() {
         .join('');
     };
 
-    const headerParts = [primary?.name, secondary?.name, tertiary?.name].filter(Boolean);
-    const headerDetail = headerParts.length
-      ? `: ${SecurityUtils.sanitizeHTML(headerParts.join(', '))}`
-      : '';
+    const archetypeQualitiesHtml = (() => {
+      const sName = secondary?.name ? String(secondary.name).trim() : '';
+      const tName = tertiary?.name ? String(tertiary.name).trim() : '';
+      if (sName && tName) {
+        return `<p class="archetype-profile-qualities">with qualities of ${SecurityUtils.sanitizeHTML(sName)} and ${SecurityUtils.sanitizeHTML(tName)}</p>`;
+      }
+      if (sName) return `<p class="archetype-profile-qualities">with qualities of ${SecurityUtils.sanitizeHTML(sName)}</p>`;
+      if (tName) return `<p class="archetype-profile-qualities">with qualities of ${SecurityUtils.sanitizeHTML(tName)}</p>`;
+      return '';
+    })();
     const getBaseBrutalNarrative = (archetype) => {
       if (!archetype) return '';
       return String(BRUTAL_TRUTHS?.[archetype.id]?.narrative || archetype.archetypalNarrative || '').trim();
@@ -2391,12 +2397,20 @@ showGenderSelection() {
 
     let resultsHTML = `
       <div class="results-container" style="max-width: 900px; margin: 0 auto;">
-        <h2 style="color: var(--brand); text-align: center; margin-bottom: 0.35rem;">Your Archetype Profile${headerDetail}</h2>
-        ${reportGenderGlyphHtml(this.gender)}
+        <div class="archetype-profile-header">
+          ${reportGenderGlyphHtml(this.gender)}
+          <h2 class="suite-results-main-title">Your Archetype Profile:</h2>
+          <div class="temperament-composite-badge-wrap temperament-composite-badge-wrap--lead">
+            <div class="temperament-composite-badge archetype-primary-name-badge" role="status" aria-label="${SecurityUtils.sanitizeHTML(primary?.name || '').replace(/"/g, '&quot;')}">
+              ${SecurityUtils.sanitizeHTML(primary?.name || '')}
+            </div>
+          </div>
+          ${archetypeQualitiesHtml}
+        </div>
 
         <!-- Primary Archetype -->
         <div class="archetype-card primary" style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; border: 2px solid var(--brand);">
-          <h3 style="color: var(--brand); margin-top: 0; font-size: 1.75rem; font-weight: 800; letter-spacing: 0.01em;">Primary Archetype: ${SecurityUtils.sanitizeHTML(primary.name || '')}</h3>
+          <h3 style="color: var(--brand); margin-top: 0; font-size: 1.75rem; font-weight: 800; letter-spacing: 0.01em;">Primary Archetype</h3>
           ${memeticSummaryHtml(primary, { margin: '0.15rem 0 0.9rem', fontSize: '1rem' })}
           ${primary.explanation ? `<div style="background: rgba(255, 184, 0, 0.1); border-left: 3px solid var(--brand); border-radius: var(--radius); padding: 1rem; margin: 1rem 0;"><p style="margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.6; font-style: italic;">${primary.explanation}</p></div>` : ''}
           <p style="color: var(--muted); margin: 1rem 0; line-height: 1.7;"><strong>Social Role:</strong> ${SecurityUtils.sanitizeHTML(primary.socialRole || '')}</p>
