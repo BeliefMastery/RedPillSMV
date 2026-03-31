@@ -16,6 +16,7 @@ import {
 import { getDimensionNormativeClarifier } from './shared/temperament-normative-clarifier.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
+import { EXPECTED_GENDER_TRENDS, formatCompositePositionDescription } from './shared/temperament-composite-meta.js';
 
 // Data modules - will be loaded lazily
 let TEMPERAMENT_DIMENSIONS, INTIMATE_DYNAMICS;
@@ -30,11 +31,6 @@ const GENDER_QUESTION = {
     { value: 'woman', label: 'Woman' },
     { value: 'man', label: 'Man' }
   ]
-};
-
-const EXPECTED_GENDER_TRENDS = {
-  man: 0.6,
-  woman: 0.4
 };
 
 // Cross-polarity: respondent scores significantly beyond their gender's typical range
@@ -1678,10 +1674,6 @@ export class TemperamentEngine {
     }
 
     const crossPolarityClass = (reportedGender === 'man' && score < (femaleTrend - CROSS_POLARITY_THRESHOLD)) || (reportedGender === 'woman' && score > (maleTrend + CROSS_POLARITY_THRESHOLD)) ? ' cross-polarity-notable' : '';
-    const keyInsightHtml = `
-        <div class="temperament-key-insight" style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(127,127,127,0.22);">
-          <p style="margin:0;color:var(--muted);font-size:0.9rem;line-height:1.55;">Your overall position is a weighted blend across dimensions; the groups below show where that blend comes from.</p>
-        </div>`;
     const synthesisParagraphs = buildTemperamentSynthesisPlainParagraphs(this.analysisData);
     if (this.analysisData.temperamentInterpretation) {
       this.analysisData.temperamentInterpretation.synthesisParagraphs = synthesisParagraphs;
@@ -1705,36 +1697,34 @@ export class TemperamentEngine {
           ${aggregatePatternsHtml}
           ${variationNoteHtml}
         </div>`;
+
+    const compositeBadgeText = `Composite position: ${formatCompositePositionDescription(temperament.normalizedScore)}`;
+
     html += `
       <div class="temperament-profile-card${crossPolarityClass}">
-        <h2>Temperament Expression Profile</h2>
-        ${reportGenderGlyphHtml(reportedGender)}
-        ${buildTemperamentReportEducationHtml()}
-        <div class="temperament-profile-inner temperament-profile-inner-headline">
-          <h3>${SecurityUtils.sanitizeHTML(interpretation.label || '')}</h3>
-          <p>${SecurityUtils.sanitizeHTML(interpretation.description || '')}</p>
-        </div>
         <div class="temperament-spectrum-container">
-          <h4>Temperament Spectrum Position</h4>
+          <h3 class="temperament-spectrum-section-title">Temperament Spectrum Position</h3>
           <div class="temperament-spectrum-large">
             <div class="temperament-trend-dot temperament-trend-male" style="left: ${maleTrend * 100}%;" title="Expected trend for males"></div>
             <div class="temperament-trend-dot temperament-trend-female" style="left: ${femaleTrend * 100}%;" title="Expected trend for females"></div>
             <div class="temperament-marker temperament-marker-large" style="left: ${temperament.normalizedScore * 100}%;"></div>
           </div>
           <div class="temperament-spectrum-labels">
-            <span>Feminine-Leaning (0%)</span>
-            <span>Balanced (50%)</span>
-            <span>Masculine-Leaning (100%)</span>
+            <span>Feminine-leaning</span>
+            <span>Mid</span>
+            <span>Masculine-leaning</span>
           </div>
           <div class="temperament-trend-legend">
-            <span><span class="temperament-trend-dot temperament-trend-male"></span> Expected trend for males</span>
             <span><span class="temperament-trend-dot temperament-trend-female"></span> Expected trend for females</span>
+            <span><span class="temperament-trend-dot temperament-trend-male"></span> Expected trend for males</span>
           </div>
-          <p class="temperament-spectrum-position">
-            Expression Position: ${(temperament.normalizedScore * 100).toFixed(1)}% on the spectrum
-          </p>
+          <div class="temperament-composite-badge-wrap">
+            <div class="temperament-composite-badge" role="status" aria-label="${SecurityUtils.sanitizeHTML(compositeBadgeText).replace(/"/g, '&quot;')}">
+              ${SecurityUtils.sanitizeHTML(compositeBadgeText)}
+            </div>
+          </div>
         </div>
-        ${keyInsightHtml}
+        ${buildTemperamentReportEducationHtml()}
       </div>
     `;
 
@@ -1828,6 +1818,10 @@ export class TemperamentEngine {
 
       // Sanitize HTML before rendering - all dynamic content is already sanitized above
       SecurityUtils.safeInnerHTML(container, html);
+      const genderGlyphSlot = document.getElementById('temperamentResultsGenderGlyph');
+      if (genderGlyphSlot) {
+        SecurityUtils.safeInnerHTML(genderGlyphSlot, reportGenderGlyphHtml(reportedGender));
+      }
       this.saveProgress();
       
       // Display debug report if in development mode
@@ -1943,6 +1937,8 @@ export class TemperamentEngine {
     const actionButtonsSection = document.getElementById('actionButtonsSection');
     const questionnaireSection = document.getElementById('questionnaireSection');
     const resultsSection = document.getElementById('resultsSection');
+    const genderGlyphSlot = document.getElementById('temperamentResultsGenderGlyph');
+    if (genderGlyphSlot) genderGlyphSlot.innerHTML = '';
 
     if (introSection) introSection.classList.remove('hidden');
     if (actionButtonsSection) actionButtonsSection.classList.remove('hidden');

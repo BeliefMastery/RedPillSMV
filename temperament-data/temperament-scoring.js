@@ -14,6 +14,7 @@ export const TEMPERAMENT_SCORING = {
   },
   
   // Dimension weights (some dimensions are more indicative than others)
+  // Every active dimension key used in Phase 2 has an explicit entry below (no silent 1.0 fallbacks in product logic).
   // Recalibration notes:
   //   Core behavioral: raised shame_and_fear to 1.2 (primary threat-response axis),
   //     provision_and_nurture to 1.2 (highly discriminating), independence_and_interdependence

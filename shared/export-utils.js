@@ -7,6 +7,7 @@ import {
   TEMPERAMENT_REPORT_TIER2_SUMMARY,
   TEMPERAMENT_REPORT_TIER2_PARAS
 } from '../temperament-data/temperament-report-copy.js';
+import { EXPECTED_GENDER_TRENDS, formatCompositePositionDescription } from './temperament-composite-meta.js';
 import { getDimensionNormativeClarifier } from './temperament-normative-clarifier.js';
 import { TEMPERAMENT_DIMENSIONS } from '../temperament-data/temperament-dimensions.js';
 import { INTIMATE_DYNAMICS } from '../temperament-data/intimate-dynamics.js';
@@ -1371,6 +1372,36 @@ function buildTemperamentReportPrimerExportHtml() {
   return h;
 }
 
+/** Mirrors on-screen “Temperament Spectrum Position” block (spectrum + composite badge). */
+function buildTemperamentSpectrumPositionExportHtml(data) {
+  const ot = data.overallTemperament;
+  if (!ot || typeof ot.normalizedScore !== 'number') return '';
+  const maleTrend = EXPECTED_GENDER_TRENDS.man;
+  const femaleTrend = EXPECTED_GENDER_TRENDS.woman;
+  const compositeBadgeText = `Composite position: ${formatCompositePositionDescription(ot.normalizedScore)}`;
+
+  return `
+<div class="temperament-spectrum-container" style="background:#f8f9fb;padding:1.25rem;border-radius:8px;margin:1rem 0;">
+  <h3 style="margin:0 0 1rem;color:#1a4d8c;font-size:1.35rem;font-weight:700;line-height:1.25;">Temperament Spectrum Position</h3>
+  <div class="temperament-spectrum-large" style="position:relative;height:40px;background:linear-gradient(to right, rgba(80, 140, 255, 0.35), rgba(20, 35, 55, 0.25));border-radius:8px;margin-bottom:0.35rem;border:2px solid #c8d0dc;">
+    <div style="position:absolute;top:50%;left:${maleTrend * 100}%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:#4c8bff;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.25);" title="Expected trend for males"></div>
+    <div style="position:absolute;top:50%;left:${femaleTrend * 100}%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;background:#ff7fb1;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.25);" title="Expected trend for females"></div>
+    <div style="position:absolute;top:50%;left:${ot.normalizedScore * 100}%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #333;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:#666;max-width:100%;">
+    <span>Feminine-leaning</span><span>Mid</span><span>Masculine-leaning</span>
+  </div>
+  <p style="margin:0.75rem 0 0;font-size:0.8rem;color:#666;text-align:center;">
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ff7fb1;vertical-align:middle;margin-right:0.35rem;"></span> Expected trend for females
+    &nbsp;&nbsp;
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#4c8bff;vertical-align:middle;margin-right:0.35rem;"></span> Expected trend for males
+  </p>
+  <div style="display:flex;justify-content:center;margin-top:1rem;">
+    <div role="status" style="display:inline-block;max-width:100%;padding:0.65rem 1.15rem;border-radius:999px;background:#f0f4fa;border:2px solid #1a4d8c;color:#1a1a1a;font-weight:600;font-size:0.95rem;line-height:1.35;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.08);">${escapeHtml(compositeBadgeText)}</div>
+  </div>
+</div>`;
+}
+
 function buildTemperamentReportBody(data) {
   let html = '';
   const ot = data.overallTemperament;
@@ -1378,15 +1409,9 @@ function buildTemperamentReportBody(data) {
     html += '<h2>Polarity Position</h2>';
     html += `<p><strong>Category:</strong> ${escapeHtml(ot.category || 'Not specified')}</p>`;
     html += `<p>Normalized: ${(ot.normalizedScore != null ? (ot.normalizedScore * 100).toFixed(1) : '—')}% · Masculine: ${(ot.masculineScore != null ? (ot.masculineScore * 100).toFixed(1) : '—')}% · Feminine: ${(ot.feminineScore != null ? (ot.feminineScore * 100).toFixed(1) : '—')}% · Net: ${(ot.netScore != null ? (ot.netScore * 100).toFixed(1) : '—')}%</p>`;
+    html += buildTemperamentSpectrumPositionExportHtml(data);
     html += buildTemperamentReportPrimerExportHtml();
   }
-  const ti = data.temperamentInterpretation;
-  if (ti && (ti.label || ti.description)) {
-    html += '<div class="card temperament-expression-headline"><h3>' + escapeHtml(ti.label || 'Expression summary') + '</h3>';
-    if (ti.description) html += `<p>${escapeHtml(ti.description)}</p>`;
-    html += '</div>';
-  }
-  html += '<p class="muted">Your overall position is a weighted blend across dimensions; grouped rows below show where that blend comes from.</p>';
   if (data.crossPolarityDetected && data.crossPolarityNote) {
     html += `<div class="card"><h3>Cross-polarity finding</h3><p>${escapeHtml(data.crossPolarityNote)}</p></div>`;
   }
@@ -1502,6 +1527,7 @@ function buildTemperamentReportBody(data) {
       html += `<p>Pull lands best when a partner holds a <strong>${escapeHtml(complementLabel)}</strong> side with enough strength; weak complement reads as strain or over-functioning.</p></div>`;
     }
   }
+  const ti = data.temperamentInterpretation;
   const synthParas =
     Array.isArray(ti?.synthesisParagraphs) && ti.synthesisParagraphs.length
       ? ti.synthesisParagraphs
