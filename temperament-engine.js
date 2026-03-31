@@ -10,7 +10,6 @@ import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
 import {
   TEMPERAMENT_REPORT_TIER1_PARAS,
   TEMPERAMENT_REPORT_SPECTRUM_NOTE,
-  TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE,
   TEMPERAMENT_REPORT_TIER2_SUMMARY,
   TEMPERAMENT_REPORT_TIER2_PARAS
 } from './temperament-data/temperament-report-copy.js';
@@ -122,12 +121,11 @@ function getSpectrumBandBadgeColors(bandKey) {
 /** How to read + spectrum caveat + Tier 2 `<details>` (static copy only). */
 function buildTemperamentReportEducationHtml() {
   let block = `<div class="info-box panel-brand-left temperament-report-primer" style="margin: 1rem 0 0; text-align: left;">`;
-  block += `<h4 style="margin-top:0;color:var(--brand);font-size:0.95rem;">How to read this</h4>`;
+  block += `<h4 style="margin-top:0;color:var(--brand);font-size:0.95rem;">How to Read This Report</h4>`;
   TEMPERAMENT_REPORT_TIER1_PARAS.forEach(p => {
     block += `<p style="margin:0.55rem 0 0;color:var(--muted);font-size:0.92rem;line-height:1.65;">${SecurityUtils.sanitizeHTML(p)}</p>`;
   });
   block += `<p style="margin:0.55rem 0 0;color:var(--muted);font-size:0.88rem;line-height:1.6;font-style:italic;">${SecurityUtils.sanitizeHTML(TEMPERAMENT_REPORT_SPECTRUM_NOTE)}</p>`;
-  block += `<p style="margin:0.55rem 0 0;color:var(--muted);font-size:0.88rem;line-height:1.6;">${SecurityUtils.sanitizeHTML(TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE)}</p>`;
   block += `<details class="temperament-plasticity-details" style="margin: 0.9rem 0 0;"><summary style="cursor:pointer;color:var(--brand);font-weight:600;font-size:0.9rem;">${SecurityUtils.sanitizeHTML(TEMPERAMENT_REPORT_TIER2_SUMMARY)}</summary><div style="margin-top:0.65rem;">`;
   TEMPERAMENT_REPORT_TIER2_PARAS.forEach(p => {
     block += `<p style="margin:0.45rem 0 0;color:var(--muted);font-size:0.88rem;line-height:1.62;">${SecurityUtils.sanitizeHTML(p)}</p>`;

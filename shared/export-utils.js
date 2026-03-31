@@ -4,7 +4,6 @@
 import {
   TEMPERAMENT_REPORT_TIER1_PARAS,
   TEMPERAMENT_REPORT_SPECTRUM_NOTE,
-  TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE,
   TEMPERAMENT_REPORT_TIER2_SUMMARY,
   TEMPERAMENT_REPORT_TIER2_PARAS
 } from '../temperament-data/temperament-report-copy.js';
@@ -1359,12 +1358,11 @@ export function buildTemperamentSynthesisPlainParagraphs(data) {
 
 /** Mirrors on-screen primer: how to read + spectrum caveat + Tier 2 copy. */
 function buildTemperamentReportPrimerExportHtml() {
-  let h = '<div class="card"><h3>How to read this</h3>';
+  let h = '<div class="card"><h3>How to Read This Report</h3>';
   TEMPERAMENT_REPORT_TIER1_PARAS.forEach(p => {
     h += `<p>${escapeHtml(p)}</p>`;
   });
   h += `<p><em>${escapeHtml(TEMPERAMENT_REPORT_SPECTRUM_NOTE)}</em></p>`;
-  h += `<p class="muted">${escapeHtml(TEMPERAMENT_REPORT_SELECTION_CRITERIA_NOTE)}</p>`;
   h += `<h4>${escapeHtml(TEMPERAMENT_REPORT_TIER2_SUMMARY)}</h4>`;
   TEMPERAMENT_REPORT_TIER2_PARAS.forEach(p => {
     h += `<p>${escapeHtml(p)}</p>`;

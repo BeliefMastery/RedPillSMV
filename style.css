@@ -1822,6 +1822,19 @@ body.home-page .home-grid-section:hover {
     margin: 0.5rem auto 0.45rem !important;
 }
 
+.home-suite-title {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    white-space: normal;
+    text-wrap: balance;
+    line-height: 1.12;
+}
+
+.home-suite-title-line {
+    display: block;
+}
+
 .home-image-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1869,6 +1882,15 @@ body.home-page .home-grid-section:hover {
 
     .home-grid-section .section-inner.minimal-section > .section-title-btn {
         margin: 0.45rem auto 0.4rem !important;
+    }
+    .home-suite-title {
+        font-size: clamp(1.08rem, 5.1vw, 1.36rem);
+        letter-spacing: 0.04em;
+        line-height: 1.08;
+        padding: 0.72rem 0.9rem;
+    }
+    .home-suite-title-line {
+        white-space: nowrap;
     }
     #tools .section-subtitle {
         display: none;
