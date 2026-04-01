@@ -11,6 +11,18 @@ Maintainer reference for how **physical aesthetics** and **fertility markers** e
   - **Target market** copy where applicable.
 - They **do not** renormalize or rescale cluster/axis weights at runtime. If product later adopts **preference-conditioned weighting**, document new rules here, cap deltas, and extend `scripts/smv-sensitivity-check.mjs`.
 
+### Male age vs stated partner ages (preferences layer only)
+
+[`shared/male-age-gap.js`](../shared/male-age-gap.js) derives:
+
+- **gapYounger** = respondent `age − target_age_max` (positive when the oldest acceptable partner is younger than self).
+- **valueLeverage** = `0.45×overall + 0.35×axisOfAttraction + 0.20×coalitionRank` from scored SMV only (no preference fields).
+- **Delusion index:** a smooth **ageDelusionContribution** (buffered by valueLeverage) feeds the male branch of the delusion calculation; higher composite value offsets the same calendar gap.
+- **Realistic-options / mate-quality copy:** an internal **effectiveOverall** (clamped) is passed to [`computeTargetMarketSummary`](../shared/attraction-target-market-summary.js) for men only; the headline overall percentile in the report remains the raw weighted cluster SMV.
+- **Younger-partner access band** (`favorable` / `mixed` / `strained`): report badge + export text only.
+
+Female scoring and delusion paths are unchanged.
+
 ## Pipeline
 
 1. For each cluster, raw Likert values (1–10 stepped scale) are collected per **subcategory**. Within each subcategory, a **weighted mean** of raw scores is computed (`weight` on each question, default **1** if omitted), then mapped to a **percentile** via a sigmoid (`scoreToPercentile` in `shared/attraction-smv-core.mjs`).

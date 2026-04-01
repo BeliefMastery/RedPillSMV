@@ -13,8 +13,9 @@ import { TEMPERAMENT_DIMENSIONS } from '../temperament-data/temperament-dimensio
 import { INTIMATE_DYNAMICS } from '../temperament-data/intimate-dynamics.js';
 import { ATTRACTION_RESPONSIVENESS } from '../temperament-data/attraction-responsiveness.js';
 import { reportGenderGlyphHtml } from './report-gender-glyph.js';
-import { getQualificationExplanation } from './attraction-report-copy.js';
+import { getQualificationExplanation, getMaleYoungerPartnerAccessCopy } from './attraction-report-copy.js';
 import { computeTargetMarketSummary } from './attraction-target-market-summary.js';
+import { maleAgeGapContext } from './male-age-gap.js';
 
 const EXPORT_VERSION = '1.1.0';
 
@@ -1054,6 +1055,21 @@ function buildRelationshipReportBody(data) {
   return html || '<p>No report data available. Complete the assessment to generate a full report.</p>';
 }
 
+/** Male target-market lines + younger-partner access (preferences layer; headline SMV unchanged). */
+function buildMaleTargetMarketForExport(s) {
+  const overall = typeof s.overall === 'number' ? s.overall : 50;
+  const ctx = maleAgeGapContext(s.preferences || {}, s);
+  const copy = getMaleYoungerPartnerAccessCopy(ctx.accessBand);
+  return {
+    ...computeTargetMarketSummary(ctx.effectiveOverall, true),
+    headlineOverallPercentile: Math.round(overall),
+    poolAdjustedForStatedAges: Math.abs(ctx.effectiveOverallAdjust) >= 0.5,
+    youngerPartnerAccessBand: ctx.accessBand,
+    youngerPartnerAccessTitle: copy.title,
+    youngerPartnerAccessDetail: copy.detail
+  };
+}
+
 function buildAttractionClassificationExportBlock(data) {
   const gRaw = (data.gender || '').toLowerCase();
   const gender = gRaw === 'female' || gRaw === 'woman' ? 'female' : gRaw === 'male' || gRaw === 'man' ? 'male' : '';
@@ -1096,18 +1112,31 @@ function buildAttractionClassificationExportBlock(data) {
   if (combinedCardDetail) {
     pieces.push(`<p style="margin:0.35rem 0;line-height:1.55;font-size:0.95rem;">${combinedCardDetail}</p>`);
   }
-  const tmSummary =
-    s.targetMarket?.realisticOptionsPct && s.targetMarket?.potentialMateCore
-      ? s.targetMarket
-      : overall != null && gender
-        ? computeTargetMarketSummary(overall, gender === 'male')
-        : null;
+  let tmSummary = null;
+  if (gender === 'male' && overall != null) {
+    tmSummary = buildMaleTargetMarketForExport(s);
+  } else if (s.targetMarket?.realisticOptionsPct && s.targetMarket?.potentialMateCore) {
+    tmSummary = s.targetMarket;
+  } else if (overall != null && gender) {
+    tmSummary = computeTargetMarketSummary(overall, gender === 'male');
+  }
   if (tmSummary?.realisticOptionsPct && tmSummary?.potentialMateCore) {
     pieces.push(
       `<p style="font-weight:700;margin:0.85rem 0 0.35rem;font-size:1.05rem;text-align:center;">Realistic options: ${escapeHtml(tmSummary.realisticOptionsPct)}</p>`
     );
     pieces.push(
       `<p class="muted" style="margin:0 0 0.5rem;text-align:center;line-height:1.55;font-size:0.92rem;">Potential Mate Quality is ${escapeHtml(tmSummary.potentialMateCore)} (with major self-improvement).</p>`
+    );
+  }
+  if (gender === 'male' && tmSummary?.youngerPartnerAccessTitle && tmSummary?.youngerPartnerAccessDetail) {
+    pieces.push(
+      `<div class="muted" style="margin-top:0.75rem;padding:0.65rem 0.85rem;border-left:3px solid #888;line-height:1.55;font-size:0.92rem;">` +
+        `<strong>${escapeHtml(tmSummary.youngerPartnerAccessTitle)}</strong><br/>` +
+        `${escapeHtml(tmSummary.youngerPartnerAccessDetail)}` +
+        (tmSummary.poolAdjustedForStatedAges && tmSummary.headlineOverallPercentile != null
+          ? ` <em>Realistic-options bands reflect stated ages; headline overall ~${escapeHtml(String(tmSummary.headlineOverallPercentile))}th percentile unchanged.</em>`
+          : '') +
+        `</div>`
     );
   }
   if (gridExpl) {

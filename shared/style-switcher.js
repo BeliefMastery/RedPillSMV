@@ -7,32 +7,33 @@
   var FONT_SCALE_STORAGE_KEY = 'redpill-font-scale';
 
   var THEMES = [
-    { id: 'cloud', label: 'Cloud' },
+    { id: 'light', label: 'Light' },
     { id: 'forge', label: 'Forge' },
     { id: 'neomorphism', label: 'Neomorphism' }
   ];
 
   var LEGACY_THEME_MAP = {
+    cloud: 'light',
     'predatory-luxury': 'forge',
-    'sand': 'cloud',
+    sand: 'light',
     'brutal-neomorphism': 'neomorphism',
     'clinical-obsidian': 'forge',
     'style-sovereign-vault': 'forge',
     'style-matrix-forge': 'forge',
     'clinical-dominance': 'forge',
-    'sovereign-gold': 'cloud',
+    'sovereign-gold': 'light',
     'clinical-dark': 'forge',
-    'luxury': 'forge',
-    'clouded': 'cloud',
-    'beached': 'cloud',
-    'minimal': 'cloud',
-    'neutral-intelligence': 'cloud',
-    'obsidian': 'forge',
+    luxury: 'forge',
+    clouded: 'light',
+    beached: 'light',
+    minimal: 'light',
+    'neutral-intelligence': 'light',
+    obsidian: 'forge',
     'raw-truth': 'forge',
     'matrix-forge': 'forge',
-    'beach': 'cloud',
-    'graze': 'cloud',
-    'signal': 'forge',
+    beach: 'light',
+    graze: 'light',
+    signal: 'forge',
     'sovereign-vault': 'forge'
   };
 
@@ -99,7 +100,10 @@
 
     try {
       var saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) select.value = saved;
+      if (saved) {
+        var resolved = LEGACY_THEME_MAP[saved] || saved;
+        select.value = resolved;
+      }
     } catch (e) {}
 
     select.addEventListener('change', function() {

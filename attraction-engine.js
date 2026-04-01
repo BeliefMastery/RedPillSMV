@@ -37,9 +37,11 @@ import {
   getClusterSummary as attractionClusterSummary,
   getQualificationExplanation as attractionQualificationExplanation,
   getSMVInterpretation as attractionSmvInterpretation,
-  getDelusionWarning as attractionDelusionWarning
+  getDelusionWarning as attractionDelusionWarning,
+  getMaleYoungerPartnerAccessCopy as attractionMaleYoungerPartnerAccessCopy
 } from './shared/attraction-report-copy.js';
 import { computeTargetMarketSummary } from './shared/attraction-target-market-summary.js';
+import { maleAgeGapContext } from './shared/male-age-gap.js';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 
@@ -225,7 +227,7 @@ export class AttractionEngine {
     const container = document.getElementById('questionContainer');
     if (!container) return;
 
-    let html = `<div class="phase-intro"><h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math.</p><form id="preferencesForm" class="preferences-form">`;
+    let html = `<div class="phase-intro"><h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math. For men, stated partner ages also tune a <strong>younger-partner access</strong> read and realistic-options copy; your headline Sexual Market Value percentile stays the scored model only.</p><form id="preferencesForm" class="preferences-form">`;
     questions.forEach(q => {
       html += `<div class="form-group"><label class="form-label">${SecurityUtils.sanitizeHTML(q.text)}</label>`;
       if (q.type === 'number') {
@@ -572,9 +574,8 @@ export class AttractionEngine {
     const p = this.preferences;
     let score = 0;
     if (this.currentGender === 'male') {
-      const ageDelta = (p.age || 0) - (p.target_age_max || 0);
-      if (ageDelta > 10 && smv.overall < 70) score += 20;
-      if (ageDelta > 15 && smv.overall < 60) score += 30;
+      const ageCtx = maleAgeGapContext(p, smv);
+      score += ageCtx.ageDelusionContribution;
       const phys = p.physical_standards || 0;
       if (phys >= 5 && (smv.clusters?.axisOfAttraction || 0) < 60) score += 25;
       if (phys >= 7 && (smv.clusters?.axisOfAttraction || 0) < 70) score += 35;
@@ -599,7 +600,19 @@ export class AttractionEngine {
   }
 
   analyzeTargetMarket(smv) {
-    return computeTargetMarketSummary(smv.overall, this.currentGender === 'male');
+    if (this.currentGender !== 'male') {
+      return computeTargetMarketSummary(smv.overall, false);
+    }
+    const ctx = maleAgeGapContext(this.preferences, smv);
+    const copy = attractionMaleYoungerPartnerAccessCopy(ctx.accessBand);
+    return {
+      ...computeTargetMarketSummary(ctx.effectiveOverall, true),
+      headlineOverallPercentile: Math.round(smv.overall),
+      poolAdjustedForStatedAges: Math.abs(ctx.effectiveOverallAdjust) >= 0.5,
+      youngerPartnerAccessBand: ctx.accessBand,
+      youngerPartnerAccessTitle: copy.title,
+      youngerPartnerAccessDetail: copy.detail
+    };
   }
 
   /** Targeted guidance for each weakest subcategory: what it means and how to achieve it */
@@ -721,9 +734,11 @@ export class AttractionEngine {
       classificationFollowupParts.push(`<p class="attraction-classification-detail">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</p>`);
     }
     const marketUi =
-      typeof s.overall === 'number' && !Number.isNaN(s.overall)
-        ? computeTargetMarketSummary(s.overall, this.currentGender === 'male')
-        : null;
+      s.targetMarket && s.targetMarket.realisticOptionsPct && s.targetMarket.potentialMateCore
+        ? s.targetMarket
+        : typeof s.overall === 'number' && !Number.isNaN(s.overall)
+          ? computeTargetMarketSummary(s.overall, this.currentGender === 'male')
+          : null;
     if (marketUi?.realisticOptionsPct && marketUi?.potentialMateCore) {
       const roPlain = String(marketUi.realisticOptionsPct);
       const roPct = SecurityUtils.sanitizeHTML(roPlain);
@@ -736,6 +751,20 @@ export class AttractionEngine {
           </div>
         </div>
         <p class="attraction-potential-mate-quality-line">Potential Mate Quality is ${pmc} (with major self-improvement).</p>`
+      );
+    }
+    if (this.currentGender === 'male' && marketUi?.youngerPartnerAccessTitle && marketUi?.youngerPartnerAccessDetail) {
+      const headPct = marketUi.headlineOverallPercentile ?? Math.round(s.overall);
+      const poolNote =
+        marketUi.poolAdjustedForStatedAges
+          ? `<span class="qualification-explanation" style="display:block;margin-top:0.5rem;font-style:italic;">Realistic-options bands above reflect your stated partner ages (headline overall ~${SecurityUtils.sanitizeHTML(String(headPct))}th percentile unchanged).</span>`
+          : '';
+      const ypAria = String(marketUi.youngerPartnerAccessTitle).replace(/"/g, '&quot;');
+      classificationFollowupParts.push(
+        `<div class="attraction-younger-partner-access" role="region" aria-label="${ypAria}">
+          <p class="attraction-younger-partner-access-title"><strong>${SecurityUtils.sanitizeHTML(marketUi.youngerPartnerAccessTitle)}</strong></p>
+          <p class="attraction-younger-partner-access-detail">${SecurityUtils.sanitizeHTML(marketUi.youngerPartnerAccessDetail)}${poolNote}</p>
+        </div>`
       );
     }
     if (gridExpl) {

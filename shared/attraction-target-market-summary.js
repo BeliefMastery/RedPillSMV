@@ -13,7 +13,7 @@ export function mateQualityPhraseFromAspirational(aspirational) {
 }
 
 /**
- * @param {number} overall - SMV overall percentile 0–100
+ * @param {number} overall - SMV overall percentile 0–100 (for men, callers may pass age-adjusted leverage from `male-age-gap.js` while keeping headline SMV elsewhere)
  * @param {boolean} isMale
  * @returns {{ realistic: string, aspirational: string, realisticOptionsPct: string, potentialMateCore: string }}
  */

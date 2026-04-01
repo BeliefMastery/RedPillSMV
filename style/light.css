@@ -1,0 +1,229 @@
+/* ============================================================
+   STYLE VARIATION — "LIGHT"
+   Aesthetic: Clean aerial / soft corporate light
+   Mood: Calm, clear, spacious
+   Fonts: Inter (body) + system sans-serif stack
+   Palette: Bright white, warm neutrals, crimson accent (replaces former blue)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ========== VARIABLES ========== */
+:root {
+    /* Core colors — red accent; body text slightly softened vs pure black for long reads */
+    --brand: #1e293b;              /* Slate-800: strong contrast on white without harsh black */
+    --muted: #64748b;              /* Slate-500: secondary text, WCAG-friendly on light surfaces */
+    --accent: #b91c1c;             /* Crimson / red-700 */
+    --accent-hover: #dc2626;       /* Brighter red for hovers / links */
+
+    /* Backgrounds */
+    --bg: #f8fafc;
+    --glass: rgba(255, 255, 255, 0.78);
+    --glass-light: rgba(255, 255, 255, 0.92);
+    --card-bg: #ffffff;
+    --card-hover: #faf5f5;
+    --accent-panel: rgba(185, 28, 28, 0.08);
+    --accent-panel-strong: rgba(185, 28, 28, 0.14);
+    --brand-panel: rgba(15, 23, 42, 0.04);
+
+    /* Borders — light rose-grey (readable edge, not heavy) */
+    --border-subtle: rgba(226, 214, 214, 0.95);
+    --border-medium: #e8dcdc;
+    --border-bright: #d4bcbc;
+
+    /* Glows / focus rings — red accent */
+    --glow-blue: rgba(220, 38, 38, 0.18);   /* var name kept for compatibility with style.css */
+    --glow-bright: rgba(220, 38, 38, 0.28);
+    --glow-accent: rgba(220, 38, 38, 0.22);
+
+    /* Shadows — much lighter lift */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.10), 0 5px 10px rgba(0, 0, 0, 0.08);
+    --shadow: var(--shadow-md);
+
+    /* Functional */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #dc2626; /* Distinct from --accent for form/alerts */
+
+    /* Layout */
+    --radius: 10px;
+    --transition: all 0.18s ease-out;
+
+    /* Text & accessibility */
+    --text-primary: var(--brand);
+    --text-secondary: var(--muted);
+    --link-color: var(--accent);
+    --focus-color: var(--accent);
+    --font-size-base: clamp(0.94rem, 0.9rem + 0.35vw, 1.05rem);
+}
+
+/* Base overrides for light mode */
+html,
+body {
+    background: var(--bg);
+    color: var(--brand);
+}
+
+/* Match main offset to fixed header height (base uses 54px vs 58px header — align for light theme) */
+main {
+    padding-top: 58px;
+}
+
+a {
+    color: var(--accent);
+}
+
+a:hover {
+    color: var(--accent-hover);
+}
+
+img {
+    filter: brightness(0.98) contrast(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+img:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+}
+
+/* Header — re-assert dimensions from style.css so overlay cannot shrink / drift nav layout */
+header.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.8rem;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-medium);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.nav {
+    max-width: 1180px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    header.site-header {
+        height: auto;
+        min-height: 56px;
+        padding: 0.35rem 0.45rem;
+    }
+
+    .nav {
+        padding: 0;
+    }
+}
+
+.nav-list a {
+    color: var(--muted);
+}
+
+.nav-list a:hover,
+.nav-list a.active {
+    color: var(--accent);
+    background: var(--accent-panel);
+}
+
+/* Panels & cards — bright & lifted (avoid bare `section` so layout shells / nav aren’t resized) */
+.panel,
+.card,
+.tool-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-md);
+}
+
+.panel-accent-left {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-panel);
+}
+
+.btn-primary,
+button:not(.secondary):not(.hamburger):not(.close-btn) {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+/* Spectrum / bars — warm neutral track */
+.temperament-spectrum-large,
+.dimension-spectrum {
+    background: #f1e9e9;
+    border-color: var(--border-medium);
+}
+
+.temperament-trend-dot,
+.dimension-marker {
+    background: var(--accent);
+    border-color: white;
+}
+
+/* ========== Section shells (base theme uses dark forge tint on `section` — restore light surfaces) ========== */
+section {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px) saturate(1.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    color: var(--brand);
+}
+
+section:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-medium);
+}
+
+.section-inner {
+    background: var(--glass-light);
+    color: var(--brand);
+}
+
+/* Active questionnaire / results panels — swap gold wash for accent-tinted light panel */
+.questionnaire-section.active,
+.results-section.active,
+.disclaimer-section.expanded,
+.instructions-panel.expanded {
+    background: var(--accent-panel);
+    border-left-color: var(--accent);
+}
+
+/* Content pages: remove blue text-shadow meant for dark cosmic bg */
+.content-section h1,
+.content-section h2,
+.content-section h3 {
+    text-shadow: none;
+    color: var(--brand);
+}
+
+.hero h1 {
+    text-shadow: none;
+    color: var(--brand);
+}
+
+.hero h2,
+.hero p {
+    color: var(--muted);
+}
+
+/* Keep most other component classes the same — just color vars changed */

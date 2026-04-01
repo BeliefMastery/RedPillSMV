@@ -78,3 +78,26 @@ export function getDelusionWarning(band) {
   if (band === 'high') return 'SIGNIFICANT MISMATCH: Standards exceed market position. Adjust or improve.';
   return 'MODERATE MISMATCH: Some recalibration needed.';
 }
+
+/** @param {'favorable'|'mixed'|'strained'} band */
+export function getMaleYoungerPartnerAccessCopy(band) {
+  if (band === 'strained') {
+    return {
+      title: 'Younger-partner access: strained',
+      detail:
+        'Your stated partner age window sits far below your age relative to your composite leverage. That does not change your headline Sexual Market Value score, but it usually tightens who will reciprocate. Closing the gap takes visible status, attraction, and coalition strength—or narrowing the age band you optimize for.'
+    };
+  }
+  if (band === 'mixed') {
+    return {
+      title: 'Younger-partner access: mixed',
+      detail:
+        'There is some tension between your age and the ages you said you want. Strong axis and coalition signals can still buy runway here; if those are only moderate, expect more friction or smaller pools than the raw percentile line suggests.'
+    };
+  }
+  return {
+    title: 'Younger-partner access: favorable',
+    detail:
+      'Given your stated ages and your blend of overall, attraction, and coalition signals, pursuing partners in that window is broadly plausible. Headline Sexual Market Value stays the same; this is how your preferences read against leverage.'
+  };
+}

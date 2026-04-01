@@ -5430,6 +5430,28 @@ img[data-src].loaded {
     color: var(--muted);
 }
 
+.results-dashboard .attraction-younger-partner-access {
+    margin: 1rem auto 0;
+    max-width: 38rem;
+    padding: 0.85rem 1rem;
+    text-align: left;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--text, inherit);
+    background: var(--glass);
+    border-radius: var(--radius);
+    border-left: 3px solid var(--accent);
+}
+
+.results-dashboard .attraction-younger-partner-access-title {
+    margin: 0 0 0.35rem;
+}
+
+.results-dashboard .attraction-younger-partner-access-detail {
+    margin: 0;
+    color: var(--muted);
+}
+
 .results-dashboard .attraction-standards-calibration .delusion-warning {
     margin-top: 0;
 }
