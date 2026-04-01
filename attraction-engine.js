@@ -79,6 +79,9 @@ export class AttractionEngine {
       this.responses = d.responses || {};
       this.preferences = d.preferences || {};
       this.currentGender = d.currentGender;
+      if (this.smv && typeof this.smv.overall === 'number') {
+        this.smv.targetMarket = this.analyzeTargetMarket(this.smv);
+      }
       this.setReportHeaderState(true);
       this.ui.transition('results');
       this.renderResults();
@@ -717,11 +720,14 @@ export class AttractionEngine {
     if (combinedCardDetail) {
       classificationFollowupParts.push(`<p class="attraction-classification-detail">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</p>`);
     }
-    const tm = s.targetMarket || {};
-    if (tm.realisticOptionsPct && tm.potentialMateCore) {
-      const roPlain = String(tm.realisticOptionsPct);
+    const marketUi =
+      typeof s.overall === 'number' && !Number.isNaN(s.overall)
+        ? computeTargetMarketSummary(s.overall, this.currentGender === 'male')
+        : null;
+    if (marketUi?.realisticOptionsPct && marketUi?.potentialMateCore) {
+      const roPlain = String(marketUi.realisticOptionsPct);
       const roPct = SecurityUtils.sanitizeHTML(roPlain);
-      const pmc = SecurityUtils.sanitizeHTML(tm.potentialMateCore);
+      const pmc = SecurityUtils.sanitizeHTML(marketUi.potentialMateCore);
       const roAria = `Realistic options: ${roPlain}`.replace(/"/g, '&quot;');
       classificationFollowupParts.push(
         `<div class="temperament-composite-badge-wrap attraction-realistic-options-badge-wrap">

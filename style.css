@@ -5418,6 +5418,7 @@ img[data-src].loaded {
 .results-dashboard .attraction-realistic-options-badge {
     font-size: 1rem;
     font-weight: 700;
+    opacity: 0.7; /* 30% transparency — less prominent than classification pill */
 }
 
 .results-dashboard .attraction-potential-mate-quality-line {
@@ -6610,8 +6611,34 @@ img[data-src].loaded {
     margin: 0.65rem 0 0;
     color: var(--muted);
     font-size: 1rem;
-    line-height: 1.5;
+    line-height: 1.6;
     font-weight: 500;
+}
+
+.archetype-profile-qualities .archetype-inline-pill {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 0.12rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.88em;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    border: 1px solid var(--brand);
+    background: linear-gradient(145deg, var(--glass-light), var(--glass));
+    color: var(--text);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    word-break: break-word;
+}
+
+.archetype-inline-pill--secondary {
+    opacity: 0.7; /* 30% transparency */
+}
+
+.archetype-inline-pill--tertiary {
+    opacity: 0.4; /* 60% transparency */
 }
 
 .temperament-spectrum-labels {

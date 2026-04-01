@@ -1687,7 +1687,7 @@ export class TemperamentEngine {
           ${variationNoteHtml}
         </div>`;
 
-    const compositeBadgeText = `Composite position: ${formatCompositePositionDescription(temperament.normalizedScore)}`;
+    const compositeBadgeText = formatCompositePositionDescription(temperament.normalizedScore);
     const compositeBadgeAria = SecurityUtils.sanitizeHTML(compositeBadgeText).replace(/"/g, '&quot;');
     const temperamentHeaderSuiteHtml = `
       <div class="results-header temperament-report-header-suite${crossPolarityClass}">

@@ -15,15 +15,15 @@ export const EXPECTED_GENDER_TRENDS = { man: 0.6, woman: 0.4 };
 export function formatCompositePositionDescription(normalizedScore) {
   const pct = (Number(normalizedScore) || 0) * 100;
   if (pct < 40) {
-    return 'Feminine-leaning (outside the 40–60% balanced band).';
+    return 'Feminine-leaning (outside the 40–60% balanced band)';
   }
   if (pct < 50) {
-    return 'Feminine side of balanced.';
+    return 'Feminine side of balanced';
   }
   if (pct <= 60) {
-    return 'Masculine side of balanced.';
+    return 'Masculine side of balanced';
   }
-  return 'Masculine-leaning (outside the 40–60% balanced band).';
+  return 'Masculine-leaning (outside the 40–60% balanced band)';
 }
 
 /** Same band thresholds as temperament-engine getSpectrumBandKey */

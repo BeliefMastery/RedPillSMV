@@ -1440,7 +1440,7 @@ function buildTemperamentSpectrumPositionExportHtml(data) {
   if (!ot || typeof ot.normalizedScore !== 'number') return '';
   const maleTrend = EXPECTED_GENDER_TRENDS.man;
   const femaleTrend = EXPECTED_GENDER_TRENDS.woman;
-  const compositeBadgeText = `Composite position: ${formatCompositePositionDescription(ot.normalizedScore)}`;
+  const compositeBadgeText = formatCompositePositionDescription(ot.normalizedScore);
 
   return `
 <div class="temperament-spectrum-container" style="background:#f8f9fb;padding:1.25rem;border-radius:8px;margin:1rem 0;">
@@ -1621,13 +1621,17 @@ function buildArchetypeProfileSummaryExportHtml(data) {
   if (!primary?.name) return '';
   const sName = secondary?.name ? String(secondary.name).trim() : '';
   const tName = tertiary?.name ? String(tertiary.name).trim() : '';
+  const pillBase =
+    'display:inline-block;vertical-align:middle;margin:0 0.1rem;padding:0.15rem 0.5rem;border-radius:999px;font-size:0.88em;font-weight:600;border:1px solid #1a4d8c;background:linear-gradient(145deg,#f8fafc,#eef2f7);color:#1a1a1a;';
+  const pillSecondary = (n) => `<span style="${pillBase}opacity:0.7;">${escapeHtml(n)}</span>`;
+  const pillTertiary = (n) => `<span style="${pillBase}opacity:0.4;">${escapeHtml(n)}</span>`;
   let qual = '';
   if (sName && tName) {
-    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.5;">with qualities of ${escapeHtml(sName)} and ${escapeHtml(tName)}</p>`;
+    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.6;">with qualities of ${pillSecondary(sName)} and ${pillTertiary(tName)}</p>`;
   } else if (sName) {
-    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.5;">with qualities of ${escapeHtml(sName)}</p>`;
+    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.6;">with qualities of ${pillSecondary(sName)}</p>`;
   } else if (tName) {
-    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.5;">with qualities of ${escapeHtml(tName)}</p>`;
+    qual = `<p style="margin:0.65rem 0 0;color:#666;font-size:1rem;line-height:1.6;">with qualities of ${pillTertiary(tName)}</p>`;
   }
   return `
 <div style="text-align:center;margin-bottom:1.5rem;">

@@ -2346,11 +2346,18 @@ showGenderSelection() {
     const archetypeQualitiesHtml = (() => {
       const sName = secondary?.name ? String(secondary.name).trim() : '';
       const tName = tertiary?.name ? String(tertiary.name).trim() : '';
-      if (sName && tName) {
-        return `<p class="archetype-profile-qualities">with qualities of ${SecurityUtils.sanitizeHTML(sName)} and ${SecurityUtils.sanitizeHTML(tName)}</p>`;
+      const escAttr = (t) => String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+      const sPill = sName
+        ? `<span class="archetype-inline-pill archetype-inline-pill--secondary" role="text" aria-label="${escAttr(`Secondary archetype: ${sName}`)}">${SecurityUtils.sanitizeHTML(sName)}</span>`
+        : '';
+      const tPill = tName
+        ? `<span class="archetype-inline-pill archetype-inline-pill--tertiary" role="text" aria-label="${escAttr(`Tertiary archetype: ${tName}`)}">${SecurityUtils.sanitizeHTML(tName)}</span>`
+        : '';
+      if (sPill && tPill) {
+        return `<p class="archetype-profile-qualities">with qualities of ${sPill} and ${tPill}</p>`;
       }
-      if (sName) return `<p class="archetype-profile-qualities">with qualities of ${SecurityUtils.sanitizeHTML(sName)}</p>`;
-      if (tName) return `<p class="archetype-profile-qualities">with qualities of ${SecurityUtils.sanitizeHTML(tName)}</p>`;
+      if (sPill) return `<p class="archetype-profile-qualities">with qualities of ${sPill}</p>`;
+      if (tPill) return `<p class="archetype-profile-qualities">with qualities of ${tPill}</p>`;
       return '';
     })();
     const getBaseBrutalNarrative = (archetype) => {
