@@ -1112,6 +1112,9 @@ function buildAttractionClassificationExportBlock(data) {
   if (combinedCardDetail) {
     pieces.push(`<p style="margin:0.35rem 0;line-height:1.55;font-size:0.95rem;">${combinedCardDetail}</p>`);
   }
+  if (gender === 'male' && gridExpl) {
+    pieces.push(`<p class="muted" style="margin:0.35rem 0 0.5rem;line-height:1.55;font-size:0.92rem;font-style:italic;text-align:center;">${escapeHtml(gridExpl)}</p>`);
+  }
   let tmSummary = null;
   if (gender === 'male' && overall != null) {
     tmSummary = buildMaleTargetMarketForExport(s);
@@ -1128,7 +1131,14 @@ function buildAttractionClassificationExportBlock(data) {
       `<p class="muted" style="margin:0 0 0.5rem;text-align:center;line-height:1.55;font-size:0.92rem;">Potential Mate Quality is ${escapeHtml(tmSummary.potentialMateCore)} (with major self-improvement).</p>`
     );
   }
-  if (gender === 'male' && tmSummary?.youngerPartnerAccessTitle && tmSummary?.youngerPartnerAccessDetail) {
+  const exportShowMaleYoungerPartner =
+    gender === 'male' &&
+    tmSummary?.youngerPartnerAccessTitle &&
+    tmSummary?.youngerPartnerAccessDetail &&
+    overall != null &&
+    overall < 50 &&
+    (tmSummary.youngerPartnerAccessBand === 'mixed' || tmSummary.youngerPartnerAccessBand === 'strained');
+  if (exportShowMaleYoungerPartner) {
     pieces.push(
       `<div class="muted" style="margin-top:0.75rem;padding:0.65rem 0.85rem;border-left:3px solid #888;line-height:1.55;font-size:0.92rem;">` +
         `<strong>${escapeHtml(tmSummary.youngerPartnerAccessTitle)}</strong><br/>` +
@@ -1139,7 +1149,7 @@ function buildAttractionClassificationExportBlock(data) {
         `</div>`
     );
   }
-  if (gridExpl) {
+  if (gridExpl && gender !== 'male') {
     pieces.push(`<p class="muted" style="margin:0.5rem 0;line-height:1.55;font-size:0.9rem;">${escapeHtml(gridExpl)}</p>`);
   }
   if (partnerNote) pieces.push(partnerNote);
@@ -1159,6 +1169,12 @@ function buildAttractionReportBody(data) {
       if (typeof v === 'number') html += `<li>${escapeHtml(clusterNames[k] || k)}: ~${Math.round(v)}th percentile</li>`;
     });
     html += '</ul>';
+  }
+
+  const gAttr = String(data.gender || '').toLowerCase();
+  const isMaleExport = gAttr === 'male' || gAttr === 'man';
+  if (isMaleExport && data.maleSocialProofLine) {
+    html += `<p class="muted" style="font-size:0.92rem;margin-top:0.65rem;line-height:1.55;">${escapeHtml(data.maleSocialProofLine)}</p>`;
   }
 
   if (delusionIndex != null && delusionIndex > 30) {

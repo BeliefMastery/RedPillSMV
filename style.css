@@ -5404,12 +5404,6 @@ img[data-src].loaded {
     font-size: 0.9rem;
 }
 
-.results-dashboard .attraction-social-proof-note {
-    margin: 0.75rem auto 0;
-    max-width: 38rem;
-    text-align: center;
-}
-
 .results-dashboard .attraction-realistic-options-badge-wrap {
     margin-top: 1rem;
     margin-bottom: 0.5rem;
@@ -5427,6 +5421,22 @@ img[data-src].loaded {
     text-align: center;
     font-size: 0.92rem;
     line-height: 1.55;
+    color: var(--muted);
+}
+
+.results-dashboard .attraction-classification-qualifier {
+    margin: 0.35rem auto 0;
+    max-width: 38rem;
+    text-align: center;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--muted);
+}
+
+.results-dashboard .attraction-axis-modifier {
+    margin: 0.5rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
     color: var(--muted);
 }
 

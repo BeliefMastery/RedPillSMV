@@ -227,7 +227,7 @@ export class AttractionEngine {
     const container = document.getElementById('questionContainer');
     if (!container) return;
 
-    let html = `<div class="phase-intro"><h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math. For men, stated partner ages also tune a <strong>younger-partner access</strong> read and realistic-options copy; your headline Sexual Market Value percentile stays the scored model only.</p><form id="preferencesForm" class="preferences-form">`;
+    let html = `<div class="phase-intro"><h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math. For men, stated partner ages tune realistic-options copy and delusion; if market position is below mid-tier and age preferences add friction, a short <strong>younger-partner access</strong> note may appear. Headline Sexual Market Value stays the scored model only.</p><form id="preferencesForm" class="preferences-form">`;
     questions.forEach(q => {
       html += `<div class="form-group"><label class="form-label">${SecurityUtils.sanitizeHTML(q.text)}</label>`;
       if (q.type === 'number') {
@@ -469,8 +469,10 @@ export class AttractionEngine {
     smv.delusionBand = this.calculateDelusionBand(smv.delusionIndex);
     smv.targetMarket = this.analyzeTargetMarket(smv);
     smv.recommendation = this.generateRecommendation(smv);
-    if (this.currentGender === 'male') smv.badBoyGoodGuy = this.placeBadBoyGoodGuy(smv);
-    else smv.keeperSweeper = this.placeKeeperSweeper(smv);
+    if (this.currentGender === 'male') {
+      smv.badBoyGoodGuy = this.placeBadBoyGoodGuy(smv);
+      smv.maleSocialProofLine = this.getMaleSocialProofSignalLine(this.responses);
+    } else smv.keeperSweeper = this.placeKeeperSweeper(smv);
     smv.rawResponses = { ...this.responses };
     smv.preferences = { ...this.preferences };
     return smv;
@@ -731,7 +733,11 @@ export class AttractionEngine {
     const badgeAria = SecurityUtils.sanitizeHTML(badgeValueRaw || 'Market classification').replace(/"/g, '&quot;');
     const classificationFollowupParts = [];
     if (combinedCardDetail) {
-      classificationFollowupParts.push(`<p class="attraction-classification-detail">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</p>`);
+      let detailBlock = `<p class="attraction-classification-detail">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</p>`;
+      if (this.currentGender === 'male' && gridExpl) {
+        detailBlock += `<p class="attraction-classification-qualifier"><em>${SecurityUtils.sanitizeHTML(gridExpl)}</em></p>`;
+      }
+      classificationFollowupParts.push(detailBlock);
     }
     const marketUi =
       s.targetMarket && s.targetMarket.realisticOptionsPct && s.targetMarket.potentialMateCore
@@ -753,7 +759,14 @@ export class AttractionEngine {
         <p class="attraction-potential-mate-quality-line">Potential Mate Quality is ${pmc} (with major self-improvement).</p>`
       );
     }
-    if (this.currentGender === 'male' && marketUi?.youngerPartnerAccessTitle && marketUi?.youngerPartnerAccessDetail) {
+    const showMaleYoungerPartnerAccess =
+      this.currentGender === 'male' &&
+      marketUi?.youngerPartnerAccessTitle &&
+      marketUi?.youngerPartnerAccessDetail &&
+      typeof s.overall === 'number' &&
+      s.overall < 50 &&
+      (marketUi.youngerPartnerAccessBand === 'mixed' || marketUi.youngerPartnerAccessBand === 'strained');
+    if (showMaleYoungerPartnerAccess) {
       const headPct = marketUi.headlineOverallPercentile ?? Math.round(s.overall);
       const poolNote =
         marketUi.poolAdjustedForStatedAges
@@ -767,14 +780,13 @@ export class AttractionEngine {
         </div>`
       );
     }
-    if (gridExpl) {
+    if (gridExpl && this.currentGender !== 'male') {
       classificationFollowupParts.push(`<p class="attraction-classification-expl">${SecurityUtils.sanitizeHTML(gridExpl)}</p>`);
     }
     if (partnerCountNote) classificationFollowupParts.push(partnerCountNote);
     const classificationFollowupHtml = classificationFollowupParts.length
       ? `<div class="attraction-classification-followup">${classificationFollowupParts.join('')}</div>`
       : '';
-    const socialProofNote = this.currentGender === 'male' ? this.getMaleSocialProofSignalLine(s.rawResponses || this.responses) : '';
     const attractionHeaderSuiteHtml = `
         <div class="results-header attraction-report-header-suite">
           ${reportGenderGlyphHtml(this.currentGender)}
@@ -786,7 +798,6 @@ export class AttractionEngine {
             </div>
           </div>` : ''}
           ${classificationFollowupHtml}
-          ${socialProofNote ? `<p class="qualification-explanation attraction-social-proof-note">${SecurityUtils.sanitizeHTML(socialProofNote)}</p>` : ''}
         </div>`;
 
     const clusterOrder = ['coalitionRank', 'reproductiveConfidence', 'axisOfAttraction'];
@@ -805,10 +816,14 @@ export class AttractionEngine {
       const clusterGuidance = weakest?.id ? this.getWeakestSubcategoryGuidance(weakest.id, clusterId) : null;
       const weakLabel = weakest?.id ? (subLabels[weakest.id] || weakest.id) : '';
       const tierLineHtml = `<p class="tier-logic" style="font-size:0.9rem;color:var(--muted);margin:0.25rem 0 0.75rem;font-style:italic;">${SecurityUtils.sanitizeHTML(tierInfo.logic)}</p>`;
+      const axisSocialProofHtml =
+        this.currentGender === 'male' && clusterId === 'axisOfAttraction' && s.maleSocialProofLine
+          ? `<p class="attraction-axis-modifier qualification-explanation">${SecurityUtils.sanitizeHTML(s.maleSocialProofLine)}</p>`
+          : '';
       const clusterGuidanceHtml = clusterGuidance
         ? `<div class="weakest-guidance" style="margin-top:1rem;"><h4>Focus: ${SecurityUtils.sanitizeHTML(weakLabel)}</h4><div class="guidance-block"><p class="guidance-meaning">${SecurityUtils.sanitizeHTML(clusterGuidance.meaning || '')}</p><p class="guidance-actions"><strong>How to improve:</strong></p><ol>${(clusterGuidance.actions || []).map(a => `<li>${SecurityUtils.sanitizeHTML(a)}</li>`).join('')}</ol></div></div>`
         : '';
-      return `<section class="report-section"><h2 class="report-section-title">${this.getReportClusterHeading(clusterId)}</h2><div class="attraction-cluster-section"><div class="attraction-cluster-badge">${badge}</div><div class="cluster-subcategory-block">${subHtml}${clusterSummary ? `<p class="cluster-summary" style="font-size:0.95rem;color:var(--brand);margin:0.5rem 0 0.5rem;line-height:1.6;">${SecurityUtils.sanitizeHTML(clusterSummary)}</p>` : ''}${tierLineHtml}${clusterGuidanceHtml}</div></div></section>`;
+      return `<section class="report-section"><h2 class="report-section-title">${this.getReportClusterHeading(clusterId)}</h2><div class="attraction-cluster-section"><div class="attraction-cluster-badge">${badge}</div><div class="cluster-subcategory-block">${subHtml}${clusterSummary ? `<p class="cluster-summary" style="font-size:0.95rem;color:var(--brand);margin:0.5rem 0 0.5rem;line-height:1.6;">${SecurityUtils.sanitizeHTML(clusterSummary)}</p>` : ''}${tierLineHtml}${axisSocialProofHtml}${clusterGuidanceHtml}</div></div></section>`;
     }).join('');
 
     const radScore = this.currentGender === 'male' && s.subcategories?.axisOfAttraction?.radActivity;
@@ -917,7 +932,7 @@ export class AttractionEngine {
     if (percentile >= 65) intensity = 'High';
     else if (percentile >= 45) intensity = 'Moderate';
 
-    return `Social proof signal: ${intensity} (~${percentile}th percentile) from recent traction, public conversion, and dating stability indicators. This is included lightly under Wealth/Status/Performance.`;
+    return `Social proof modifier: ${intensity} (~${percentile}th percentile) from recent traction, public conversion, and dating stability—weighted lightly inside Wealth/Status/Performance on this axis.`;
   }
 
   getPercentileColor(p) { if (p >= 80) return '#2ecc71'; if (p >= 60) return '#3498db'; if (p >= 40) return '#f39c12'; return '#e74c3c'; }

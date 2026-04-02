@@ -19,7 +19,7 @@ Maintainer reference for how **physical aesthetics** and **fertility markers** e
 - **valueLeverage** = `0.45×overall + 0.35×axisOfAttraction + 0.20×coalitionRank` from scored SMV only (no preference fields).
 - **Delusion index:** a smooth **ageDelusionContribution** (buffered by valueLeverage) feeds the male branch of the delusion calculation; higher composite value offsets the same calendar gap.
 - **Realistic-options / mate-quality copy:** an internal **effectiveOverall** (clamped) is passed to [`computeTargetMarketSummary`](../shared/attraction-target-market-summary.js) for men only; the headline overall percentile in the report remains the raw weighted cluster SMV.
-- **Younger-partner access band** (`favorable` / `mixed` / `strained`): report badge + export text only.
+- **Younger-partner access band** (`favorable` / `mixed` / `strained`): computed for all males; **report + export** surface the badge only when headline overall is **below ~50** and the band is **`mixed` or `strained`** (favorable is not shown in the opening summary). Delusion and realistic-options copy still use the full `male-age-gap` context.
 
 Female scoring and delusion paths are unchanged.
 

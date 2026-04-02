@@ -85,7 +85,7 @@ export function getMaleYoungerPartnerAccessCopy(band) {
     return {
       title: 'Younger-partner access: strained',
       detail:
-        'Your stated partner age window sits far below your age relative to your composite leverage. That does not change your headline Sexual Market Value score, but it usually tightens who will reciprocate. Closing the gap takes visible status, attraction, and coalition strength—or narrowing the age band you optimize for.'
+        'Your stated partner age window sits far below your age relative to your composite leverage; that usually tightens who will reciprocate. Closing the gap takes visible status, attraction, and coalition strength—or narrowing the age band you optimize for.'
     };
   }
   if (band === 'mixed') {
@@ -98,6 +98,6 @@ export function getMaleYoungerPartnerAccessCopy(band) {
   return {
     title: 'Younger-partner access: favorable',
     detail:
-      'Given your stated ages and your blend of overall, attraction, and coalition signals, pursuing partners in that window is broadly plausible. Headline Sexual Market Value stays the same; this is how your preferences read against leverage.'
+      'Given your stated ages and your blend of overall, attraction, and coalition signals, pursuing partners in that window is broadly plausible.'
   };
 }
