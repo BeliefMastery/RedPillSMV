@@ -1387,7 +1387,8 @@ export class RelationshipEngine {
     if (this.assessmentMode === 'both') {
       html += '<h2 style="margin-top: 0;">Part 1: Points of Conflict</h2>';
     }
-    html += '<p style="color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem;">All relationships show strain somewhere (usually in at least 3–5 areas). This is normal, not failure. These strain points indicate areas for attention, not verdicts on relationship viability. This report clarifies the areas showing strain, ranked in order of impact. Having many areas of critical or high strain is often terminal for a relationship; focus on the most impactful areas or consider whether the pattern suggests fundamental incompatibility.</p>';
+    html += '<p style="color: var(--muted); line-height: 1.7; margin-bottom: 0.85rem;">All relationships show strain somewhere (usually in at least 3–5 areas). Strain points indicate areas for attention moreso than verdicts on relationship viability. This is normal, not failure... not yet at least.</p>';
+    html += '<p style="color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem;">This report clarifies the areas showing strain, ranked in order of impact. Having many areas of critical or high strain is often terminal for a relationship; focus on the most impactful areas or consider whether the pattern suggests fundamental incompatibility.</p>';
 
     if (this.crossDomainSpillover.detected && this.crossDomainSpillover.message) {
       html += `<p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; font-style: italic;">${SecurityUtils.sanitizeHTML(this.crossDomainSpillover.message)}</p>`;
