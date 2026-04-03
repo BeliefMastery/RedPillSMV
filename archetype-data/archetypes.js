@@ -753,6 +753,7 @@ export const GENDER_NEUTRAL_MAPPING = {
   'Dark Gamma Male': 'dark_gamma',
   'Delta Male': 'delta',
   'Delta-Mu Male': 'delta_mu',
+  'Dark Delta Male': 'dark_delta',
   'Sigma Male': 'sigma',
   'Sigma-Kappa Male': 'sigma_kappa',
   'Sigma-Lambda Male': 'sigma_lambda',

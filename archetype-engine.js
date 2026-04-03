@@ -30,6 +30,8 @@ function archetypeSlogan(archetype) {
     beta: 'useful, reliable... replaceable',
     beta_iota: 'good-hearted, not taken seriously',
     beta_kappa: 'agrees to belong',
+    beta_nu: "Signed for life... passion wasn't in the contract",
+    beta_rho: 'Indispensable on purpose... intimacy on a leash',
     gamma: 'smart, outside the system, resents it',
     gamma_nu: 'loves the idea of love',
     gamma_theta: 'talks to God, struggles with people',
@@ -37,18 +39,19 @@ function archetypeSlogan(archetype) {
     dark_gamma: 'sees through everything, believes in nothing',
     delta: 'keeps the world running, never leads it',
     delta_mu: 'dad energy without dominance',
+    dark_delta: 'Gives everything... but keeps the receipts.',
     sigma: 'opts out, plays solo, keeps leverage',
     sigma_kappa: 'quiet strategist, moves pieces unseen',
     sigma_lambda: 'creates in isolation',
     dark_sigma_zeta: 'burns the system instead of mastering it',
     omega: 'invisible, disengaged, low agency',
     dark_omega: 'drags others down with him',
-    phi: 'myth, not a demographic',
+    phi: "Above the hierarchy... under the roof's mess",
 
     alpha_female: 'desired, selects-not chased',
     alpha_xi_female: 'cuts through men with standards',
     alpha_unicorn_female: 'idealized loyalty fantasy',
-    alpha_iota_female: 'balanced, rare, stable',
+    alpha_iota_female: 'Peace in every room... war inside her chest',
     dark_alpha_female: 'control disguised as empowerment',
     beta_female: 'trades access for security',
     beta_nu_female: 'settles into tradition',
@@ -59,14 +62,14 @@ function archetypeSlogan(archetype) {
     gamma_feminist_female: 'career-first, relationship-fractured',
     dark_gamma_female: 'withdrawn, disillusioned',
     delta_female: 'home, stability, support',
-    delta_mu_female: 'warmth, joy, life energy',
+    delta_mu_female: 'Sunshine for the table... thunder in the kitchen',
     dark_delta_female: 'self-sacrifice turned resentment',
     sigma_female: 'independent, hard to lock down',
     sigma_feminist_female: 'self-sufficient, low compromise',
     dark_sigma_zeta_female: 'rejects system entirely',
     omega_female: 'excluded from the game',
     dark_omega_female: 'weaponizes destruction',
-    phi_female: 'myth, not a demographic'
+    phi_female: 'Still water... nobody wades in'
   };
   if (byId[id]) return byId[id];
 
@@ -78,7 +81,7 @@ function archetypeSlogan(archetype) {
     delta: 'Tell me what to do.',
     sigma: "I don't need your game.",
     omega: 'Why try?',
-    phi: 'myth, not a demographic'
+    phi: "Above the hierarchy... under the roof's mess"
   };
   return coreByParent[parent] || '';
 }
@@ -727,19 +730,19 @@ showGenderSelection() {
       // IQ-Archetype correlations
       if (this.iqBracket === '80_100' || this.iqBracket === '100_115') {
         // Lower IQ brackets correlate with Beta, Delta, Omega
-        const lowerIQArchetypes = ['beta', 'delta', 'omega', 'beta_iota', 'beta_nu', 'delta_mu'];
+        const lowerIQArchetypes = ['beta', 'delta', 'omega', 'beta_iota', 'beta_nu', 'beta_kappa', 'beta_rho', 'delta_mu'];
         relevanceScore = archetypeIds.filter(id => lowerIQArchetypes.includes(id)).length * 3;
         // Also relevant but less: Alpha (some), Gamma/Sigma less likely
         if (archetypeIds.some(id => id === 'alpha' || id === 'alpha_xi')) relevanceScore += 1;
       } else if (this.iqBracket === '115_130') {
         // Mid IQ correlates with Alpha, Beta, Delta
-        const midIQArchetypes = ['alpha', 'beta', 'delta', 'alpha_xi', 'beta_nu', 'delta_mu'];
+        const midIQArchetypes = ['alpha', 'beta', 'delta', 'alpha_xi', 'beta_nu', 'beta_kappa', 'delta_mu'];
         relevanceScore = archetypeIds.filter(id => midIQArchetypes.includes(id)).length * 3;
         // Gamma/Sigma also possible
         if (archetypeIds.some(id => id === 'gamma' || id === 'sigma')) relevanceScore += 2;
       } else if (this.iqBracket === '130_145' || this.iqBracket === '145_plus') {
         // Higher IQ correlates with Gamma, Sigma, Phi, Alpha
-        const higherIQArchetypes = ['gamma', 'sigma', 'phi', 'alpha', 'gamma_theta', 'sigma_kappa'];
+        const higherIQArchetypes = ['gamma', 'sigma', 'phi', 'alpha', 'gamma_nu', 'gamma_theta', 'gamma_pi', 'sigma_kappa', 'sigma_lambda'];
         relevanceScore = archetypeIds.filter(id => higherIQArchetypes.includes(id)).length * 3;
         // Beta/Delta less likely but still possible
         if (archetypeIds.some(id => id === 'beta' || id === 'delta')) relevanceScore += 1;
@@ -1406,9 +1409,49 @@ showGenderSelection() {
     const selectedVignette = question.vignettes[selectedIndex];
     if (!selectedVignette) return;
 
+    const mapArchetypeId = (archId) => {
+      if (this.gender !== 'female') return archId;
+      const femaleMapping = {
+        alpha: 'alpha_female',
+        alpha_xi: 'alpha_xi_female',
+        alpha_rho: 'alpha_xi_female',
+        dark_alpha: 'dark_alpha_female',
+        beta: 'beta_female',
+        beta_iota: 'alpha_unicorn_female',
+        beta_nu: 'beta_nu_female',
+        beta_manipulator: 'beta_kappa_female',
+        beta_kappa: 'beta_kappa_female',
+        beta_rho: 'beta_rho_female',
+        gamma: 'gamma_female',
+        gamma_theta: 'gamma_theta_female',
+        dark_gamma: 'dark_gamma_female',
+        delta: 'delta_female',
+        delta_mu: 'delta_mu_female',
+        dark_delta: 'dark_delta_female',
+        sigma: 'sigma_female',
+        dark_sigma_zeta: 'dark_sigma_zeta_female',
+        omega: 'omega_female',
+        dark_omega: 'dark_omega_female',
+        phi: 'phi_female'
+      };
+      return femaleMapping[archId] || archId;
+    };
+
     selectedVignette.archetypes.forEach(archId => {
+      const targetArchId = mapArchetypeId(archId);
+      if (!this.archetypeScores[targetArchId]) {
+        this.archetypeScores[targetArchId] = {
+          phase1: 0,
+          phase2: 0,
+          phase3: 0,
+          phase4: 0,
+          phase5: 0,
+          total: 0,
+          weighted: 0
+        };
+      }
       const weight = selectedVignette.weight || 1;
-      this.archetypeScores[archId].phase4 += weight * 0.5; // Phase 4 gets 0.5x multiplier
+      this.archetypeScores[targetArchId].phase4 += weight * 0.5; // Phase 4 gets 0.5x multiplier
     });
   }
 
@@ -1611,16 +1654,27 @@ showGenderSelection() {
 
     const pickSubtype = (baseArchetype) => {
       if (!baseArchetype?.subtypes?.length) return null;
+      // Rank by full weighted evidence (all phases); tie-break on Phase 2 (dimensional refinement).
       const subtypeScores = baseArchetype.subtypes
-        .map(id => ({
-          id,
-          score: this.archetypeScores[id]?.phase2 || 0
-        }))
-        .sort((a, b) => b.score - a.score);
+        .map(id => {
+          const s = this.archetypeScores[id];
+          return {
+            id,
+            weighted: s?.weighted ?? 0,
+            phase2: s?.phase2 ?? 0
+          };
+        })
+        .sort((a, b) => {
+          if (b.weighted !== a.weighted) return b.weighted - a.weighted;
+          return b.phase2 - a.phase2;
+        });
       const topSubtype = subtypeScores[0];
-      if (!topSubtype || topSubtype.score <= 0) return null;
+      if (!topSubtype) return null;
+      if (topSubtype.weighted <= 0 && topSubtype.phase2 <= 0) return null;
       const subtype = ARCHETYPES[topSubtype.id];
-      return subtype ? { ...subtype, score: this.archetypeScores[topSubtype.id]?.weighted || topSubtype.score } : null;
+      return subtype
+        ? { ...subtype, score: this.archetypeScores[topSubtype.id]?.weighted ?? topSubtype.weighted }
+        : null;
     };
 
     const primarySubtype = pickSubtype(primary);
@@ -1797,7 +1851,7 @@ showGenderSelection() {
     // Base (canonical) archetype ids only; apply in calculateFinalScores via baseId lookup for gender-specific keys
     const adj = {};
     const alphaFamily = ['alpha', 'alpha_xi', 'alpha_rho', 'dark_alpha'];
-    const betaDelta = ['beta', 'beta_nu', 'beta_kappa', 'delta', 'delta_mu'];
+    const betaDelta = ['beta', 'beta_iota', 'beta_nu', 'beta_kappa', 'beta_rho', 'delta', 'delta_mu'];
 
     if (pattern === 'low_high') {
       alphaFamily.forEach(a => { adj[a] = 0.8; });
@@ -1892,12 +1946,17 @@ showGenderSelection() {
             alpha_rho: 0.78,
             dark_alpha: 0.78,
             beta: 1.22,
+            beta_iota: 1.14,
             beta_nu: 1.22,
             beta_kappa: 1.18,
+            beta_rho: 1.14,
             delta: 1.22,
             delta_mu: 1.22,
+            dark_delta: 1.1,
             gamma: 0.98,
             sigma: 0.98,
+            sigma_kappa: 0.96,
+            sigma_lambda: 0.96,
             omega: 1.05,
             phi: 0.97
           }

@@ -42,7 +42,7 @@ export const ARCHETYPE_SPREAD = [
     "vedicEquivalent": "Vaishya Dharma (Servant to Structure, Duty)",
     "greekPantheon": "Hephaestus (Industrious, Dutiful, Unappreciated)",
     "tarotCard": "Six of Pentacles",
-    "socialProportion": 30
+    "socialProportion": 25
   },
   {
     "name": "Beta-Iota Male",
@@ -61,6 +61,24 @@ export const ARCHETYPE_SPREAD = [
     "greekPantheon": "Hermes (Mediator, Messenger)",
     "tarotCard": "Temperance",
     "socialProportion": 4
+  },
+  {
+    "name": "Beta-Nu Male",
+    "socialRole": "Traditionalist, Dutiful, Settler",
+    "jungianEquivalent": "Dutiful Provider (Worker-Lover)",
+    "vedicEquivalent": "Grihastha (Householder, Dharma of Duty)",
+    "greekPantheon": "Priam (Patriarch, Duty, Family Contract)",
+    "tarotCard": "The Hierophant",
+    "socialProportion": 3
+  },
+  {
+    "name": "Beta-Rho Male",
+    "socialRole": "Creator, Motherly, Controlling",
+    "jungianEquivalent": "Weaver (Father-Lover, Controlling Nurturer)",
+    "vedicEquivalent": "Parvati (Nurturing, Fertility, Possession)",
+    "greekPantheon": "Demeter (Nurturance, Retention, Control)",
+    "tarotCard": "King of Pentacles",
+    "socialProportion": 2
   },
   {
     "name": "Gamma Male",
@@ -114,7 +132,7 @@ export const ARCHETYPE_SPREAD = [
     "vedicEquivalent": "Karma Yoga (Duty-Focused Labor, Service without Power)",
     "greekPantheon": "Hercules (Strong, Enduring, but Obedient to Fate)",
     "tarotCard": "Eight of Pentacles",
-    "socialProportion": 25
+    "socialProportion": 24
   },
   {
     "name": "Delta-Mu Male",
@@ -122,8 +140,17 @@ export const ARCHETYPE_SPREAD = [
     "jungianEquivalent": "Father (King-Lover)",
     "vedicEquivalent": "Prajapati (Creator, Protector, Fertility)",
     "greekPantheon": "Priam (Patriarch, Leadership, Family, Compassion)",
-    "tarotCard": "King of Pentcles",
+    "tarotCard": "King of Pentacles",
     "socialProportion": 5
+  },
+  {
+    "name": "Dark Delta Male",
+    "socialRole": "Sacrificing, Martyr, Passive",
+    "jungianEquivalent": "Distorted Provider (Shadow Worker)",
+    "vedicEquivalent": "Annapurna (Self-Sustaining, Unreciprocated Giving)",
+    "greekPantheon": "Sisyphus (Endless Burden, Unseen Labor)",
+    "tarotCard": "Four of Cups",
+    "socialProportion": 1
   },
   {
     "name": "Sigma Male",
