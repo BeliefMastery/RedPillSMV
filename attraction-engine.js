@@ -750,7 +750,9 @@ export class AttractionEngine {
       const roPct = SecurityUtils.sanitizeHTML(roPlain);
       const mateLineHtml = marketUi.potentialMateSubline
         ? SecurityUtils.sanitizeHTML(marketUi.potentialMateSubline)
-        : `Potential Mate Quality achievable is: ${SecurityUtils.sanitizeHTML(marketUi.potentialMateCore)} (requires major self-improvement).`;
+        : marketUi.potentialMateCore === 'Achievable'
+          ? 'Potential Mate Quality achievable with major self-improvement.'
+          : `Potential Mate Quality achievable is: ${SecurityUtils.sanitizeHTML(marketUi.potentialMateCore)} (requires major self-improvement).`;
       const roAria = `Realistic options: ${roPlain}`.replace(/"/g, '&quot;');
       classificationFollowupParts.push(
         `<div class="temperament-composite-badge-wrap attraction-realistic-options-badge-wrap">

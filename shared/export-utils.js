@@ -1128,7 +1128,12 @@ function buildAttractionClassificationExportBlock(data) {
       `<p style="font-weight:700;margin:0.85rem 0 0.35rem;font-size:1.05rem;text-align:center;">Realistic options: ${escapeHtml(tmSummary.realisticOptionsPct)}</p>`
     );
     pieces.push(
-      `<p class="muted" style="margin:0 0 0.5rem;text-align:center;line-height:1.55;font-size:0.92rem;">${escapeHtml(tmSummary.potentialMateSubline || `Potential Mate Quality achievable is: ${tmSummary.potentialMateCore} (requires major self-improvement).`)}</p>`
+      `<p class="muted" style="margin:0 0 0.5rem;text-align:center;line-height:1.55;font-size:0.92rem;">${escapeHtml(
+        tmSummary.potentialMateSubline ||
+          (tmSummary.potentialMateCore === 'Achievable'
+            ? 'Potential Mate Quality achievable with major self-improvement.'
+            : `Potential Mate Quality achievable is: ${tmSummary.potentialMateCore} (requires major self-improvement).`)
+      )}</p>`
     );
   }
   const exportShowMaleYoungerPartner =

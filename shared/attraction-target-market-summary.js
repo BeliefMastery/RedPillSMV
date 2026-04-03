@@ -65,6 +65,11 @@ export function computeTargetMarketSummary(overall, isMale) {
   if (o >= 80) mateSuffix = '(with elite leverage and selectivity)';
   else if (o >= 60) mateSuffix = '(with sustained optimization)';
   else if (o >= 40) mateSuffix = '(requires focused self-improvement)';
-  m.potentialMateSubline = `Potential Mate Quality achievable is: ${m.potentialMateCore} ${mateSuffix}.`;
+  // Low tier: avoid "achievable is: Achievable (requires…)" — one clear sentence.
+  if (o < 40) {
+    m.potentialMateSubline = 'Potential Mate Quality achievable with major self-improvement.';
+  } else {
+    m.potentialMateSubline = `Potential Mate Quality achievable is: ${m.potentialMateCore} ${mateSuffix}.`;
+  }
   return m;
 }
