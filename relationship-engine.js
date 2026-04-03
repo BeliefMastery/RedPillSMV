@@ -1387,7 +1387,7 @@ export class RelationshipEngine {
     if (this.assessmentMode === 'both') {
       html += '<h2 style="margin-top: 0;">Part 1: Points of Conflict</h2>';
     }
-    html += '<p style="color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem;">All relationships show strain in at least 3–5 areas. This is normal, not failure. These strain points indicate areas for attention, not verdicts on relationship viability. This report clarifies the areas showing strain, ranked in order of impact. Having many areas of critical or high strain is often terminal for a relationship; focus on the most impactful areas or consider whether the pattern suggests fundamental incompatibility.</p>';
+    html += '<p style="color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem;">All relationships show strain somewhere (usually in at least 3–5 areas). This is normal, not failure. These strain points indicate areas for attention, not verdicts on relationship viability. This report clarifies the areas showing strain, ranked in order of impact. Having many areas of critical or high strain is often terminal for a relationship; focus on the most impactful areas or consider whether the pattern suggests fundamental incompatibility.</p>';
 
     if (this.crossDomainSpillover.detected && this.crossDomainSpillover.message) {
       html += `<p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; font-style: italic;">${SecurityUtils.sanitizeHTML(this.crossDomainSpillover.message)}</p>`;
@@ -1433,7 +1433,7 @@ export class RelationshipEngine {
         }
         
         html += `
-          <details class="strain-accordion weakest-link-item strain-point-section ${criticalClass}" ${index === 0 ? 'open' : ''}>
+          <details class="strain-accordion weakest-link-item strain-point-section ${criticalClass}">
             <summary class="strain-accordion-summary">
               <h3 style="display: inline; margin: 0;">${index + 1}. ${SecurityUtils.sanitizeHTML(link.name || '')} <span style="font-size: 0.9em; color: var(--muted);">(${SecurityUtils.sanitizeHTML(link.impactTier || '')} impact — State: ${SecurityUtils.sanitizeHTML(stateLabel)}${stateRangeStr ? ` (${stateRangeStr})` : ''})</span></h3>
               ${!allSamePrioritySeverity ? `<p style="margin: 0.35rem 0 0;"><strong>Priority:</strong> ${SecurityUtils.sanitizeHTML(link.priority || '')} · <strong>Severity:</strong> ${SecurityUtils.sanitizeHTML(link.severity || '')}</p>` : ''}
