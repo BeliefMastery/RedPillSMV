@@ -751,13 +751,13 @@ export class AttractionEngine {
       const mateLineHtml = marketUi.potentialMateSubline
         ? SecurityUtils.sanitizeHTML(marketUi.potentialMateSubline)
         : marketUi.potentialMateCore === 'Achievable'
-          ? 'Potential Mate Quality achievable with major self-improvement.'
-          : `Potential Mate Quality achievable is: ${SecurityUtils.sanitizeHTML(marketUi.potentialMateCore)} (requires major self-improvement).`;
-      const roAria = `Realistic options: ${roPlain}`.replace(/"/g, '&quot;');
+          ? '(Raising partner tier from here usually takes major self-improvement across SMV drivers.)'
+          : `Improving partner tier typically requires: ${SecurityUtils.sanitizeHTML(marketUi.potentialMateCore)} (requires major self-improvement).`;
+      const roAria = `Achievable partner quality: ${roPlain}`.replace(/"/g, '&quot;');
       classificationFollowupParts.push(
         `<div class="temperament-composite-badge-wrap attraction-realistic-options-badge-wrap">
           <div class="temperament-composite-badge attraction-realistic-options-badge" role="status" aria-label="${roAria}">
-            Realistic options: ${roPct}
+            Achievable partner quality: ${roPct}
           </div>
         </div>
         <p class="attraction-potential-mate-quality-line">${mateLineHtml}</p>`
@@ -774,7 +774,7 @@ export class AttractionEngine {
       const headPct = marketUi.headlineOverallPercentile ?? Math.round(s.overall);
       const poolNote =
         marketUi.poolAdjustedForStatedAges
-          ? `<span class="qualification-explanation" style="display:block;margin-top:0.5rem;font-style:italic;">Realistic-options bands above reflect your stated partner ages (headline overall ~${SecurityUtils.sanitizeHTML(String(headPct))}th percentile unchanged).</span>`
+          ? `<span class="qualification-explanation" style="display:block;margin-top:0.5rem;font-style:italic;">Match-pool bands above reflect your stated partner ages (headline overall ~${SecurityUtils.sanitizeHTML(String(headPct))}th percentile unchanged).</span>`
           : '';
       const ypAria = String(marketUi.youngerPartnerAccessTitle).replace(/"/g, '&quot;');
       classificationFollowupParts.push(

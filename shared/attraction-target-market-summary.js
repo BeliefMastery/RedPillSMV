@@ -65,11 +65,11 @@ export function computeTargetMarketSummary(overall, isMale) {
   if (o >= 80) mateSuffix = '(with elite leverage and selectivity)';
   else if (o >= 60) mateSuffix = '(with sustained optimization)';
   else if (o >= 40) mateSuffix = '(requires focused self-improvement)';
-  // Low tier: avoid "achievable is: Achievable (requires…)" — one clear sentence.
   if (o < 40) {
-    m.potentialMateSubline = 'Potential Mate Quality achievable with major self-improvement.';
+    m.potentialMateSubline =
+      '(Raising partner tier from here usually takes major self-improvement across SMV drivers.)';
   } else {
-    m.potentialMateSubline = `Potential Mate Quality achievable is: ${m.potentialMateCore} ${mateSuffix}.`;
+    m.potentialMateSubline = `Improving partner tier typically requires: ${m.potentialMateCore} ${mateSuffix}.`;
   }
   return m;
 }
