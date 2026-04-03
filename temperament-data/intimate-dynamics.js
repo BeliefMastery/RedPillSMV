@@ -57,10 +57,10 @@ export const INTIMATE_DYNAMICS = {
   
   emotional_responses: {
     name: 'Emotional Responses to Intimacy',
-    spectrumLabel: 'Openness and emotional presence vs Contained focus',
-    description: 'How you emotionally respond to intimate connection',
-    masculinePoleLabel: 'oriented to confidence and contained focus',
-    femininePoleLabel: 'oriented to openness and emotional presence',
+    spectrumLabel: 'Receptive openness vs Contained steady focus',
+    description: 'How open and permeable you are in intimate connection vs steady, inwardly bounded focus',
+    masculinePoleLabel: 'oriented to confidence and contained steady focus',
+    femininePoleLabel: 'oriented to receptive openness and attunement',
     questions: [
       {
         id: 'int_emo_1',
@@ -71,17 +71,17 @@ export const INTIMATE_DYNAMICS = {
       },
       {
         id: 'int_emo_2',
-        question: 'During intimate moments, what feels more authentic: feeling open and emotionally present, or feeling more contained and focused?',
+        question: 'During intimate moments, what feels more authentic: feeling openly receptive and attuned, or feeling more contained and steadily focused?',
         masculineWeight: -0.5,
         feminineWeight: 1.0,
-        poleLabels: { low: 'Contained and focused', high: 'Open and emotionally present' }
+        poleLabels: { low: 'Contained and steadily focused', high: 'Open, receptive, attuned' }
       },
       {
         id: 'int_emo_3',
-        question: 'When physical intimacy occurs, what feels more important: the emotional connection and presence between you, or the physical sensation itself?',
+        question: 'When physical intimacy occurs, what feels more important: the emotional connection and attunement between you, or the physical sensation itself?',
         masculineWeight: -0.4,
         feminineWeight: 1.0,
-        poleLabels: { low: 'Physical sensation itself', high: 'Emotional connection and presence' }
+        poleLabels: { low: 'Physical sensation itself', high: 'Emotional connection and attunement' }
       },
       {
         id: 'int_emo_4',
@@ -99,7 +99,7 @@ export const INTIMATE_DYNAMICS = {
       },
       {
         id: 'int_emo_6',
-        question: 'What helps you feel more fully present during intimate connection: knowing your partner specifically wants and chooses you, or feeling confident in your own appeal and capability?',
+        question: 'What helps you feel most immersed and engaged during intimate connection: knowing your partner specifically wants and chooses you, or feeling confident in your own appeal and capability?',
         masculineWeight: -0.5,
         feminineWeight: 1.0,
         poleLabels: { low: 'Confident in my appeal', high: 'Partner wants and chooses me' }
@@ -112,14 +112,14 @@ export const INTIMATE_DYNAMICS = {
     spectrumLabel: 'Receiving pleasure vs Giving pleasure',
     description: 'What brings you the most satisfaction in intimate connection',
     masculinePoleLabel: 'oriented to providing pleasure and guiding the experience',
-    femininePoleLabel: 'oriented to receiving and being present to sensation',
+    femininePoleLabel: 'oriented to receiving and attending fully to sensation',
     questions: [
       {
         id: 'int_sat_1',
-        question: 'What feels more satisfying during intimate connection: being the one who provides pleasure and guides the experience, or being fully present and receptive to sensation?',
+        question: 'What feels more satisfying during intimate connection: being the one who provides pleasure and guides the experience, or being fully receptive to sensation?',
         masculineWeight: 1.0,
         feminineWeight: -0.5,
-        poleLabels: { low: 'Present and receptive to sensation', high: 'Provide pleasure and guide' }
+        poleLabels: { low: 'Receptive to sensation', high: 'Provide pleasure and guide' }
       },
       {
         id: 'int_sat_2',
@@ -130,10 +130,10 @@ export const INTIMATE_DYNAMICS = {
       },
       {
         id: 'int_sat_3',
-        question: 'What enhances your experience more: feeling your partner\'s responsiveness and openness to you, or feeling your partner\'s strength and presence?',
+        question: 'What enhances your experience more: feeling your partner\'s responsiveness and openness to you, or feeling your partner\'s strength and grounded bearing?',
         masculineWeight: 1.0,
         feminineWeight: -0.6,
-        poleLabels: { low: 'Responsiveness and openness', high: 'Strength and presence' }
+        poleLabels: { low: 'Responsiveness and openness', high: 'Strength and grounded bearing' }
       },
       {
         id: 'int_sat_4',
@@ -242,7 +242,7 @@ export const INTIMATE_DYNAMICS = {
       },
       {
         id: 'int_ar_4',
-        question: 'When your partner shows strength, presence, and takes clear direction, how does that affect your arousal: does it increase your interest, or do you prefer when roles are more balanced?',
+        question: 'When your partner shows strength, grounded bearing, and takes clear direction, how does that affect your arousal: does it increase your interest, or do you prefer when roles are more balanced?',
         masculineWeight: -0.9,
         feminineWeight: 1.0,
         poleLabels: { low: 'Prefer roles more balanced', high: 'Partner\'s strength increases my interest' }

@@ -15,7 +15,7 @@ export function mateQualityPhraseFromAspirational(aspirational) {
 /**
  * @param {number} overall - SMV overall percentile 0–100 (for men, callers may pass age-adjusted leverage from `male-age-gap.js` while keeping headline SMV elsewhere)
  * @param {boolean} isMale
- * @returns {{ realistic: string, aspirational: string, realisticOptionsPct: string, potentialMateCore: string }}
+ * @returns {{ realistic: string, aspirational: string, realisticOptionsPct: string, potentialMateCore: string, potentialMateSubline: string }}
  */
 export function computeTargetMarketSummary(overall, isMale) {
   const o = typeof overall === 'number' ? overall : 0;
@@ -58,5 +58,13 @@ export function computeTargetMarketSummary(overall, isMale) {
     }
   }
   m.potentialMateCore = mateQualityPhraseFromAspirational(m.aspirational);
+  if (o < 40) {
+    m.potentialMateCore = 'Achievable';
+  }
+  let mateSuffix = '(requires major self-improvement)';
+  if (o >= 80) mateSuffix = '(with elite leverage and selectivity)';
+  else if (o >= 60) mateSuffix = '(with sustained optimization)';
+  else if (o >= 40) mateSuffix = '(requires focused self-improvement)';
+  m.potentialMateSubline = `Potential Mate Quality achievable is: ${m.potentialMateCore} ${mateSuffix}.`;
   return m;
 }

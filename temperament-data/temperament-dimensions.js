@@ -44,17 +44,17 @@ export const TEMPERAMENT_DIMENSIONS = {
   
   provision_and_nurture: {
     name: 'Provision and Nurture',
-    spectrumLabel: 'Nurture and presence vs Provision and resources',
-    description: 'Tendency toward providing/protecting vs. nurturing/receiving',
-    masculinePoleLabel: 'oriented to providing and securing resources',
-    femininePoleLabel: 'oriented to nurturing and emotional presence',
+    spectrumLabel: 'Attuned care and warmth vs Practical support and resources',
+    description: 'Tendency toward practical support and securing what is needed vs. attuned care, warmth, and receptive understanding',
+    masculinePoleLabel: 'oriented to practical support and securing resources',
+    femininePoleLabel: 'oriented to attuned care, warmth, and understanding',
     questions: [
       {
         id: 'prov_1',
-        question: 'When someone close to you faces difficulty, what feels more natural: taking practical action to solve their problems and secure resources, or offering emotional presence and understanding?',
+        question: 'When someone close to you faces difficulty, what feels more natural: taking practical action to solve their problems and secure resources, or offering attuned listening, warmth, and understanding?',
         masculineWeight: 1.0,
         feminineWeight: -0.6,
-        poleLabels: { low: 'Emotional presence & understanding', high: 'Practical action & securing resources' }
+        poleLabels: { low: 'Attunement, warmth & understanding', high: 'Practical action & securing resources' }
       },
       {
         id: 'prov_2',
@@ -72,20 +72,20 @@ export const TEMPERAMENT_DIMENSIONS = {
       },
       {
         id: 'prov_4',
-        question: 'Imagine a scenario where people depend on you. What feels more natural: feeling responsible for their security and well-being, or being present to support them while they find their own way?',
+        question: 'Imagine a scenario where people depend on you. What feels more natural: feeling responsible for their security and well-being, or staying attuned and supportive while they find their own way?',
         masculineWeight: 1.0,
         feminineWeight: 0.3,
-        poleLabels: { low: 'Present, support them finding their way', high: 'Responsible for their security & well-being' }
+        poleLabels: { low: 'Attuned support while they find their way', high: 'Responsible for their security & well-being' }
       }
     ]
   },
   
   focus_and_expression: {
     name: 'Focus and Expression',
-    spectrumLabel: 'Expressive flow vs Focused action',
-    description: 'Tendency toward focused action vs. expressive flow',
-    masculinePoleLabel: 'oriented to focused action and clear objectives',
-    femininePoleLabel: 'oriented to expressive flow and emotional response',
+    spectrumLabel: 'Feeling-led processing vs Goal-led execution',
+    description: 'Whether you lead with affect and process first, or with objectives, structure, and completing the task',
+    masculinePoleLabel: 'oriented to goal-led execution and clear objectives',
+    femininePoleLabel: 'oriented to feeling-led processing and emotional response',
     questions: [
       {
         id: 'foc_1',
@@ -96,10 +96,10 @@ export const TEMPERAMENT_DIMENSIONS = {
       },
       {
         id: 'foc_2',
-        question: 'In conversations about meaningful experiences, what feels more authentic: sharing your emotional responses and what you felt, or discussing the facts and what happened?',
+        question: 'When you recount a meaningful experience to someone, what feels more authentic: leading with what you felt and how it landed emotionally, or leading with the facts and sequence of what happened?',
         masculineWeight: -0.7,
         feminineWeight: 1.0,
-        poleLabels: { low: 'Facts and what happened', high: 'Emotional responses and what I felt' }
+        poleLabels: { low: 'Facts and sequence first', high: 'Feelings and emotional impact first' }
       },
       {
         id: 'foc_3',
@@ -351,7 +351,7 @@ export const TEMPERAMENT_DIMENSIONS = {
     spectrumLabel: 'Movement and responsiveness vs Stability and direction',
     description: 'Preference for stability/steadiness vs. movement/change',
     masculinePoleLabel: 'oriented to stability and steady direction',
-    femininePoleLabel: 'oriented to movement and responsive presence',
+    femininePoleLabel: 'oriented to movement and attuned responsiveness',
     questions: [
       {
         id: 'stab_1',
@@ -369,17 +369,17 @@ export const TEMPERAMENT_DIMENSIONS = {
       },
       {
         id: 'stab_3',
-        question: 'When others around you feel unsteady, what feels more natural: providing a stabilizing presence and steady direction, or being present to their experience and responding to their needs?',
+        question: 'When others around you feel unsteady, what feels more natural: offering stabilizing steadiness and clear direction, or staying attuned to their experience and responding to their needs?',
         masculineWeight: 1.0,
         feminineWeight: 0.2,
-        poleLabels: { low: 'Present to their experience', high: 'Stabilizing presence and direction' }
+        poleLabels: { low: 'Attuned to their experience', high: 'Stabilizing steadiness and direction' }
       },
       {
         id: 'stab_4',
-        question: 'In a group setting, what feels more authentic: maintaining your own steady presence regardless of the energy around you, or naturally picking up and responding to the emotional tone of the group?',
+        question: 'In a group setting, what feels more authentic: maintaining your own steady composure regardless of the energy around you, or naturally picking up and responding to the emotional tone of the group?',
         masculineWeight: -0.7,
         feminineWeight: 1.0,
-        poleLabels: { low: 'Own steady presence', high: 'Pick up and respond to group tone' }
+        poleLabels: { low: 'Own steady composure', high: 'Pick up and respond to group tone' }
       }
     ]
   },

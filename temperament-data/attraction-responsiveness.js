@@ -96,7 +96,7 @@ export const ATTRACTION_RESPONSIVENESS = {
     spectrumLabel: 'Personality and connection vs Competence and vitality',
     description: 'What signals attract you and how you display attraction (Axis of Attraction)',
     masculinePoleLabel: 'oriented to competence, achievement, and vitality signals',
-    femininePoleLabel: 'oriented to personality, connection, and presence',
+    femininePoleLabel: 'oriented to personality, connection, and expressive warmth',
     questions: [
       {
         id: 'attr_sig_1',
@@ -107,17 +107,17 @@ export const ATTRACTION_RESPONSIVENESS = {
       },
       {
         id: 'attr_sig_2',
-        question: 'In what you find physically attractive, what tends to matter more: youth, health, and vitality signals, or other aspects of their presence and being?',
+        question: 'In what you find physically attractive, what tends to matter more: youth, health, and vitality signals, or other aspects of their character, manner, and overall bearing?',
         masculineWeight: 1.0,
         feminineWeight: -0.2,
-        poleLabels: { low: 'Presence and being', high: 'Youth, health, vitality' }
+        poleLabels: { low: 'Character, manner, bearing', high: 'Youth, health, vitality' }
       },
       {
         id: 'attr_sig_3',
-        question: 'When you want to attract someone\'s interest, what feels more natural: showing what you\'ve achieved, your resources, or your status, versus letting your presence speak for itself?',
+        question: 'When you want to attract someone\'s interest, what feels more natural: showing what you\'ve achieved, your resources, or your status, versus letting how you show up speak for itself?',
         masculineWeight: 0.8,
         feminineWeight: -0.5,
-        poleLabels: { low: 'Let presence speak', high: 'Show achievement and status' }
+        poleLabels: { low: 'How I show up speaks for itself', high: 'Show achievement and status' }
       },
       {
         id: 'attr_sig_4',
@@ -232,7 +232,7 @@ export const ATTRACTION_RESPONSIVENESS = {
       },
       {
         id: 'attr_resp_6',
-        question: 'When someone shows strength, presence, and clear direction, how do you typically respond: does it increase your interest and responsiveness, or do you prefer when roles are more balanced?',
+        question: 'When someone shows strength, grounded bearing, and clear direction, how do you typically respond: does it increase your interest and responsiveness, or do you prefer when roles are more balanced?',
         masculineWeight: -0.9,
         feminineWeight: 1.0,
         poleLabels: { low: 'Prefer roles more balanced', high: 'Increases my interest' }

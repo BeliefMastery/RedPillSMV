@@ -748,7 +748,9 @@ export class AttractionEngine {
     if (marketUi?.realisticOptionsPct && marketUi?.potentialMateCore) {
       const roPlain = String(marketUi.realisticOptionsPct);
       const roPct = SecurityUtils.sanitizeHTML(roPlain);
-      const pmc = SecurityUtils.sanitizeHTML(marketUi.potentialMateCore);
+      const mateLineHtml = marketUi.potentialMateSubline
+        ? SecurityUtils.sanitizeHTML(marketUi.potentialMateSubline)
+        : `Potential Mate Quality achievable is: ${SecurityUtils.sanitizeHTML(marketUi.potentialMateCore)} (requires major self-improvement).`;
       const roAria = `Realistic options: ${roPlain}`.replace(/"/g, '&quot;');
       classificationFollowupParts.push(
         `<div class="temperament-composite-badge-wrap attraction-realistic-options-badge-wrap">
@@ -756,7 +758,7 @@ export class AttractionEngine {
             Realistic options: ${roPct}
           </div>
         </div>
-        <p class="attraction-potential-mate-quality-line">Potential Mate Quality is ${pmc} (with major self-improvement).</p>`
+        <p class="attraction-potential-mate-quality-line">${mateLineHtml}</p>`
       );
     }
     const showMaleYoungerPartnerAccess =

@@ -1730,10 +1730,6 @@ export class TemperamentEngine {
 
     html += '<div class="dimension-breakdown">';
     html += '<h3>Dimension Breakdown</h3>';
-    html += '<p class="dimension-cross-variation" style="color: var(--muted); font-size: 0.95rem; margin: 0 0 1rem; line-height: 1.55;">Cross-dimensional variation is expected: strong structure in some areas and expressive flow in others.</p>';
-    if (anomalousKeys.size > 0) {
-      html += '<p style="color: var(--muted); font-size: 0.9rem; margin: 0 0 1rem;">Rows marked <strong>Temperament anomaly</strong> are explained in the partner-fit note below.</p>';
-    }
 
     const dimScores = this.analysisData.dimensionScores || {};
     const domainKeys = [];

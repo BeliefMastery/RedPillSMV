@@ -43,7 +43,7 @@ export const PHASE_1_ORIENTATION_QUESTIONS = [
   },
   {
     id: 'p1_orientation_3',
-    question: 'When someone close to you faces difficulty, what feels more natural: taking practical action to solve problems, or offering emotional presence and understanding?',
+    question: 'When someone close to you faces difficulty, what feels more natural: taking practical action to solve problems, or offering attuned listening, warmth, and understanding?',
     type: 'three_point',
     options: [
       {
@@ -55,7 +55,7 @@ export const PHASE_1_ORIENTATION_QUESTIONS = [
         mapsTo: { masculine: 0, feminine: 0, weight: 0.5 }
       },
       {
-        text: 'Offering emotional presence feels more natural',
+        text: 'Offering attuned warmth and understanding feels more natural',
         mapsTo: { masculine: -0.8, feminine: 2, weight: 1.0 }
       }
     ]
@@ -74,7 +74,7 @@ export const PHASE_1_ORIENTATION_QUESTIONS = [
         mapsTo: { masculine: 0, feminine: 0, weight: 0.5 }
       },
       {
-        text: 'Staying present and responding feels more natural',
+        text: 'Staying responsive to what emerges feels more natural',
         mapsTo: { masculine: -1, feminine: 2, weight: 1.1 }
       }
     ]
