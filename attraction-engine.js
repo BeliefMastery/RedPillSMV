@@ -93,6 +93,8 @@ export class AttractionEngine {
       this.currentGender = d.currentGender;
       if (this.smv && typeof this.smv.overall === 'number') {
         this.smv.targetMarket = this.analyzeTargetMarket(this.smv);
+        // Recompute recommendation copy so cached reports pick up latest wording updates.
+        this.smv.recommendation = this.generateRecommendation(this.smv);
       }
       this.setReportHeaderState(true);
       this.ui.transition('results');
