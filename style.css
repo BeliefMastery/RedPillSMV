@@ -5415,6 +5415,59 @@ img[data-src].loaded {
     opacity: 0.7; /* 30% transparency — less prominent than classification pill */
 }
 
+.results-dashboard .attraction-partner-quality-range-wrap {
+    margin: 1rem auto 0.5rem;
+    max-width: 34rem;
+}
+
+.results-dashboard .attraction-partner-quality-range-label {
+    margin: 0 0 0.35rem;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.results-dashboard .attraction-partner-quality-range-track {
+    position: relative;
+    height: 0.8rem;
+    border-radius: 999px;
+    background: rgba(127, 127, 127, 0.35);
+    overflow: hidden;
+}
+
+.results-dashboard .attraction-partner-quality-range-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #b1833a, #f0ce87);
+}
+
+.results-dashboard .attraction-partner-quality-range-tail {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(177, 131, 58, 0), rgba(177, 131, 58, 0.62));
+}
+
+.results-dashboard .attraction-partner-quality-range-axis {
+    margin-top: 0.32rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+}
+
+.results-dashboard .attraction-partner-quality-range-axis-min,
+.results-dashboard .attraction-partner-quality-range-axis-max {
+    font-weight: 600;
+    opacity: 0.95;
+}
+
 .results-dashboard .attraction-potential-mate-quality-line {
     margin: 0 auto 0.35rem;
     max-width: 38rem;

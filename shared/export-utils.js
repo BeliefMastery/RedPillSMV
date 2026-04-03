@@ -14,7 +14,7 @@ import { INTIMATE_DYNAMICS } from '../temperament-data/intimate-dynamics.js';
 import { ATTRACTION_RESPONSIVENESS } from '../temperament-data/attraction-responsiveness.js';
 import { reportGenderGlyphHtml } from './report-gender-glyph.js';
 import { getQualificationExplanation, getMaleYoungerPartnerAccessCopy } from './attraction-report-copy.js';
-import { computeTargetMarketSummary } from './attraction-target-market-summary.js';
+import { computeTargetMarketSummary, partnerRangeSublineFromOverall } from './attraction-target-market-summary.js';
 import { maleAgeGapContext } from './male-age-gap.js';
 
 const EXPORT_VERSION = '1.1.0';
@@ -1124,15 +1124,27 @@ function buildAttractionClassificationExportBlock(data) {
     tmSummary = computeTargetMarketSummary(overall, gender === 'male');
   }
   if (tmSummary?.realisticOptionsPct && tmSummary?.potentialMateCore) {
+    const rangeMin = Number.isFinite(tmSummary.partnerRangeMin) ? Math.max(0, Math.min(100, tmSummary.partnerRangeMin)) : 0;
+    const rangeMax = Number.isFinite(tmSummary.partnerRangeMax) ? Math.max(rangeMin, Math.min(100, tmSummary.partnerRangeMax)) : 100;
+    const rangeWidth = Math.max(2, rangeMax - rangeMin);
+    const rangeTailWidth = Math.min(18, Math.max(4, rangeMin));
+    const rangeTailLeft = Math.max(0, rangeMin - rangeTailWidth);
     pieces.push(
-      `<p style="font-weight:700;margin:0.85rem 0 0.35rem;font-size:1.05rem;text-align:center;">Achievable partner quality: ${escapeHtml(tmSummary.realisticOptionsPct)}</p>`
+      `<div style="margin:0.85rem auto 0.45rem;max-width:34rem;">` +
+        `<p style="font-weight:700;margin:0 0 0.35rem;font-size:1rem;text-align:center;">Achievable partner quality</p>` +
+        `<div aria-label="Achievable partner quality range" role="status" style="position:relative;height:0.8rem;border-radius:999px;background:#3c3b40;overflow:hidden;">` +
+          `<span style="position:absolute;top:0;bottom:0;left:${rangeTailLeft}%;width:${rangeTailWidth}%;border-radius:999px;background:linear-gradient(90deg,rgba(190,143,69,0),rgba(190,143,69,0.62));"></span>` +
+          `<span style="position:absolute;top:0;bottom:0;left:${rangeMin}%;width:${rangeWidth}%;border-radius:999px;background:linear-gradient(90deg,#be8f45,#f2d08b);"></span>` +
+        `</div>` +
+        `<div aria-hidden="true" style="margin-top:0.3rem;display:flex;justify-content:space-between;font-size:0.78rem;color:#7a7a7a;letter-spacing:0.01em;font-weight:600;">` +
+          `<span>1</span><span>10</span>` +
+        `</div>` +
+      `</div>`
     );
     pieces.push(
       `<p class="muted" style="margin:0 0 0.5rem;text-align:center;line-height:1.55;font-size:0.92rem;">${escapeHtml(
         tmSummary.potentialMateSubline ||
-          (tmSummary.potentialMateCore === 'Achievable'
-            ? '(Raising partner tier from here usually takes major self-improvement across SMV drivers.)'
-            : `Improving partner tier typically requires: ${tmSummary.potentialMateCore} (requires major self-improvement).`)
+          partnerRangeSublineFromOverall(typeof overall === 'number' ? overall : 50)
       )}</p>`
     );
   }

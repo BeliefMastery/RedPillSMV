@@ -40,10 +40,20 @@ import {
   getDelusionWarning as attractionDelusionWarning,
   getMaleYoungerPartnerAccessCopy as attractionMaleYoungerPartnerAccessCopy
 } from './shared/attraction-report-copy.js';
-import { computeTargetMarketSummary } from './shared/attraction-target-market-summary.js';
+import { computeTargetMarketSummary, partnerRangeSublineFromOverall } from './shared/attraction-target-market-summary.js';
 import { maleAgeGapContext } from './shared/male-age-gap.js';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
+
+function describePartnerRangeForAria(min, max) {
+  const lo = Math.max(0, Math.min(100, typeof min === 'number' ? min : 0));
+  const hi = Math.max(lo, Math.min(100, typeof max === 'number' ? max : lo));
+  const mid = (lo + hi) / 2;
+  const zone = mid < 33 ? 'lower bracket' : mid < 67 ? 'middle bracket' : 'upper bracket';
+  const span = hi - lo;
+  const spread = span < 16 ? 'focused range' : span < 26 ? 'moderate range' : 'broad range';
+  return `${zone}, ${spread}`;
+}
 
 export class AttractionEngine {
   constructor() {
@@ -681,7 +691,7 @@ export class AttractionEngine {
         const guid = this.getWeakestSubcategoryGuidance(weakest.axisOfAttraction.id, 'axisOfAttraction');
         r.weakestGuidance.push({ cluster: 'Axis of Attraction', label: weakest.axisOfAttraction.label, ...guid });
       }
-      if (smv.delusionBand === 'high' || smv.delusionBand === 'severe') r.warning = 'WARNING: Your standards (height/income/status) significantly exceed your market value. Adjust standards or dramatically improve Sexual Market Value.';
+      if (smv.delusionBand === 'high' || smv.delusionBand === 'severe') r.warning = 'WARNING: Your standards (height/income/status) significantly exceed your market value. Adjust standards or dramatically improve Sexual Market Value to avoid self-enforced exclusion and further SMV erosion through non-committal promiscuity.';
     }
     if (r.weakestGuidance.length > 0) {
       r.tactical = ['Pick one action from each pillar\'s guidance above; run a short cycle and re-test in 2-4 weeks.'];
@@ -739,25 +749,38 @@ export class AttractionEngine {
       }
       classificationFollowupParts.push(detailBlock);
     }
+    const computedMarketUi =
+      typeof s.overall === 'number' && !Number.isNaN(s.overall)
+        ? computeTargetMarketSummary(s.overall, this.currentGender === 'male')
+        : null;
     const marketUi =
       s.targetMarket && s.targetMarket.realisticOptionsPct && s.targetMarket.potentialMateCore
-        ? s.targetMarket
-        : typeof s.overall === 'number' && !Number.isNaN(s.overall)
-          ? computeTargetMarketSummary(s.overall, this.currentGender === 'male')
-          : null;
+        ? { ...(computedMarketUi || {}), ...s.targetMarket }
+        : computedMarketUi;
     if (marketUi?.realisticOptionsPct && marketUi?.potentialMateCore) {
-      const roPlain = String(marketUi.realisticOptionsPct);
-      const roPct = SecurityUtils.sanitizeHTML(roPlain);
+      const rangeMin = Number.isFinite(marketUi.partnerRangeMin) ? Math.max(0, Math.min(100, marketUi.partnerRangeMin)) : 0;
+      const rangeMax = Number.isFinite(marketUi.partnerRangeMax) ? Math.max(rangeMin, Math.min(100, marketUi.partnerRangeMax)) : 100;
+      const rangeWidth = Math.max(2, rangeMax - rangeMin);
+      const rangeTailWidth = Math.min(18, Math.max(4, rangeMin));
+      const rangeTailLeft = Math.max(0, rangeMin - rangeTailWidth);
       const mateLineHtml = marketUi.potentialMateSubline
         ? SecurityUtils.sanitizeHTML(marketUi.potentialMateSubline)
-        : marketUi.potentialMateCore === 'Achievable'
-          ? '(Raising partner tier from here usually takes major self-improvement across SMV drivers.)'
-          : `Improving partner tier typically requires: ${SecurityUtils.sanitizeHTML(marketUi.potentialMateCore)} (requires major self-improvement).`;
-      const roAria = `Achievable partner quality: ${roPlain}`.replace(/"/g, '&quot;');
+        : SecurityUtils.sanitizeHTML(
+            partnerRangeSublineFromOverall(
+              typeof s.overall === 'number' && !Number.isNaN(s.overall) ? s.overall : 50
+            )
+          );
+      const roAria = `Achievable partner quality range, ${describePartnerRangeForAria(rangeMin, rangeMax)}.`.replace(/"/g, '&quot;');
       classificationFollowupParts.push(
-        `<div class="temperament-composite-badge-wrap attraction-realistic-options-badge-wrap">
-          <div class="temperament-composite-badge attraction-realistic-options-badge" role="status" aria-label="${roAria}">
-            Achievable partner quality: ${roPct}
+        `<div class="attraction-partner-quality-range-wrap">
+          <div class="attraction-partner-quality-range-label">Achievable partner quality</div>
+          <div class="attraction-partner-quality-range-track" role="status" aria-label="${roAria}">
+            <span class="attraction-partner-quality-range-tail" style="left:${rangeTailLeft}%;width:${rangeTailWidth}%;"></span>
+            <span class="attraction-partner-quality-range-fill" style="left:${rangeMin}%;width:${rangeWidth}%;"></span>
+          </div>
+          <div class="attraction-partner-quality-range-axis" aria-hidden="true">
+            <span class="attraction-partner-quality-range-axis-min">1</span>
+            <span class="attraction-partner-quality-range-axis-max">10</span>
           </div>
         </div>
         <p class="attraction-potential-mate-quality-line">${mateLineHtml}</p>`

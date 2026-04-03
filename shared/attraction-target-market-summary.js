@@ -12,14 +12,76 @@ export function mateQualityPhraseFromAspirational(aspirational) {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
+function clampPct(v) {
+  return Math.max(0, Math.min(100, v));
+}
+
+function computePartnerRange(overall, isMale) {
+  const center = clampPct(typeof overall === 'number' ? overall : 0);
+  const halfSpan = isMale
+    ? center < 40
+      ? 12
+      : center < 60
+        ? 11
+        : center < 80
+          ? 10
+          : 9
+    : center < 40
+      ? 11
+      : center < 60
+        ? 10
+        : center < 80
+          ? 9
+          : 8;
+  let min = Math.round(clampPct(center - halfSpan));
+  let max = Math.round(clampPct(center + halfSpan));
+  if (max - min < 8) {
+    if (min <= 4) max = Math.min(100, min + 8);
+    else min = Math.max(0, max - 8);
+  }
+  return { partnerRangeMin: min, partnerRangeMax: max };
+}
+
+export function partnerRangeSublineFromOverall(overall) {
+  const o = typeof overall === 'number' ? overall : 0;
+  if (o < 30) {
+    return '(Raising partner tier from here requires major self-improvement across SMV drivers. Target the weakest points identified in the report below for greatest impact.)';
+  }
+  if (o < 40) {
+    return '(Securing relationships above marked range is achievable, but requires disciplined improvements across multiple core categories in this report.)';
+  }
+  if (o < 50) {
+    return '(Securing relationships above marked range is achievable but will require focused self-improvement in the categories identified in this report)';
+  }
+  if (o < 60) {
+    return '(Progress beyond the marked range is realistic with consistent optimization of your weakest high-impact categories.)';
+  }
+  if (o < 70) {
+    return '(Reaching beyond the upper end of this range usually takes sustained optimization of demonstrated strengths.)';
+  }
+  if (o < 80) {
+    return '(Extending above this marked range is most often driven by consistency, selectivity, and stronger execution in top leverage categories.)';
+  }
+  if (o < 90) {
+    return '(Elite leverage and selectivity expand access above the marked range.)';
+  }
+  return '(Elite leverage and disciplined selectivity enable access to the top tier; outcomes are constrained more by standards and fit than baseline access.)';
+}
+
 /**
  * @param {number} overall - SMV overall percentile 0–100 (for men, callers may pass age-adjusted leverage from `male-age-gap.js` while keeping headline SMV elsewhere)
  * @param {boolean} isMale
- * @returns {{ realistic: string, aspirational: string, realisticOptionsPct: string, potentialMateCore: string, potentialMateSubline: string }}
+ * @returns {{ realistic: string, aspirational: string, realisticOptionsPct: string, potentialMateCore: string, potentialMateSubline: string, partnerRangeMin: number, partnerRangeMax: number }}
  */
 export function computeTargetMarketSummary(overall, isMale) {
   const o = typeof overall === 'number' ? overall : 0;
-  const m = { realistic: '', aspirational: '', realisticOptionsPct: '', potentialMateCore: '' };
+  const m = {
+    realistic: '',
+    aspirational: '',
+    realisticOptionsPct: '',
+    potentialMateCore: '',
+    ...computePartnerRange(o, isMale)
+  };
   if (isMale) {
     if (o >= 80) {
       m.realistic = 'Top 20-30% of women (7-9/10 range)';
@@ -61,15 +123,6 @@ export function computeTargetMarketSummary(overall, isMale) {
   if (o < 40) {
     m.potentialMateCore = 'Achievable';
   }
-  let mateSuffix = '(requires major self-improvement)';
-  if (o >= 80) mateSuffix = '(with elite leverage and selectivity)';
-  else if (o >= 60) mateSuffix = '(with sustained optimization)';
-  else if (o >= 40) mateSuffix = '(requires focused self-improvement)';
-  if (o < 40) {
-    m.potentialMateSubline =
-      '(Raising partner tier from here usually takes major self-improvement across SMV drivers.)';
-  } else {
-    m.potentialMateSubline = `Improving partner tier typically requires: ${m.potentialMateCore} ${mateSuffix}.`;
-  }
+  m.potentialMateSubline = partnerRangeSublineFromOverall(o);
   return m;
 }
