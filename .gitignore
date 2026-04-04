@@ -21,3 +21,9 @@ www/
 # Git
 .git/
 
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+.pw-browsers/
+

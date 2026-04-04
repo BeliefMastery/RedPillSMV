@@ -8,7 +8,9 @@
     "cap:sync": "npm run copy:www && npx cap sync android",
     "serve": "serve . -p 3000",
     "serve:www": "npm run copy:www && serve www -p 3000",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "playwright test",
+    "test:e2e": "playwright test",
+    "playwright:install": "node scripts/playwright-install.cjs",
     "smv:sensitivity": "node scripts/smv-sensitivity-check.mjs"
   },
   "keywords": [],
@@ -20,6 +22,7 @@
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@fontsource/inter": "^5.2.8",
+    "@playwright/test": "^1.59.1",
     "serve": "^14.2.4"
   }
 }
