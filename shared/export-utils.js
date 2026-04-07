@@ -61,8 +61,8 @@ function buildExecutiveHighlights(data) {
 
   if (Array.isArray(data.weakestLinks) && data.weakestLinks.length) {
     data.weakestLinks.slice(0, 3).forEach(link => {
-      const statePart = link.stateLabel ? ` — ${link.stateLabel}${link.rangeStr ? ` (${link.rangeStr})` : ''}` : '';
-      highlights.push(`Relationship strain: ${link.name} (${link.rawScore}/10)${statePart}`);
+      const statePart = link.stateLabel ? ` — ${link.stateLabel}` : '';
+      highlights.push(`Relationship strain: ${link.name}${statePart}`);
     });
   }
   if (data.viabilityBand) {
@@ -70,11 +70,7 @@ function buildExecutiveHighlights(data) {
     highlights.push(`Viability: ${bandLabels[data.viabilityBand] || data.viabilityBand}`);
   }
   if (data.viabilityScoresByDimension && typeof data.viabilityScoresByDimension === 'object' && Object.keys(data.viabilityScoresByDimension).length > 0) {
-    const scores = Object.entries(data.viabilityScoresByDimension).filter(([, v]) => typeof v === 'number');
-    if (scores.length) {
-      const avg = scores.reduce((a, [, v]) => a + v, 0) / scores.length;
-      highlights.push(`Viability dimensions average: ${avg.toFixed(1)}/10`);
-    }
+    highlights.push('Viability dimensions: qualitative pattern included in report body');
   }
 
   if (data.obstacles && typeof data.obstacles === 'object') {
@@ -1016,10 +1012,11 @@ function buildRelationshipReportBody(data) {
   if (data.viabilityBand) {
     html += `<h2>Relationship Viability</h2><p><strong>${escapeHtml(bandLabels[data.viabilityBand] || data.viabilityBand)}</strong></p>`;
     if (data.viabilityScoresByDimension && typeof data.viabilityScoresByDimension === 'object' && Object.keys(data.viabilityScoresByDimension).length > 0) {
-      html += '<p class="muted">Scores by dimension:</p><ul>';
+      html += '<p class="muted">Dimension levels:</p><ul>';
       Object.entries(data.viabilityScoresByDimension).forEach(([dimId, score]) => {
         if (typeof score !== 'number') return;
-        html += `<li>${escapeHtml(dimId)}: ${Number(score).toFixed(1)}/10</li>`;
+        const level = score < 4 ? 'Low' : score <= 6 ? 'Medium' : 'High';
+        html += `<li>${escapeHtml(dimId)}: ${level}</li>`;
       });
       html += '</ul>';
     }
@@ -1029,9 +1026,9 @@ function buildRelationshipReportBody(data) {
   if (weakestLinks.length > 0) {
     html += '<h2>Strain Points (Priority Areas)</h2><p class="muted">Areas of compatibility strain, ranked by impact. Address these for greatest effect.</p>';
     weakestLinks.forEach((link, index) => {
-      const statePart = link.stateLabel ? ` — ${escapeHtml(link.stateLabel)}${link.rangeStr ? ` (${escapeHtml(link.rangeStr)})` : ''}` : '';
+      const stateText = link.stateLabel ? escapeHtml(link.stateLabel) : '';
       html += `<div class="card"><h3>${index + 1}. ${escapeHtml(link.name || '')}</h3>`;
-      html += `<p><strong>Impact:</strong> ${escapeHtml(link.impactTier || '')} · <strong>Score:</strong> ${link.rawScore}/10${statePart}</p>`;
+      html += `<p><strong>Impact:</strong> ${escapeHtml(link.impactTier || '')}${stateText ? ` · <strong>State:</strong> ${stateText}` : ''}</p>`;
       const strat = link.strategies || {};
       if (strat.immediate && strat.immediate.length) {
         html += '<p><strong>Immediate actions:</strong></p><ul>';

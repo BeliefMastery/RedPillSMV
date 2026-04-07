@@ -260,6 +260,49 @@ main {
     margin-top: 0.75rem;
 }
 
+.relationship-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
+}
+
+.relationship-summary-card {
+    background: var(--glass);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-subtle);
+    padding: 1rem 1.1rem;
+}
+
+.relationship-summary-card h4 {
+    margin: 0 0 0.5rem;
+    font-size: 0.92rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.relationship-summary-card p {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.relationship-summary-card--verdict {
+    border-left: 4px solid var(--brand);
+}
+
+.relationship-summary-emphasis {
+    color: var(--brand) !important;
+    font-weight: 800;
+    margin-bottom: 0.35rem !important;
+}
+
+@media (max-width: 640px) {
+    .relationship-summary-card {
+        padding: 0.9rem 1rem;
+    }
+}
+
 .module-reference {
     margin-top: 1rem;
 }
@@ -6685,6 +6728,48 @@ img[data-src].loaded {
     box-shadow:
         0 4px 14px rgba(0, 0, 0, 0.12),
         0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.primary-result-badge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.1rem;
+}
+
+.primary-result-label {
+    margin: 0;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-medium);
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.primary-result-badge {
+    padding: 0.95rem 1.85rem;
+    border-width: 3px;
+    font-size: 1.26rem;
+    font-weight: 800;
+    letter-spacing: 0.015em;
+    box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.22),
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+}
+
+@media (max-width: 640px) {
+    .primary-result-badge {
+        width: 100%;
+        max-width: 28rem;
+        padding: 0.9rem 1rem;
+        font-size: 1.08rem;
+    }
 }
 
 .archetype-profile-header {

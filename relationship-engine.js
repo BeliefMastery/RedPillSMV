@@ -1329,33 +1329,99 @@ export class RelationshipEngine {
     return insights;
   }
 
+  getViabilityLevel(score) {
+    if (score == null || Number.isNaN(Number(score))) return 'Unavailable';
+    if (score < 4) return 'Low';
+    if (score <= 6) return 'Medium';
+    return 'High';
+  }
+
+  getViabilitySummaryMeta(scores = {}) {
+    const band = typeof getViabilityBand === 'function' ? getViabilityBand(scores) : null;
+    const conclusionData = band && VIABILITY_BAND_CONCLUSIONS ? VIABILITY_BAND_CONCLUSIONS[band] : null;
+    const dimensionSummaries = (VIABILITY_DIMENSIONS || []).map(dim => {
+      const score = scores[dim.id];
+      return {
+        id: dim.id,
+        name: dim.name || '',
+        score: typeof score === 'number' ? score : null,
+        level: this.getViabilityLevel(score)
+      };
+    });
+    const rankedRisks = dimensionSummaries
+      .filter(dim => dim.score != null)
+      .sort((a, b) => a.score - b.score);
+    const primaryRisks = rankedRisks.filter(dim => dim.level === 'Low').slice(0, 2);
+    const watchRisks = rankedRisks.filter(dim => dim.level === 'Medium').slice(0, 2);
+    const riskSet = primaryRisks.length ? primaryRisks : watchRisks;
+    const riskText = riskSet.length
+      ? `Primary pressure appears in ${riskSet.map(dim => SecurityUtils.sanitizeHTML(dim.name)).join(' and ')}.`
+      : 'No single dominant gap stands out; focus on consistency and follow-through across all dimensions.';
+
+    let nextAction = 'Choose one shared experiment, define clear boundaries, and reassess based on consistent behavior over time.';
+    if (band === 'consider_stepping_away' || band === 'step_away') {
+      nextAction = 'Protect your boundaries, reduce over-investment, and make a clear decision timeline instead of prolonged ambiguity.';
+    } else if (band === 'invest_with_caution' || band === 'cautious_investment') {
+      nextAction = 'Pick one high-friction pattern, agree on concrete behavior changes, and evaluate whether both partners follow through.';
+    } else if (band === 'invest_in_resolution' || band === 'strong_potential') {
+      nextAction = 'Keep investing in repair habits and shared direction so current strengths become stable patterns.';
+    }
+
+    return {
+      band,
+      conclusionData,
+      dimensionSummaries,
+      riskText,
+      nextAction
+    };
+  }
+
   /**
    * @param {{ embedInPart2?: boolean }} opts - When true (both-mode Part 2), omit bridge copy that repeats the conclusion/reflection.
    */
   renderViabilityResults(opts = {}) {
     const embedInPart2 = Boolean(opts.embedInPart2);
     const scores = this.viabilityScoresByDimension || {};
-    const band = typeof getViabilityBand === 'function' ? getViabilityBand(scores) : null;
-    const conclusionData = band && VIABILITY_BAND_CONCLUSIONS ? VIABILITY_BAND_CONCLUSIONS[band] : null;
+    const summary = this.getViabilitySummaryMeta(scores);
+    const conclusionData = summary.conclusionData;
     let html = '<div class="viability-report">';
-    if (conclusionData && conclusionData.headline && conclusionData.conclusion) {
-      html += `<div style="margin-bottom: 2rem; padding: 1.25rem; background: var(--glass); border-radius: var(--radius); border-left: 4px solid var(--brand);">
-        <h3 style="margin-top: 0; color: var(--brand); font-size: 1.15rem;">${SecurityUtils.sanitizeHTML(conclusionData.headline)}</h3>
-        <p style="margin: 0.75rem 0 0; line-height: 1.7; color: var(--muted);">${SecurityUtils.sanitizeHTML(conclusionData.conclusion)}</p>
-      </div>`;
-    }
+
+    const verdictTitle = conclusionData?.headline
+      ? SecurityUtils.sanitizeHTML(conclusionData.headline)
+      : 'Overall conclusion: Review relationship direction';
+    const verdictDetail = conclusionData?.conclusion
+      ? SecurityUtils.sanitizeHTML(conclusionData.conclusion)
+      : 'Use the dimensions below to clarify whether continued investment is likely to produce a healthy return.';
+
+    html += `<div class="relationship-summary-cards" style="margin-bottom: 1.5rem;">
+      <article class="relationship-summary-card relationship-summary-card--verdict">
+        <h4>Verdict</h4>
+        <p class="relationship-summary-emphasis">${verdictTitle}</p>
+        <p>${verdictDetail}</p>
+      </article>
+      <article class="relationship-summary-card">
+        <h4>Primary Risks</h4>
+        <p>${summary.riskText}</p>
+      </article>
+      <article class="relationship-summary-card">
+        <h4>Next Best Action</h4>
+        <p>${SecurityUtils.sanitizeHTML(summary.nextAction)}</p>
+      </article>
+    </div>`;
+
     if (!embedInPart2) {
-      html += '<p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">The six dimensions below support this conclusion.</p>';
+      html += '<p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">The dimensions below support this conclusion.</p>';
     }
     html += '<div style="padding: 1.25rem; background: var(--glass); border-radius: var(--radius); border-left: 4px solid var(--brand); margin-bottom: 1.5rem;">';
     html += '<h4 style="margin-top: 0; margin-bottom: 1rem; font-size: 1rem;">Your responses by dimension</h4>';
     html += '<ul style="margin: 0; padding-left: 1.25rem; list-style: none;">';
-    (VIABILITY_DIMENSIONS || []).forEach(dim => {
-      const score = scores[dim.id];
-      const level = score == null ? '—' : score < 4 ? 'Low' : score <= 6 ? 'Medium' : 'High';
-      const levelColor = score == null ? 'var(--muted)' : score < 4 ? 'var(--accent)' : score <= 6 ? 'var(--brand)' : 'var(--muted)';
-      const scoreText = score != null ? ` (${Number(score).toFixed(1)}/10)` : '';
-      html += `<li style="margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.08);"><strong>${SecurityUtils.sanitizeHTML(dim.name || '')}</strong> — <span style="color: ${levelColor};">${SecurityUtils.sanitizeHTML(level)}</span>${scoreText}</li>`;
+    summary.dimensionSummaries.forEach(dim => {
+      const levelColor = dim.level === 'Low'
+        ? 'var(--accent)'
+        : dim.level === 'Medium'
+          ? 'var(--brand)'
+          : 'var(--muted)';
+      html += `<li style="margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.08);"><strong>${SecurityUtils.sanitizeHTML(dim.name || '')}</strong> — <span style="color: ${levelColor};">${SecurityUtils.sanitizeHTML(dim.level)}</span></li>`;
     });
     html += '</ul></div>';
     if (!embedInPart2) {
@@ -1387,11 +1453,11 @@ export class RelationshipEngine {
     if (this.assessmentMode === 'both') {
       html += '<h2 style="margin-top: 0;">Part 1: Points of Conflict</h2>';
     }
-    html += '<p style="color: var(--muted); line-height: 1.7; margin-bottom: 0.85rem;">All relationships show strain somewhere (usually in at least 3–5 areas). Strain points indicate areas for attention moreso than verdicts on relationship viability. This is normal, not failure... not yet at least.</p>';
+    html += '<p style="color: var(--muted); line-height: 1.7; margin-bottom: 0.85rem;">All relationships show strain somewhere. Strain points indicate areas for attention moreso than verdicts on relationship viability. This is normal, not failure... not yet at least.</p>';
     html += '<p style="color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem;">This report clarifies the areas showing strain, ranked in order of impact. Having many areas of critical or high strain is often terminal for a relationship; focus on the most impactful areas or consider whether the pattern suggests fundamental incompatibility.</p>';
 
     if (this.crossDomainSpillover.detected && this.crossDomainSpillover.message) {
-      html += `<p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; font-style: italic;">${SecurityUtils.sanitizeHTML(this.crossDomainSpillover.message)}</p>`;
+      html += '<p style="color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; font-style: italic;">Cross-domain amplification detected, which suggests systemic strain patterns rather than a single isolated issue.</p>';
     }
 
     let weakestLinks = this.analysisData.weakestLinks || [];
@@ -1412,12 +1478,9 @@ export class RelationshipEngine {
     }
 
     if (weakestLinks.length > 0) {
-      const allSamePrioritySeverity = weakestLinks.length > 0 && weakestLinks.every(l => l.priority === weakestLinks[0].priority && l.severity === weakestLinks[0].severity);
         weakestLinks.forEach((link, index) => {
         const criticalClass = this.severityCountsAsCritical(link.severity) ? 'critical' : '';
-        const tier = this.getSeverityTier(link.rawScore);
         const stateLabel = this.getStrainStateLabel(link.severity);
-        const stateRangeStr = tier ? `${tier.minScore}–${tier.maxScore}` : '';
         const point = COMPATIBILITY_POINTS?.[link.point];
         
         const selfRegulation = this.getSelfRegulationStrategies(link);
@@ -1436,8 +1499,8 @@ export class RelationshipEngine {
         html += `
           <details class="strain-accordion weakest-link-item strain-point-section ${criticalClass}">
             <summary class="strain-accordion-summary">
-              <h3 style="display: inline; margin: 0;">${index + 1}. ${SecurityUtils.sanitizeHTML(link.name || '')} <span style="font-size: 0.9em; color: var(--muted);">(${SecurityUtils.sanitizeHTML(link.impactTier || '')} impact — State: ${SecurityUtils.sanitizeHTML(stateLabel)}${stateRangeStr ? ` (${stateRangeStr})` : ''})</span></h3>
-              ${!allSamePrioritySeverity ? `<p style="margin: 0.35rem 0 0;"><strong>Priority:</strong> ${SecurityUtils.sanitizeHTML(link.priority || '')} · <strong>Severity:</strong> ${SecurityUtils.sanitizeHTML(link.severity || '')}</p>` : ''}
+              <h3 style="display: inline; margin: 0;">${index + 1}. ${SecurityUtils.sanitizeHTML(link.name || '')} <span style="font-size: 0.9em; color: var(--muted);">(${SecurityUtils.sanitizeHTML(link.impactTier || '')} impact)</span></h3>
+              <p style="margin: 0.35rem 0 0;"><strong>Status:</strong> ${SecurityUtils.sanitizeHTML(link.priority || '')} priority · ${SecurityUtils.sanitizeHTML(stateLabel || '')}</p>
             </summary>
             <div class="strain-accordion-body" style="padding-top: 1rem;">
             <div class="strain-context" style="margin: 1.25rem 0; color: var(--muted); line-height: 1.7; font-size: 0.95rem;">
@@ -1513,7 +1576,7 @@ export class RelationshipEngine {
         `;
       });
 
-      html += '<p style="font-size: 0.85rem; color: var(--muted); margin: 2rem 0 0; font-style: italic;">Reassess after 30–90 days. Avoid impulsive decisions based on this analysis alone.</p>';
+      html += '<p style="font-size: 0.85rem; color: var(--muted); margin: 2rem 0 0; font-style: italic;">Reassess after a deliberate cooling-off period. Avoid impulsive decisions based on this analysis alone.</p>';
 
       const criticalCount = weakestLinks.filter(l => this.severityCountsAsCritical(l.severity)).length;
       const criticalOrHighCount = weakestLinks.filter(l => l.priority === 'Critical' || l.priority === 'High').length;
@@ -1563,17 +1626,12 @@ export class RelationshipEngine {
   }
 
   /**
-   * Part 2 (both mode): explain verdict basis vs Part 1 mean—no second status line (Watch/Urgent) that can contradict the headline.
-   * Headline uses getViabilityBand(six dimensions); Part 1 number is mean of many compatibility areas and often regresses toward mid-range.
+   * Part 2 (both mode): explain rationale without exposing numeric grading.
    */
   renderPart2CrossCheck() {
     const scores = this.viabilityScoresByDimension || {};
-    const band = typeof getViabilityBand === 'function' ? getViabilityBand(scores) : null;
     const vals = Object.values(scores).filter(n => typeof n === 'number');
     if (!vals.length) return '';
-
-    const sixDimAvg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    const bandLabel = band && VIABILITY_BAND_LABELS ? VIABILITY_BAND_LABELS[band] : '';
 
     const part1Keys = [];
     if (Array.isArray(RELATIONSHIP_ANALYSIS_MODULES)) {
@@ -1581,22 +1639,18 @@ export class RelationshipEngine {
         if (Array.isArray(m.pointKeys)) part1Keys.push(...m.pointKeys);
       });
     }
-    const part1Avg = part1Keys.length ? this.getModuleScore([...new Set(part1Keys)]) : null;
+    const hasPart1Blend = part1Keys.length ? this.getModuleScore([...new Set(part1Keys)]) != null : false;
 
     let html = `<div class="analysis-modules-section part2-cross-check" style="margin-top: 1.5rem; padding: 1.1rem 1.25rem; background: var(--glass); border-radius: var(--radius); border-left: 3px solid rgba(255,255,255,0.15);">
-      <h4 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--brand);">How the numbers relate</h4>
+      <h4 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--brand);">How this conclusion was formed</h4>
       <p style="margin: 0 0 0.85rem; color: var(--muted); font-size: 0.95rem; line-height: 1.65;">
-        <strong>Verdict basis (same as headline):</strong> average of your six viability dimensions is <strong>${sixDimAvg.toFixed(1)}/10</strong>`;
-    if (bandLabel) {
-      html += ` — that supports <strong>${SecurityUtils.sanitizeHTML(bandLabel)}</strong>`;
-    }
-    html += `.</p>`;
+        <strong>Verdict basis (same as headline):</strong> the pattern across the six viability dimensions supports the conclusion above.
+      </p>`;
 
-    if (part1Avg != null) {
+    if (hasPart1Blend) {
       html += `<p style="margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.65;">
-        <strong>Part 1 context (not a second verdict):</strong> mean across your compatibility strain areas (many topics blended) is <strong>${part1Avg.toFixed(1)}/10</strong>.
-        That blend often lands in the middle even when specific viability answers are very low—strong areas pull the average up.
-        If this differs from the conclusion above, <strong>trust the six dimensions and the headline</strong>; use the Part 1 mean only as background texture.
+        <strong>Part 1 context (not a second verdict):</strong> Part 1 blends many compatibility areas and can appear more neutral because stronger areas offset weaker ones.
+        If this differs from the conclusion above, <strong>trust the six dimensions and the headline</strong>; use Part 1 as background texture.
       </p>`;
     }
     html += '</div>';
@@ -1627,7 +1681,7 @@ export class RelationshipEngine {
         <div class="analysis-module-card card">
           <h4>${SecurityUtils.sanitizeHTML(module.title || '')}</h4>
           <p>${SecurityUtils.sanitizeHTML(module.summary || '')}</p>
-          ${score !== null ? `<p><strong>Aggregate score:</strong> ${score.toFixed(1)}/10 <span class="module-status">${SecurityUtils.sanitizeHTML(status)}</span></p>` : ''}
+          ${score !== null ? `<p><strong>Status:</strong> <span class="module-status">${SecurityUtils.sanitizeHTML(status)}</span></p>` : ''}
           ${conclusion ? `<p class="module-conclusion">${SecurityUtils.sanitizeHTML(conclusion)}</p>` : ''}
         </div>
       `;
@@ -1696,7 +1750,7 @@ export class RelationshipEngine {
     return `
       <div style="margin-top: 2rem; padding: 1.25rem 1.5rem; background: var(--glass); border-radius: var(--radius); border-left: 4px solid var(--brand);">
         <h4 style="color: var(--brand); margin-top: 0; margin-bottom: 0.5rem;">Reflection prompts</h4>
-        <p style="color: var(--muted); margin: 0 0 0.5rem; font-size: 0.95rem;">Use with the Part 2 conclusion and dimension scores above (and Part 1 strain detail)—not a separate verdict.</p>
+        <p style="color: var(--muted); margin: 0 0 0.5rem; font-size: 0.95rem;">Use with the Part 2 conclusion and dimension levels above (and Part 1 strain detail)—not a separate verdict.</p>
         <ul style="color: var(--muted); margin: 0; padding-left: 1.25rem;">
           <li style="margin-bottom: 0.35rem;">Does this relationship support the future you envision? Is there a shared vision that makes the effort worthwhile?</li>
           <li style="margin-bottom: 0.35rem;">Is the discomfort temporary or a pattern that undermines your goals? Can resolving these challenges lead to a deeper connection?</li>

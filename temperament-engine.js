@@ -1694,8 +1694,9 @@ export class TemperamentEngine {
         ${reportGenderGlyphHtml(reportedGender)}
         <h2 class="suite-results-main-title">Your Temperament Analysis:</h2>
         <div class="temperament-composite-chart-suite">
-          <div class="temperament-composite-badge-wrap temperament-composite-badge-wrap--lead">
-            <div class="temperament-composite-badge" role="status" aria-label="${compositeBadgeAria}">
+          <div class="temperament-composite-badge-wrap temperament-composite-badge-wrap--lead primary-result-badge-wrap">
+            <p class="primary-result-label">Primary Result</p>
+            <div class="temperament-composite-badge primary-result-badge" role="status" aria-label="${compositeBadgeAria}">
               ${SecurityUtils.sanitizeHTML(compositeBadgeText)}
             </div>
           </div>

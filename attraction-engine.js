@@ -821,8 +821,9 @@ export class AttractionEngine {
           ${reportGenderGlyphHtml(this.currentGender)}
           <h2 class="suite-results-main-title">Your Sexual Market Value Profile:</h2>
           <p class="attraction-classification-foreword">${SecurityUtils.sanitizeHTML(classificationContext)}</p>
-          ${badgeValueRaw ? `<div class="temperament-composite-badge-wrap temperament-composite-badge-wrap--lead attraction-classification-badge-wrap">
-            <div class="temperament-composite-badge attraction-market-classification-badge" role="status" aria-label="${badgeAria}">
+          ${badgeValueRaw ? `<div class="temperament-composite-badge-wrap temperament-composite-badge-wrap--lead attraction-classification-badge-wrap primary-result-badge-wrap">
+            <p class="primary-result-label">Primary Result</p>
+            <div class="temperament-composite-badge primary-result-badge attraction-market-classification-badge" role="status" aria-label="${badgeAria}">
               ${SecurityUtils.sanitizeHTML(badgeValueRaw)}
             </div>
           </div>` : ''}
