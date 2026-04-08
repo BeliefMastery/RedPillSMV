@@ -3,7 +3,7 @@
  * using summed weighted scores per cluster (parent + subtypes). Versioned thresholds for tuning.
  *
  * v1 calibration (conservative — prefer "competitive" over false "sharp"):
- * Tune using real `profileDecisiveness` objects from Reveal logic JSON; margins/ratios share
+ * Tune using real `profileDecisiveness` on saved analysis snapshots; margins/ratios share
  * the same scale as engine `weighted` scores (post phaseWeights).
  *
  * Callers must pass the loaded `ARCHETYPES` map from the engine (do not import archetypes.js

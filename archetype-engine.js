@@ -2397,7 +2397,6 @@ showGenderSelection() {
     const primaryParentSummary = primaryParent ? summarizeArchetype(primaryParent) : '';
     const secondaryParentSummary = secondaryParent ? summarizeArchetype(secondaryParent) : '';
     const tertiaryParentSummary = tertiaryParent ? summarizeArchetype(tertiaryParent) : '';
-    const revealLogicPayload = this.buildConclusionLogicPayload();
 
     const formatList = (items) => {
       if (!Array.isArray(items)) return '';
@@ -2646,83 +2645,13 @@ showGenderSelection() {
       <p style="margin-top: 2rem; font-size: 0.9rem; color: var(--muted);">
         <a href="archetype-spread.html" style="color: var(--brand); text-decoration: underline;">View full archetype table</a> — cross-paradigm equivalents and population proportions.
       </p>
-      <div class="archetype-logic-panel" style="margin-top:0.75rem;">
-        <button id="revealLogicBtn" class="btn btn-secondary" type="button" aria-expanded="false" aria-controls="revealLogicOutput">Reveal logic (JSON)</button>
-        <pre id="revealLogicOutput" hidden style="margin-top:0.75rem;padding:0.85rem;border-radius:var(--radius);border:1px solid var(--border-medium);background:rgba(255,255,255,0.06);color:var(--muted);font-size:0.84rem;line-height:1.45;white-space:pre-wrap;word-break:break-word;"></pre>
-      </div>
     `;
 
     resultsHTML += `</div>`;
 
     // Sanitize results HTML before rendering
     SecurityUtils.safeInnerHTML(container, resultsHTML);
-    const revealBtn = container.querySelector('#revealLogicBtn');
-    const revealOut = container.querySelector('#revealLogicOutput');
-    if (revealBtn && revealOut) {
-      revealBtn.addEventListener('click', () => {
-        const open = !revealOut.hidden;
-        if (open) {
-          revealOut.hidden = true;
-          revealBtn.setAttribute('aria-expanded', 'false');
-          revealBtn.textContent = 'Reveal logic (JSON)';
-          return;
-        }
-        revealOut.textContent = JSON.stringify(revealLogicPayload, null, 2);
-        revealOut.hidden = false;
-        revealBtn.setAttribute('aria-expanded', 'true');
-        revealBtn.textContent = 'Hide logic (JSON)';
-      });
-    }
     this.showResultsContainer();
-  }
-
-  buildConclusionLogicPayload() {
-    const pickScore = (id) => {
-      if (!id || !this.archetypeScores || !this.archetypeScores[id]) return null;
-      const s = this.archetypeScores[id];
-      return {
-        phase1: s.phase1 ?? 0,
-        phase2: s.phase2 ?? 0,
-        phase3: s.phase3 ?? 0,
-        phase4: s.phase4 ?? 0,
-        phase5: s.phase5 ?? 0,
-        total: s.total ?? 0,
-        weighted: s.weighted ?? 0
-      };
-    };
-    const rank = Object.entries(this.archetypeScores || {})
-      .map(([id, s]) => ({ id, weighted: s?.weighted ?? 0, total: s?.total ?? 0 }))
-      .sort((a, b) => b.weighted - a.weighted)
-      .slice(0, 10);
-    return {
-      generatedAt: new Date().toISOString(),
-      gender: this.gender || null,
-      selectedArchetypes: {
-        primary: this.analysisData?.primaryArchetype?.id || null,
-        secondary: this.analysisData?.secondaryArchetype?.id || null,
-        tertiary: this.analysisData?.tertiaryArchetype?.id || null
-      },
-      selectedArchetypeScores: {
-        primary: pickScore(this.analysisData?.primaryArchetype?.id),
-        secondary: pickScore(this.analysisData?.secondaryArchetype?.id),
-        tertiary: pickScore(this.analysisData?.tertiaryArchetype?.id)
-      },
-      topWeightedArchetypes: rank,
-      phaseWeights: this.gender === 'female'
-        ? { phase1: 0.0233, phase2: 0.0194, phase3: 0.0175, phase4: 0.0467, phase5: 0.0090 }
-        : { phase1: 0.0250, phase2: 0.0194, phase3: 0.0175, phase4: 0.0467, phase5: 0.0060 },
-      adjustments: {
-        aspiration: this.analysisData?.aspirationAnalysis?.adjustments || {},
-        respectContext: this.analysisData?.respectContext?.adjustments || {},
-        provisionContext: this.analysisData?.provisionContext?.adjustments || {},
-        aestheticsContext: this.analysisData?.aestheticsContext?.adjustments || {}
-      },
-      notes: [
-        'Weighted scores combine phases 1-5 plus context adjustments before ranking.',
-        'Aspiration adjustments are bias-mitigation multipliers, not direct trait scoring.'
-      ],
-      profileDecisiveness: this.analysisData?.profileDecisiveness || null
-    };
   }
 
   updateNavigation() {
@@ -2828,6 +2757,17 @@ showGenderSelection() {
         // We still must load the archetype data modules before rendering results.
         // Stored progress can contain phase3/4 results, but ARCHETYPES/BRUTAL_TRUTHS are lazy-loaded.
         await this.loadArchetypeData();
+        // Saves from before profileDecisiveness existed omit this field; recompute from stored scores.
+        if (
+          !this.analysisData.profileDecisiveness &&
+          this.archetypeScores &&
+          Object.keys(this.archetypeScores).length > 0
+        ) {
+          this.analysisData.profileDecisiveness = computeProfileDecisiveness(
+            this.archetypeScores,
+            ARCHETYPES
+          );
+        }
         this.renderResults();
         this.showResultsContainer();
         return;
