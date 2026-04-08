@@ -737,7 +737,6 @@ export const ARCHETYPES = {
   sigma_family_female: { id: 'sigma_family_female', name: 'Sigma Family Female', subtypes: ['sigma_female', 'sigma_feminist_female', 'dark_sigma_zeta_female'] },
   omega_family_female: { id: 'omega_family_female', name: 'Omega Family Female', subtypes: ['omega_female', 'dark_omega_female'] },
   phi_family_female: { id: 'phi_family_female', name: 'Phi Family Female', subtypes: ['phi_female'] }
-  }
 };
 
 export const CORE_GROUPS = {

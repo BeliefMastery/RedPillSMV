@@ -163,11 +163,12 @@ init() {
   const setup = async () => {
     // 1. Attach listeners first so the 'Begin' button is functional
     this.attachEventListeners();
+    // Initialize empty buckets before optional restore.
+    this.initializeScores();
     
     // 2. Load the data silently in the background
     try {
       await this.loadStoredData();
-      this.initializeScores();
 
       if (this.shouldAutoGenerateSample()) {
         await this.generateSampleReport();
@@ -1694,7 +1695,7 @@ showGenderSelection() {
     const genderMapping = {
       'alpha': this.gender === 'female' ? 'alpha_female' : 'alpha',
       'alpha_xi': this.gender === 'female' ? 'alpha_xi_female' : 'alpha_xi',
-      'alpha_rho': this.gender === 'female' ? 'alpha_rho' : 'alpha_rho', // Alpha-Rho is male-specific
+      'alpha_rho': this.gender === 'female' ? 'alpha_xi_female' : 'alpha_rho', // Female path maps Rho evidence into Xi lane
       'dark_alpha': this.gender === 'female' ? 'dark_alpha_female' : 'dark_alpha',
       'beta': this.gender === 'female' ? 'beta_female' : 'beta',
       'beta_iota': this.gender === 'female' ? 'alpha_unicorn_female' : 'beta_iota', // Alpha-Unicorn maps to Beta-Iota pattern
@@ -1733,16 +1734,30 @@ showGenderSelection() {
 
     // Rank family nodes by rolled-up evidence across all subtypes in each class.
     const familyTotals = new Map();
+    const familyCounts = new Map();
     sortedArchetypes.forEach((arch) => {
       const familyId = this.getFamilyNodeIdForArchetype(arch.id);
       if (!familyId) return;
       familyTotals.set(familyId, (familyTotals.get(familyId) || 0) + (arch.score || 0));
+      if ((arch.score || 0) !== 0) {
+        familyCounts.set(familyId, (familyCounts.get(familyId) || 0) + 1);
+      }
     });
     const rankedFamilies = [...familyTotals.entries()]
-      .map(([id, score]) => ({ id, score, archetype: ARCHETYPES[id] }))
+      .map(([id, score]) => {
+        const count = familyCounts.get(id) || 0;
+        const effectiveCount = Math.max(1, count);
+        const normalizedScore = score / effectiveCount;
+        return { id, score, normalizedScore, effectiveCount, archetype: ARCHETYPES[id] };
+      })
       .filter((x) => x.archetype && Array.isArray(x.archetype.subtypes))
-      .sort((a, b) => b.score - a.score);
-    this.analysisData.familyRollup = rankedFamilies.map((x) => ({ id: x.id, score: x.score }));
+      .sort((a, b) => b.normalizedScore - a.normalizedScore);
+    this.analysisData.familyRollup = rankedFamilies.map((x) => ({
+      id: x.id,
+      rawScore: x.score,
+      normalizedScore: x.normalizedScore,
+      effectiveSubtypeCount: x.effectiveCount
+    }));
 
     const pickSubtypeFromFamily = (familyNode) => {
       if (!familyNode?.archetype?.subtypes?.length) return null;
@@ -1778,13 +1793,13 @@ showGenderSelection() {
 
     let secondaryFamily = null;
     if (rankedFamilies[1] && primaryFamily) {
-      secondaryFamily = rankedFamilies[1].score > (primaryFamily.score * 0.25) ? rankedFamilies[1] : null;
+      secondaryFamily = rankedFamilies[1].normalizedScore > (primaryFamily.normalizedScore * 0.25) ? rankedFamilies[1] : null;
     }
     let secondary = pickSubtypeFromFamily(secondaryFamily);
 
     let tertiaryFamily = null;
     if (rankedFamilies[2] && primaryFamily) {
-      tertiaryFamily = rankedFamilies[2].score > (primaryFamily.score * 0.15) ? rankedFamilies[2] : null;
+      tertiaryFamily = rankedFamilies[2].normalizedScore > (primaryFamily.normalizedScore * 0.15) ? rankedFamilies[2] : null;
     }
     let tertiary = pickSubtypeFromFamily(tertiaryFamily);
 
@@ -2304,8 +2319,19 @@ showGenderSelection() {
 
   calculateCoreGroupScores() {
     const groupScores = {};
-    Object.keys(CORE_GROUPS).forEach(groupId => {
-      groupScores[groupId] = CORE_GROUPS[groupId].reduce((sum, archId) => {
+    const familyToIds = this.gender === 'female'
+      ? {
+          alpha: ['alpha_female', 'alpha_xi_female', 'alpha_unicorn_female', 'alpha_iota_female', 'dark_alpha_female'],
+          beta: ['beta_female', 'beta_nu_female', 'beta_kappa_female', 'beta_rho_female'],
+          gamma: ['gamma_female', 'gamma_theta_female', 'gamma_feminist_female', 'dark_gamma_female'],
+          delta: ['delta_female', 'delta_mu_female', 'dark_delta_female'],
+          sigma: ['sigma_female', 'sigma_feminist_female', 'dark_sigma_zeta_female'],
+          omega: ['omega_female', 'dark_omega_female'],
+          phi: ['phi_female']
+        }
+      : CORE_GROUPS;
+    Object.keys(familyToIds).forEach(groupId => {
+      groupScores[groupId] = familyToIds[groupId].reduce((sum, archId) => {
         return sum + (this.archetypeScores[archId]?.phase1 || 0);
       }, 0);
     });
@@ -2869,6 +2895,8 @@ showGenderSelection() {
             this.archetypeScores,
             ARCHETYPES
           );
+          // Persist migrated field so subsequent revisits render directly.
+          this.saveProgress();
         }
         this.renderResults();
         this.showResultsContainer();

@@ -13,6 +13,7 @@ This reduces false positives such as highly specific subtypes winning without th
 - Integration point: [`archetype-engine.js`](../archetype-engine.js) in `calculateFinalScores()`
 - Diagnostics output: `analysisData.mustHaveGates`
 - Class/subtype selection now uses explicit family-node rollup (`*_family` / `*_family_female`) before subtype pick.
+- Family rollup diagnostics expose both `rawScore` and `normalizedScore` per class in `analysisData.familyRollup`.
 
 ## Versioning
 
@@ -69,3 +70,5 @@ It runs male/female synthetic scenarios and asserts:
 
 - risk-averse male profile receives stronger gamma penalty
 - high-alpha female profile retains strong alpha multiplier
+- normalized class winner is not biased by family channel count
+- vanilla subtype can still win when its weighted evidence is strongest

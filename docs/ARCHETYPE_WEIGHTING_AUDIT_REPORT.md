@@ -126,3 +126,9 @@ Applied in `archetype-engine.js` to align outcomes with the audit findings:
 5. **Must-have soft gates (v1)** — Added a family-level exclusionary-penalty layer in [`shared/archetype-must-have-gates.mjs`](../shared/archetype-must-have-gates.mjs), applied in `calculateFinalScores()` before weighted recomputation. Families with missing core trait signals are down-weighted via conservative multipliers (`1.00 / 0.93 / 0.85 / 0.72`) rather than hard-blocked.
 
 6. **Family-node class distinction** — Class selection now rolls up subtype evidence via explicit family nodes (`alpha_family` … `phi_family`, female equivalents), then chooses subtype from the selected class. Vanilla archetypes are now included in each class child list.
+
+7. **Normalized family rollup** — Family rank now uses normalized class evidence (`raw family sum / effective scored subtype count`) to avoid structural advantage for classes with more active subtype channels. Diagnostics now include both `rawScore` and `normalizedScore` in `analysisData.familyRollup`.
+
+8. **Subtype refinement rebalanced** — Phase 2 forced-choice refinement options were normalized so vanilla subtype choices are no longer structurally underweighted versus variant or dark options.
+
+9. **Female consistency cleanup** — Female path mapping now consistently maps `alpha_rho` evidence into `alpha_xi_female`, and core group scoring now uses explicit female family members to avoid male-only group leakage in class-prep utilities.

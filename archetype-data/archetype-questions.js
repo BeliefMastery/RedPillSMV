@@ -507,9 +507,9 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
       type: 'forced_choice',
       options: [
         { text: 'Dominant, charismatic leadership', archetypes: ['alpha'], weight: 2 },
-        { text: 'Resilient protector who defends others', archetypes: ['alpha_xi'], weight: 3 },
-        { text: 'Just, fair, rule-setting authority', archetypes: ['alpha_rho'], weight: 3 },
-        { text: 'Hard-edged dominance that can become tyrannical', archetypes: ['dark_alpha'], weight: 3 }
+        { text: 'Resilient protector who defends others', archetypes: ['alpha_xi'], weight: 2 },
+        { text: 'Just, fair, rule-setting authority', archetypes: ['alpha_rho'], weight: 2 },
+        { text: 'Hard-edged dominance that can become tyrannical', archetypes: ['dark_alpha'], weight: 2 }
       ]
     },
     {
@@ -531,10 +531,10 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
       type: 'forced_choice',
       options: [
         { text: 'Reliable, supportive, but tends to defer', archetypes: ['beta'], weight: 2 },
-        { text: 'Gentle, nurturing, innocent-leaning', archetypes: ['beta_iota'], weight: 3 },
-        { text: 'Traditional, dutiful, and stability-focused', archetypes: ['beta_nu'], weight: 3 },
-        { text: 'Strategic alignment for access or advantage', archetypes: ['beta_kappa'], weight: 3 },
-        { text: 'Motherly/creator energy with controlling tendencies', archetypes: ['beta_rho'], weight: 3 }
+        { text: 'Gentle, nurturing, innocent-leaning', archetypes: ['beta_iota'], weight: 2 },
+        { text: 'Traditional, dutiful, and stability-focused', archetypes: ['beta_nu'], weight: 2 },
+        { text: 'Strategic alignment for access or advantage', archetypes: ['beta_kappa'], weight: 2 },
+        { text: 'Motherly/creator energy with controlling tendencies', archetypes: ['beta_rho'], weight: 2 }
       ]
     },
     {
@@ -557,10 +557,10 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
       type: 'forced_choice',
       options: [
         { text: 'Independent, rebellious outsider', archetypes: ['gamma'], weight: 2 },
-        { text: 'Romantic idealist devoted to depth', archetypes: ['gamma_nu'], weight: 3 },
-        { text: 'Mystic/prophetic and spiritually oriented', archetypes: ['gamma_theta'], weight: 3 },
-        { text: 'Opportunistic, risk-taking, and fortune-seeking', archetypes: ['gamma_pi'], weight: 3 },
-        { text: 'Isolated, detached, or nihilistic in outlook', archetypes: ['dark_gamma'], weight: 3 }
+        { text: 'Romantic idealist devoted to depth', archetypes: ['gamma_nu'], weight: 2 },
+        { text: 'Mystic/prophetic and spiritually oriented', archetypes: ['gamma_theta'], weight: 2 },
+        { text: 'Opportunistic, risk-taking, and fortune-seeking', archetypes: ['gamma_pi'], weight: 2 },
+        { text: 'Isolated, detached, or nihilistic in outlook', archetypes: ['dark_gamma'], weight: 2 }
       ]
     },
     {
@@ -583,8 +583,8 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
       type: 'forced_choice',
       options: [
         { text: 'Practical, hardworking, and reliable', archetypes: ['delta'], weight: 2 },
-        { text: 'Protective, fatherly/motherly, caretaking', archetypes: ['delta_mu'], weight: 3 },
-        { text: 'Self-sacrificing or martyr-like', archetypes: ['dark_delta'], weight: 3 }
+        { text: 'Protective, fatherly/motherly, caretaking', archetypes: ['delta_mu'], weight: 2 },
+        { text: 'Self-sacrificing or martyr-like', archetypes: ['dark_delta'], weight: 2 }
       ]
     }
   ],
@@ -595,9 +595,9 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
       type: 'forced_choice',
       options: [
         { text: 'Self-sufficient lone wolf', archetypes: ['sigma'], weight: 2 },
-        { text: 'Strategic, eccentric, or politically calculating', archetypes: ['sigma_kappa'], weight: 3 },
-        { text: 'Creative, artistic, or bohemian', archetypes: ['sigma_lambda'], weight: 3 },
-        { text: 'Anti-social, destructive, or destabilizing', archetypes: ['dark_sigma_zeta'], weight: 3 }
+        { text: 'Strategic, eccentric, or politically calculating', archetypes: ['sigma_kappa'], weight: 2 },
+        { text: 'Creative, artistic, or bohemian', archetypes: ['sigma_lambda'], weight: 2 },
+        { text: 'Anti-social, destructive, or destabilizing', archetypes: ['dark_sigma_zeta'], weight: 2 }
       ]
     },
     {
@@ -619,7 +619,7 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
       type: 'forced_choice',
       options: [
         { text: 'Withdrawn, passive, and overlooked', archetypes: ['omega'], weight: 2 },
-        { text: 'Destructive or entropic when overwhelmed', archetypes: ['dark_omega'], weight: 3 }
+        { text: 'Destructive or entropic when overwhelmed', archetypes: ['dark_omega'], weight: 2 }
       ]
     }
   ],

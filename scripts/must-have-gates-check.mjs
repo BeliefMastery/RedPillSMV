@@ -26,6 +26,23 @@ function runScenario(name, input) {
   return out;
 }
 
+function pickFamilyWinner(entries) {
+  const ranked = entries
+    .map((entry) => ({
+      ...entry,
+      normalized: entry.raw / Math.max(1, entry.scoredChildren)
+    }))
+    .sort((a, b) => b.normalized - a.normalized);
+  return ranked[0];
+}
+
+function pickSubtypeWithinFamily(candidates) {
+  return [...candidates].sort((a, b) => {
+    if (b.weighted !== a.weighted) return b.weighted - a.weighted;
+    return b.phase2 - a.phase2;
+  })[0];
+}
+
 const q = (id, value, selectedIndex) => ({ [id]: { value, selectedIndex } });
 
 const maleRiskAverse = {
@@ -87,4 +104,22 @@ if ((r1.familyDiagnostics?.gamma?.multiplier ?? 1) > 0.93) {
 if ((r2.familyDiagnostics?.alpha?.multiplier ?? 1) < 0.93) {
   throw new Error('Expected strong alpha retention in female_high_alpha scenario.');
 }
+
+const normalizedWinner = pickFamilyWinner([
+  { id: 'alpha_family', raw: 3.0, scoredChildren: 3 }, // raw-heavy due to extra channels
+  { id: 'omega_family', raw: 2.4, scoredChildren: 1 }  // higher normalized evidence
+]);
+if (normalizedWinner.id !== 'omega_family') {
+  throw new Error('Expected normalized family rollup to prevent channel-count advantage.');
+}
+
+const subtypeWinner = pickSubtypeWithinFamily([
+  { id: 'sigma', weighted: 0.24, phase2: 2 },          // vanilla path should remain reachable
+  { id: 'sigma_kappa', weighted: 0.22, phase2: 3 },
+  { id: 'sigma_lambda', weighted: 0.20, phase2: 2 }
+]);
+if (subtypeWinner.id !== 'sigma') {
+  throw new Error('Expected vanilla subtype to win when weighted evidence is strongest.');
+}
+
 console.log('must-have gates checks passed');
