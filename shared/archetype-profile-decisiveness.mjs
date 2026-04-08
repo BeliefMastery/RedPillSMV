@@ -165,8 +165,9 @@ function nearestOtherGroupName(d, archetypes) {
  * `archetypes` is optional; names nearest other *family* (clusterSecondId) for competitive and very-competitive copy.
  * @param {ReturnType<typeof computeProfileDecisiveness>} d
  * @param {Record<string, object>} [archetypes]
+ * @param {string} [primaryPatternName]
  */
-export function getProfileDecisivenessCalloutCopy(d, archetypes) {
+export function getProfileDecisivenessCalloutCopy(d, archetypes, primaryPatternName = 'your primary pattern') {
   if (!d) return null;
 
   const other = nearestOtherGroupName(d, archetypes);
@@ -176,21 +177,21 @@ export function getProfileDecisivenessCalloutCopy(d, archetypes) {
 
   if (d.familyBand === 'sharp') {
     lines = [
-      'There is a large distance between your primary archetype group and every other group—stable reading; your archetype is unlikely to change.'
+      `There is a large distance between your primary archetype group and every other group. You are most likely **consolidating into ${primaryPatternName}** as your primary pattern.`
     ];
   } else if (d.familyBand === 'very_competitive') {
     lines = [
       other
-        ? `There is very little distance between your primary archetype group and ${other}. Large conditional swings are likely: modestly different answers could change which group leads. Transition pressure toward ${other} appears ${transition.label.replace('_', ' ')}.`
-        : `There is very little distance between your primary archetype group and other groups. Large conditional swings are likely: modestly different answers could change which group leads. Transition pressure appears ${transition.label.replace('_', ' ')}.`
+        ? `There is very little distance between your primary archetype group and *${other}*. Large conditional swings are likely: modestly different answers could change which group leads. Transition pressure toward *${other}* appears ${transition.label.replace('_', ' ')}.`
+        : 'There is very little distance between your primary archetype group and other groups. Large conditional swings are likely: modestly different answers could change which group leads.'
     ];
   } else {
     lines = [
       other
         ? transition.value < 0.25
-          ? `There is only a moderate distance between your primary archetype group and ${other}. You are more likely consolidating into this primary pattern than transitioning out of it toward ${other}.`
-          : `There is only a moderate distance between your primary archetype group and ${other}. Consolidation and transition toward ${other} are both plausible; transition pressure appears ${transition.label.replace('_', ' ')}.`
-        : 'There is only a moderate distance between your primary archetype group and other groups. You may be consolidating into this primary pattern, or transitioning out of it.'
+          ? `There is a moderate distance between your primary archetype group and *${other}*. You are more likely **consolidating into ${primaryPatternName}** as your primary pattern than transitioning out of it toward *${other}*.`
+          : `There is a moderate distance between your primary archetype group and *${other}*. **Consolidating into ${primaryPatternName}** and transitioning toward *${other}* are both plausible; transition pressure appears ${transition.label.replace('_', ' ')}.`
+        : `There is a moderate distance between your primary archetype group and other groups. You are more likely **consolidating into ${primaryPatternName}** than transitioning out of it.`
     ];
   }
 

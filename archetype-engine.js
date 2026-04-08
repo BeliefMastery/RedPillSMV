@@ -2472,12 +2472,18 @@ showGenderSelection() {
     const decisivenessHtml = (() => {
       const d = this.analysisData?.profileDecisiveness;
       if (!d || !ARCHETYPES) return '';
-      const copy = getProfileDecisivenessCalloutCopy(d, ARCHETYPES);
+      const copy = getProfileDecisivenessCalloutCopy(d, ARCHETYPES, primary?.name || 'your primary pattern');
       if (!copy) return '';
+      const renderDecisivenessLine = (line) => {
+        const escaped = SecurityUtils.sanitizeHTML(String(line));
+        return escaped
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      };
       const body = copy.lines
         .map(
           (line) =>
-            `<p class="archetype-decisiveness-callout__text">${SecurityUtils.sanitizeHTML(line)}</p>`
+            `<p class="archetype-decisiveness-callout__text">${renderDecisivenessLine(line)}</p>`
         )
         .join('');
       const footnoteHtml =
