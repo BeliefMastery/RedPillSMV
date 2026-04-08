@@ -55,7 +55,16 @@ export async function loadDataModule(modulePath, moduleName = null) {
 
     // Resolve to absolute URL relative to this module (handles base href, subpaths)
     const specifier = new URL(resolvedPath, import.meta.url).href;
-    const module = await import(specifier);
+    let module;
+    try {
+      module = await import(specifier);
+    } catch (firstError) {
+      // Self-heal for stale browser/service-worker module cache by retrying once
+      // with a cache-busting query param.
+      const busted = new URL(specifier);
+      busted.searchParams.set('v', String(Date.now()));
+      module = await import(busted.href);
+    }
     
     // Cache the module (use original path as key for consistency)
     dataCache.set(modulePath, module);
