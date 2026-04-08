@@ -137,4 +137,5 @@ Frameworks referenced in the tools: Belief Mastery, Sovereign of Mind.
 | `npm run copy:www` | Copy the app into `www/` (for Capacitor). |
 | `npm run serve:www` | Copy to `www/` then serve `www/` on port 3000. |
 | `npm run cap:sync` | Run `copy:www` then `npx cap sync android`. |
+| `npm run archetype:must-have-check` | Run soft-gate scenario checks for archetype must-have penalties. |
 | `npm run test` | Placeholder (no tests configured). |

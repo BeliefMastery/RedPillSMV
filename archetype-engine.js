@@ -15,6 +15,7 @@ import {
   computeProfileDecisiveness,
   getProfileDecisivenessCalloutCopy
 } from './shared/archetype-profile-decisiveness.mjs';
+import { evaluateMustHaveGates } from './shared/archetype-must-have-gates.mjs';
 
 // Data modules - will be loaded lazily
 let ARCHETYPES, CORE_GROUPS, ARCHETYPE_OPTIMIZATION;
@@ -127,6 +128,7 @@ export class ArchetypeEngine {
       tertiaryArchetype: null,
       confidenceLevels: {},
       profileDecisiveness: null,
+      mustHaveGates: null,
       allAnswers: {},
       questionSequence: []
     };
@@ -335,9 +337,31 @@ init() {
       tertiaryArchetype: null,
       confidenceLevels: {},
       profileDecisiveness: null,
+      mustHaveGates: null,
       allAnswers: {},
       questionSequence: []
     };
+  }
+
+  buildQuestionIndexForGates() {
+    const index = {};
+    const collect = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach((q) => {
+        if (q?.id) index[q.id] = q;
+      });
+    };
+    collect(PHASE_1_QUESTIONS);
+    collect(PHASE_2_QUESTIONS);
+    collect(PHASE_3_QUESTIONS);
+    collect(PHASE_4_QUESTIONS);
+    if (this.gender === 'female') {
+      collect(PHASE_5_QUESTIONS?.female);
+    } else {
+      collect(PHASE_5_QUESTIONS?.male);
+    }
+    collect(RESPECT_CONTEXT_QUESTIONS);
+    return index;
   }
 
   pickRandomIndices(length, count) {
@@ -1570,6 +1594,26 @@ showGenderSelection() {
         this.archetypeScores[archId].phase3 *= (1 + ((mult - 1) * 0.5)); // damped carryover into phase 3
       });
     }
+
+    // Must-have family soft gates: penalize families missing core signals.
+    const gateEval = evaluateMustHaveGates({
+      gender: this.gender,
+      archetypes: ARCHETYPES,
+      archetypeScores: this.archetypeScores,
+      answers: this.answers,
+      aspirationAnswers: this.aspirationAnswers,
+      respectContextAnswers: this.respectContextAnswers,
+      questionIndex: this.buildQuestionIndexForGates()
+    });
+    this.analysisData.mustHaveGates = gateEval;
+    Object.keys(this.archetypeScores).forEach((archId) => {
+      const mult = gateEval?.archetypeMultipliers?.[archId] ?? 1;
+      this.archetypeScores[archId].phase1 *= mult;
+      this.archetypeScores[archId].phase2 *= mult;
+      this.archetypeScores[archId].phase3 *= mult;
+      this.archetypeScores[archId].phase4 *= mult;
+      this.archetypeScores[archId].phase5 *= mult;
+    });
 
     // Gender-split calibrated phase weights.
     // Weights derived from: desired_proportion / typical_max_raw_score_per_archetype_per_phase,
@@ -2854,6 +2898,7 @@ showGenderSelection() {
       tertiaryArchetype: null,
       confidenceLevels: {},
       profileDecisiveness: null,
+      mustHaveGates: null,
       allAnswers: {},
       questionSequence: []
     };

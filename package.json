@@ -12,7 +12,8 @@
     "test:e2e": "playwright test",
     "playwright:install": "node scripts/playwright-install.cjs",
     "smv:sensitivity": "node scripts/smv-sensitivity-check.mjs",
-    "suite:calibration-check": "node scripts/suite-calibration-check.mjs"
+    "suite:calibration-check": "node scripts/suite-calibration-check.mjs",
+    "archetype:must-have-check": "node scripts/must-have-gates-check.mjs"
   },
   "keywords": [],
   "author": "",

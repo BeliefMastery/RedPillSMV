@@ -122,3 +122,5 @@ Applied in `archetype-engine.js` to align outcomes with the audit findings:
 3. **Male low provision** — Added nudges for previously missing canonical IDs: **`beta_iota`**, **`beta_rho`**, **`dark_delta`** (up-weight), **`sigma_kappa`**, **`sigma_lambda`** (slight down-weight with other non-provider Sigmas), matching the intent of reducing Alpha over-attribution when provision is strained.
 
 4. **IQ funnel (`filterQuestionsByIQ`)** — Expanded archetype tags used for relevance: **lower IQ** adds `beta_kappa`, `beta_rho`; **higher IQ** adds `gamma_nu`, `gamma_pi`, `sigma_lambda` so subtype-heavy questions are more likely to survive the reduced-question funnel.
+
+5. **Must-have soft gates (v1)** — Added a family-level exclusionary-penalty layer in [`shared/archetype-must-have-gates.mjs`](../shared/archetype-must-have-gates.mjs), applied in `calculateFinalScores()` before weighted recomputation. Families with missing core trait signals are down-weighted via conservative multipliers (`1.00 / 0.93 / 0.85 / 0.72`) rather than hard-blocked.
