@@ -374,11 +374,67 @@ init() {
     return indices.slice(0, count);
   }
 
-  answerQuestionForSample(question) {
+  buildSampleTargetProfile() {
+    const all = Object.values(ARCHETYPES || {}).filter((a) => a && a.id && !String(a.id).includes('_family'));
+    const variants = all.filter((a) => a.parentType);
+    const genderVariants = variants.filter((a) => {
+      if (this.gender === 'female') return String(a.id).endsWith('_female');
+      return !String(a.id).endsWith('_female');
+    });
+    const pool = genderVariants.length > 0 ? genderVariants : variants;
+    if (pool.length === 0) return null;
+    const target = pool[Math.floor(Math.random() * pool.length)];
+    const canonicalSubtype = String(target.id).replace(/_female$/, '');
+    const canonicalFamily = String(target.parentType || '').replace(/_female$/, '');
+    return {
+      id: target.id,
+      canonicalSubtype,
+      canonicalFamily
+    };
+  }
+
+  pickWeightedIndex(weights) {
+    const total = weights.reduce((sum, w) => sum + Math.max(0, w), 0);
+    if (total <= 0) return Math.floor(Math.random() * weights.length);
+    let cursor = Math.random() * total;
+    for (let i = 0; i < weights.length; i += 1) {
+      cursor -= Math.max(0, weights[i]);
+      if (cursor <= 0) return i;
+    }
+    return weights.length - 1;
+  }
+
+  getSampleOptionWeight(option, question, sampleTarget) {
+    const tags = Array.isArray(option?.archetypes) ? option.archetypes : [];
+    if (!sampleTarget || tags.length === 0) {
+      return question?.id?.includes('_refine_') ? 1.4 : 1.0;
+    }
+
+    const canonicalTags = tags.map((id) => String(id).replace(/_female$/, ''));
+    const hasExactSubtype = canonicalTags.includes(sampleTarget.canonicalSubtype);
+    const hasFamily = canonicalTags.includes(sampleTarget.canonicalFamily);
+    const hasVariant = canonicalTags.some((id) => ARCHETYPES?.[id]?.parentType);
+    const isRefineQuestion = question?.id?.includes('_refine_');
+
+    if (hasExactSubtype) return isRefineQuestion ? 8.0 : 4.0;
+    if (hasFamily) return isRefineQuestion ? 3.5 : 2.0;
+    if (isRefineQuestion && hasVariant) return 2.0;
+    if (isRefineQuestion && !hasVariant) return 0.8;
+    return 1.0;
+  }
+
+  answerQuestionForSample(question, sampleTarget = null) {
     if (!question) return;
     if (question.type === 'likert') {
       const scale = question.scale || 5;
-      const value = Math.floor(Math.random() * scale) + 1;
+      const archetypes = Array.isArray(question.archetypes) ? question.archetypes.map((id) => String(id).replace(/_female$/, '')) : [];
+      const matchesTarget = sampleTarget && (
+        archetypes.includes(sampleTarget.canonicalSubtype) ||
+        archetypes.includes(sampleTarget.canonicalFamily)
+      );
+      const value = matchesTarget
+        ? Math.max(1, Math.min(scale, 4 + Math.floor(Math.random() * 2)))
+        : (Math.floor(Math.random() * scale) + 1);
       this.processAnswer(question, value);
       return;
     }
@@ -386,12 +442,19 @@ init() {
       const total = Array.isArray(question.options) ? question.options.length : 0;
       if (total === 0) return;
       const count = Math.min(total, Math.max(1, Math.ceil(Math.random() * 3)));
-      const selected = this.pickRandomIndices(total, count);
+      const weighted = question.options.map((opt) => this.getSampleOptionWeight(opt, question, sampleTarget));
+      const picked = new Set();
+      while (picked.size < count) {
+        picked.add(this.pickWeightedIndex(weighted));
+        if (picked.size === total) break;
+      }
+      const selected = [...picked];
       this.processAnswer(question, selected);
       return;
     }
     if (question.options && Array.isArray(question.options)) {
-      const selectedIndex = Math.floor(Math.random() * question.options.length);
+      const weighted = question.options.map((opt) => this.getSampleOptionWeight(opt, question, sampleTarget));
+      const selectedIndex = this.pickWeightedIndex(weighted);
       this.processAnswer(question, selectedIndex);
     }
   }
@@ -410,24 +473,25 @@ init() {
       this.analysisData = this.getEmptyAnalysisData();
       this.analysisData.gender = this.gender;
       this.analysisData.iqBracket = this.iqBracket;
+      const sampleTarget = this.buildSampleTargetProfile();
 
       await this.buildPhase1Sequence();
-      this.questionSequence.forEach(q => this.answerQuestionForSample(q));
+      this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
       this.analyzePhase1Results();
 
       await this.buildPhase2Sequence();
-      this.questionSequence.forEach(q => this.answerQuestionForSample(q));
+      this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
       this.analyzePhase2Results();
 
       await this.buildPhase3Sequence();
-      this.questionSequence.forEach(q => this.answerQuestionForSample(q));
+      this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
       this.analyzePhase3Results();
 
       await this.buildPhase4Sequence();
-      this.questionSequence.forEach(q => this.answerQuestionForSample(q));
+      this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
 
       await this.buildPhase5Sequence();
-      this.questionSequence.forEach(q => this.answerQuestionForSample(q));
+      this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
       this.analyzePhase5Results();
 
       this.finalizeResults();

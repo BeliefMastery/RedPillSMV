@@ -95,7 +95,8 @@ export function computeProfileDecisiveness(archetypeScores, archetypes) {
 
   const sorted = [...clusterTotals.entries()].sort((a, b) => b[1] - a[1]);
   const first = sorted[0] || ['', 0];
-  const second = sorted[1] || null;
+  const winnerCanonical = canonicalFamilyId(first[0]);
+  const second = sorted.find(([cid], idx) => idx > 0 && canonicalFamilyId(cid) !== winnerCanonical) || null;
   const w1 = first[1];
   const w2 = second ? second[1] : 0;
   const clusterWinnerId = first[0] || null;
@@ -157,6 +158,7 @@ export function computeProfileDecisiveness(archetypeScores, archetypes) {
 
 function nearestOtherGroupName(d, archetypes) {
   if (!d?.clusterSecondId || !archetypes?.[d.clusterSecondId]?.name) return '';
+  if (canonicalFamilyId(d.clusterSecondId) === canonicalFamilyId(d.clusterWinnerId)) return '';
   return String(archetypes[d.clusterSecondId].name).trim();
 }
 
