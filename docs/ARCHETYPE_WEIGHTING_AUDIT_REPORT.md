@@ -12,7 +12,7 @@
 |------|--------|--------|
 | Phase weight table | **Verified** | Male/female `phaseWeights` documented in `calculateFinalScores()`; Phase 5 counts match comments (16 male / 18 female questions). |
 | Question → taxonomy IDs | **Pass** | 31 distinct canonical IDs referenced in questions; all exist in `ARCHETYPES`. No orphan question IDs. |
-| Subtype selection | **Documented** | `pickSubtype()` uses **phase2 only**; product decision, not a bug. |
+| Subtype selection | **Verified** | `pickSubtype()` ranks by **full weighted subtype evidence**; **phase2** is tie-break. |
 | Secondary / tertiary gates | **Verified** | Secondary if score > 25% of primary; tertiary if > 15% of primary (`identifyArchetypes`). |
 | Context adjustments | **Reviewed** | Aspiration, respect, provision (male), aesthetics apply to phase1–3 as coded; keys use canonical base IDs + `baseId` strip for `_female`. |
 | Phase 4 vignettes | **P0 fixed** | Phase 4 did **not** map vignette IDs to gender-specific score keys and did not initialize buckets — **runtime risk for female respondents**. **Fixed** in `scorePhase4Answer` (same mapping pattern as Phases 1–3 / 5). |

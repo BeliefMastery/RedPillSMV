@@ -177,7 +177,7 @@ export function getProfileDecisivenessCalloutCopy(d, archetypes, primaryPatternN
 
   if (d.familyBand === 'sharp') {
     lines = [
-      `There is a large distance between your primary archetype group and every other group. You are most likely **consolidating into ${primaryPatternName}** as your primary pattern.`
+      `There is a large distance between your primary archetype group and every other group. Short of dramatic personality transformation, you are most likely **entrenched permanently into ${primaryPatternName}** as your primary pattern.`
     ];
   } else if (d.familyBand === 'very_competitive') {
     lines = [

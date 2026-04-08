@@ -44,7 +44,7 @@ flowchart TB
   subgraph pick [Outcome selection]
     R[Sort by weighted score]
     PR[Primary = top]
-    SUB[pickSubtype: phase2 only per parent subtypes]
+    SUB[pickSubtype: weighted evidence; phase2 tie-break]
     SEC[Secondary if score greater than 25% of primary]
     TER[Tertiary if score greater than 15% of primary]
     SH[Shadow: Phase 3 signal filtered by family]
@@ -60,7 +60,7 @@ flowchart TB
 | Final phase weights (male vs female) | `calculateFinalScores()` — `phaseWeights` object (~lines 1540–1554) |
 | Context adjustments | `calculateFinalScores()` — aspiration, respect, provision, aesthetics |
 | Primary / secondary / tertiary | `identifyArchetypes()` — 25% / 15% thresholds |
-| Subtype replacement | `pickSubtype()` — uses **`phase2` only** for subtype scores |
+| Subtype replacement | `pickSubtype()` — ranks by **weighted** subtype evidence; **phase2** is tie-break |
 | IQ funnel | `buildPhase1Sequence` / `filterQuestionsByIQ`, `buildPhase2Sequence` |
 | Gender ID mapping | Repeated `femaleMapping` in scoring + `identifyArchetypes` `genderMapping` |
 
