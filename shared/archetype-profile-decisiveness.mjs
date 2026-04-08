@@ -2,17 +2,18 @@
  * Profile decisiveness: how separated the top archetype *family* is from the runner-up,
  * using summed weighted scores per cluster (parent + subtypes). Versioned thresholds for tuning.
  *
- * v1 calibration (conservative — prefer "competitive" over false "sharp"):
- * Tune using real `profileDecisiveness` on saved analysis snapshots; margins/ratios share
- * the same scale as engine `weighted` scores (post phaseWeights).
+ * v2 calibration: sharper "clear lead" bar (SHARP_* raised) so near-tie family totals read
+ * competitive, not sharp. Tune using saved `profileDecisiveness` snapshots; values use the
+ * same scale as engine `weighted` (post phaseWeights).
  *
  * Callers must pass the loaded `ARCHETYPES` map from the engine (do not import archetypes.js
  * here: this package is CommonJS for Node while archetypes.js is ESM syntax-only).
  */
-export const PROFILE_DECISIVENESS_VERSION = 1;
+export const PROFILE_DECISIVENESS_VERSION = 2;
 
-const SHARP_MIN_MARGIN = 0.024;
-const SHARP_MIN_RATIO = 1.32;
+/** Both required for "sharp". Raised in v2 so ~0.028 margin / ~1.38 ratio reads competitive. */
+const SHARP_MIN_MARGIN = 0.028;
+const SHARP_MIN_RATIO = 1.4;
 const VERY_COMPETITIVE_MARGIN = 0.016;
 const VERY_COMPETITIVE_RATIO = 1.18;
 const SUBTYPE_BLURRY_THRESHOLD = 0.012;
@@ -116,46 +117,37 @@ export function computeProfileDecisiveness(archetypeScores, archetypes) {
 }
 
 const BAND_BODY = {
-  sharp:
-    'Clear front-runner among archetype families in this assessment.',
-  competitive:
-    'Close competition between patterns—treat the primary as the leading read, not the only plausible one.',
+  sharp: 'Strong lead: the top archetype family is clearly ahead.',
+  competitive: 'Moderate lead: primary fits best here, but other families are still close.',
   very_competitive:
-    'Tight race—small shifts in answers could reorder the top family; weigh secondary and tertiary heavily.'
+    'Close race: top two families score similarly—read secondary and tertiary as important too.'
 };
 
 /**
  * Plain-text strings for the report callout (sanitize in the engine when building HTML).
  * Keeps body to definition + one band sentence; optional third line for subtype blur only.
  * @param {ReturnType<typeof computeProfileDecisiveness>} d
+ * (Does not name runner-up family: that summed #2 can differ from secondary’s line-level family.)
  */
-export function getProfileDecisivenessCalloutCopy(d, archetypes) {
+export function getProfileDecisivenessCalloutCopy(d) {
   if (!d) return null;
-  const runnerName = d.clusterSecondId && archetypes?.[d.clusterSecondId]?.name
-    ? String(archetypes[d.clusterSecondId].name)
-    : '';
 
-  let bandLine = BAND_BODY[d.familyBand] || BAND_BODY.competitive;
-  if (runnerName && (d.familyBand === 'very_competitive' || d.familyBand === 'competitive')) {
-    bandLine = `${bandLine} Next-strongest family: ${runnerName}.`;
-  }
+  const bandLine = BAND_BODY[d.familyBand] || BAND_BODY.competitive;
 
   const lines = [
-    'Based on how far ahead your leading archetype family scored versus the next strongest family in this run.',
+    'Top two families by summed subtype scores. Secondary/tertiary rank individual archetype lines—order can differ.',
     bandLine
   ];
 
   if (d.subtypeBlurry) {
-    lines.push(
-      'The subtype within this family is less separated—nuance may move more easily than the overall family.'
-    );
+    lines.push('Subtype separation is also small—nuance is less certain than the family lead.');
   }
 
   return {
-    title: 'How decisive is this result?',
+    title: 'Result clarity',
     lines,
     footnote:
-      'This reflects score separation in the model for this run, not certainty about real-world stability or who you may become.'
+      'Model scores only. Family totals and line rankings are separate steps in the engine—both are valid, but not interchangeable.'
   };
 }
 

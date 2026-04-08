@@ -2472,7 +2472,7 @@ showGenderSelection() {
     const decisivenessHtml = (() => {
       const d = this.analysisData?.profileDecisiveness;
       if (!d || !ARCHETYPES) return '';
-      const copy = getProfileDecisivenessCalloutCopy(d, ARCHETYPES);
+      const copy = getProfileDecisivenessCalloutCopy(d);
       if (!copy) return '';
       const body = copy.lines
         .map(
