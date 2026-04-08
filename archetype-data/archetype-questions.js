@@ -165,12 +165,14 @@ export const PHASE_1_QUESTIONS = [
     question: 'In a friend-group conflict where two people clash publicly, you usually:',
     type: 'forced_choice',
     options: [
-      { text: 'Step in quickly, set boundaries, and direct the room', archetypes: ['alpha'], weight: 2 },
-      { text: 'Deconstruct what is actually driving the clash, then suggest a workable frame', archetypes: ['gamma'], weight: 2 },
-      { text: 'Make sure each person feels heard and de-escalate tension', archetypes: ['beta'], weight: 2 },
-      { text: 'Cut through emotion and move everyone to practical next steps', archetypes: ['delta'], weight: 2 },
-      { text: 'Detach from the drama and stay out unless directly involved', archetypes: ['sigma'], weight: 2 },
-      { text: 'Freeze up, feel overloaded, or avoid engagement', archetypes: ['omega'], weight: 1 }
+      // Split from one broad conflict question into 3 scenarios; keep each item lighter so combined
+      // conflict influence stays near the original single-question signal.
+      { text: 'Step in quickly, set boundaries, and direct the room', archetypes: ['alpha'], weight: 1 },
+      { text: 'Deconstruct what is actually driving the clash, then suggest a workable frame', archetypes: ['gamma'], weight: 1 },
+      { text: 'Make sure each person feels heard and de-escalate tension', archetypes: ['beta'], weight: 1 },
+      { text: 'Cut through emotion and move everyone to practical next steps', archetypes: ['delta'], weight: 1 },
+      { text: 'Detach from the drama and stay out unless directly involved', archetypes: ['sigma'], weight: 1 },
+      { text: 'Freeze up, feel overloaded, or avoid engagement', archetypes: ['omega'], weight: 0.66 }
     ]
   },
   {
@@ -178,12 +180,12 @@ export const PHASE_1_QUESTIONS = [
     question: 'In a work/team conflict that threatens delivery, you usually:',
     type: 'forced_choice',
     options: [
-      { text: 'Take command, assign roles, and push for an immediate decision', archetypes: ['alpha'], weight: 2 },
-      { text: 'Map root causes, expose contradictions, and redesign the approach', archetypes: ['gamma'], weight: 2 },
-      { text: 'Stabilize trust and collaboration so the team can move together', archetypes: ['beta'], weight: 2 },
-      { text: 'Prioritize execution details, sequencing, and completion discipline', archetypes: ['delta'], weight: 2 },
-      { text: 'Handle your own lane independently and minimize entanglement', archetypes: ['sigma'], weight: 2 },
-      { text: 'Shut down, procrastinate, or wait for someone else to sort it out', archetypes: ['omega'], weight: 1 }
+      { text: 'Take command, assign roles, and push for an immediate decision', archetypes: ['alpha'], weight: 1 },
+      { text: 'Map root causes, expose contradictions, and redesign the approach', archetypes: ['gamma'], weight: 1 },
+      { text: 'Stabilize trust and collaboration so the team can move together', archetypes: ['beta'], weight: 1 },
+      { text: 'Prioritize execution details, sequencing, and completion discipline', archetypes: ['delta'], weight: 1 },
+      { text: 'Handle your own lane independently and minimize entanglement', archetypes: ['sigma'], weight: 1 },
+      { text: 'Shut down, procrastinate, or wait for someone else to sort it out', archetypes: ['omega'], weight: 0.66 }
     ]
   },
   {
@@ -191,12 +193,12 @@ export const PHASE_1_QUESTIONS = [
     question: 'In an online/social-media pile-on or reputational flare-up, you usually:',
     type: 'forced_choice',
     options: [
-      { text: 'Set the frame publicly and defend position with authority', archetypes: ['alpha'], weight: 2 },
-      { text: 'Interrogate assumptions, language, and incentives behind the outrage', archetypes: ['gamma'], weight: 2 },
-      { text: 'Seek a calmer bridge that reduces hostility and preserves connection', archetypes: ['beta'], weight: 2 },
-      { text: 'Ignore theatrics and focus on the concrete issue to resolve', archetypes: ['delta'], weight: 2 },
-      { text: 'Withdraw from the thread/platform and protect your autonomy', archetypes: ['sigma'], weight: 2 },
-      { text: 'Feel personally destabilized and avoid participation entirely', archetypes: ['omega'], weight: 1 }
+      { text: 'Set the frame publicly and defend position with authority', archetypes: ['alpha'], weight: 1 },
+      { text: 'Interrogate assumptions, language, and incentives behind the outrage', archetypes: ['gamma'], weight: 1 },
+      { text: 'Seek a calmer bridge that reduces hostility and preserves connection', archetypes: ['beta'], weight: 1 },
+      { text: 'Ignore theatrics and focus on the concrete issue to resolve', archetypes: ['delta'], weight: 1 },
+      { text: 'Withdraw from the thread/platform and protect your autonomy', archetypes: ['sigma'], weight: 1 },
+      { text: 'Feel personally destabilized and avoid participation entirely', archetypes: ['omega'], weight: 0.66 }
     ]
   },
   {
