@@ -116,38 +116,52 @@ export function computeProfileDecisiveness(archetypeScores, archetypes) {
   };
 }
 
-const BAND_BODY = {
-  sharp: 'Strong lead: the top archetype family is clearly ahead.',
-  competitive: 'Moderate lead: primary fits best here, but other families are still close.',
-  very_competitive:
-    'Close race: top two families score similarly—read secondary and tertiary as important too.'
-};
+function nearestOtherGroupName(d, archetypes) {
+  if (!d?.clusterSecondId || !archetypes?.[d.clusterSecondId]?.name) return '';
+  return String(archetypes[d.clusterSecondId].name).trim();
+}
 
 /**
  * Plain-text strings for the report callout (sanitize in the engine when building HTML).
- * Keeps body to definition + one band sentence; optional third line for subtype blur only.
+ * `archetypes` is optional; names nearest other *family* (clusterSecondId) for competitive and very-competitive copy.
  * @param {ReturnType<typeof computeProfileDecisiveness>} d
- * (Does not name runner-up family: that summed #2 can differ from secondary’s line-level family.)
+ * @param {Record<string, object>} [archetypes]
  */
-export function getProfileDecisivenessCalloutCopy(d) {
+export function getProfileDecisivenessCalloutCopy(d, archetypes) {
   if (!d) return null;
 
-  const bandLine = BAND_BODY[d.familyBand] || BAND_BODY.competitive;
+  const other = nearestOtherGroupName(d, archetypes);
 
-  const lines = [
-    'Top two families by summed subtype scores. Secondary/tertiary rank individual archetype lines—order can differ.',
-    bandLine
-  ];
+  let lines = [];
+
+  if (d.familyBand === 'sharp') {
+    lines = [
+      'There is a large distance between your primary archetype group and every other group—stable reading; your archetype is unlikely to change.'
+    ];
+  } else if (d.familyBand === 'very_competitive') {
+    lines = [
+      other
+        ? `There is very little distance between your primary archetype group and ${other}—large conditional swings: modestly different answers could change which group leads. Secondary and tertiary results are especially important.`
+        : 'There is very little distance between your primary archetype group and other groups—large conditional swings: modestly different answers could change which group leads. Secondary and tertiary results are especially important.'
+    ];
+  } else {
+    lines = [
+      other
+        ? `There is only a moderate distance between your primary archetype group and ${other}. You may be consolidating into this primary pattern, or transitioning out of it.`
+        : 'There is only a moderate distance between your primary archetype group and other groups. You may be consolidating into this primary pattern, or transitioning out of it.'
+    ];
+  }
 
   if (d.subtypeBlurry) {
-    lines.push('Subtype separation is also small—nuance is less certain than the family lead.');
+    lines.push(
+      'Within your primary family, subtype scores are also close—nuance may move more easily than the family label.'
+    );
   }
 
   return {
-    title: 'Result clarity',
+    title: 'Stability of this reading',
     lines,
-    footnote:
-      'Model scores only. Family totals and line rankings are separate steps in the engine—both are valid, but not interchangeable.'
+    footnote: null
   };
 }
 

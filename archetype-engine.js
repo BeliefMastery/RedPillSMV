@@ -2472,7 +2472,7 @@ showGenderSelection() {
     const decisivenessHtml = (() => {
       const d = this.analysisData?.profileDecisiveness;
       if (!d || !ARCHETYPES) return '';
-      const copy = getProfileDecisivenessCalloutCopy(d);
+      const copy = getProfileDecisivenessCalloutCopy(d, ARCHETYPES);
       if (!copy) return '';
       const body = copy.lines
         .map(
@@ -2480,10 +2480,14 @@ showGenderSelection() {
             `<p class="archetype-decisiveness-callout__text">${SecurityUtils.sanitizeHTML(line)}</p>`
         )
         .join('');
+      const footnoteHtml =
+        copy.footnote != null && String(copy.footnote).trim() !== ''
+          ? `<p class="archetype-decisiveness-callout__footnote">${SecurityUtils.sanitizeHTML(String(copy.footnote))}</p>`
+          : '';
       return `<div class="archetype-decisiveness-callout" role="note">
         <h3 class="archetype-decisiveness-callout__title">${SecurityUtils.sanitizeHTML(copy.title)}</h3>
         ${body}
-        <p class="archetype-decisiveness-callout__footnote">${SecurityUtils.sanitizeHTML(copy.footnote)}</p>
+        ${footnoteHtml}
       </div>`;
     })();
 
