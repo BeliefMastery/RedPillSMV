@@ -504,8 +504,11 @@ init() {
       this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
       this.analyzePhase5Results();
 
+      const prePhase6BaseScores = JSON.parse(JSON.stringify(this.archetypeScores || {}));
       const decision = this.preparePhase6Decision();
       if (decision?.shouldRun && Array.isArray(decision.targetFamilyIds) && decision.targetFamilyIds.length > 0) {
+        // Restore pre-decision baseline so Phase 6 scoring applies once on raw phase evidence.
+        this.archetypeScores = JSON.parse(JSON.stringify(prePhase6BaseScores));
         this.analysisData.phase6Results = {
           ...(this.analysisData.phase6Results || {}),
           triggered: true,
@@ -523,7 +526,8 @@ init() {
         };
         await this.finalizeResults({ skipIdentify: true });
       } else {
-        await this.finalizeResults({ skipIdentify: false });
+        // preparePhase6Decision already identified in this path.
+        await this.finalizeResults({ skipIdentify: true });
       }
     } catch (error) {
       this.debugReporter.logError(error, 'generateSampleReport');
@@ -2103,8 +2107,11 @@ showGenderSelection() {
         this.renderCurrentQuestion();
       } else if (this.currentPhase === 5) {
         this.analyzePhase5Results();
+        const prePhase6BaseScores = JSON.parse(JSON.stringify(this.archetypeScores || {}));
         const decision = this.preparePhase6Decision();
         if (decision?.shouldRun && Array.isArray(decision.targetFamilyIds) && decision.targetFamilyIds.length > 0) {
+          // Restore pre-decision baseline so Phase 6 scoring applies once on raw phase evidence.
+          this.archetypeScores = JSON.parse(JSON.stringify(prePhase6BaseScores));
           this.analysisData.phase6Results = {
             ...(this.analysisData.phase6Results || {}),
             triggered: true,
@@ -2119,7 +2126,8 @@ showGenderSelection() {
             await this.finalizeResults();
           }
         } else {
-          await this.finalizeResults();
+          // preparePhase6Decision already identified in this path.
+          await this.finalizeResults({ skipIdentify: true });
         }
       } else if (this.currentPhase === 6) {
         this.analyzePhase6Results();
