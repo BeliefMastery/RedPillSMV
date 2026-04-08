@@ -124,3 +124,5 @@ Applied in `archetype-engine.js` to align outcomes with the audit findings:
 4. **IQ funnel (`filterQuestionsByIQ`)** — Expanded archetype tags used for relevance: **lower IQ** adds `beta_kappa`, `beta_rho`; **higher IQ** adds `gamma_nu`, `gamma_pi`, `sigma_lambda` so subtype-heavy questions are more likely to survive the reduced-question funnel.
 
 5. **Must-have soft gates (v1)** — Added a family-level exclusionary-penalty layer in [`shared/archetype-must-have-gates.mjs`](../shared/archetype-must-have-gates.mjs), applied in `calculateFinalScores()` before weighted recomputation. Families with missing core trait signals are down-weighted via conservative multipliers (`1.00 / 0.93 / 0.85 / 0.72`) rather than hard-blocked.
+
+6. **Family-node class distinction** — Class selection now rolls up subtype evidence via explicit family nodes (`alpha_family` … `phi_family`, female equivalents), then chooses subtype from the selected class. Vanilla archetypes are now included in each class child list.

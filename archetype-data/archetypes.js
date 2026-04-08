@@ -12,7 +12,7 @@ export const ARCHETYPES = {
     motivations: ['recognition', 'achievement', 'influence', 'control'],
     stressResponse: 'Takes charge, pushes harder, may become controlling',
     growthEdge: 'Learning to delegate, developing emotional intelligence',
-    subtypes: ['alpha_xi', 'alpha_rho', 'dark_alpha'],
+    subtypes: ['alpha', 'alpha_xi', 'alpha_rho', 'dark_alpha'],
     // Metadata for report explanations
     jungianEquivalent: 'King (Mature), Warrior (Assertive)',
     vedicEquivalent: 'Raja Dharma (Ruler/Protector), Artha (Power)',
@@ -74,7 +74,7 @@ export const ARCHETYPES = {
     motivations: ['belonging', 'approval', 'stability', 'service'],
     stressResponse: 'Seeks support, becomes more passive, avoids conflict',
     growthEdge: 'Developing assertiveness, setting boundaries',
-    subtypes: ['beta_iota', 'beta_nu', 'beta_kappa', 'beta_rho'],
+    subtypes: ['beta', 'beta_iota', 'beta_nu', 'beta_kappa', 'beta_rho'],
     // Reproductive/Mating Success Metadata
     reproductiveSuccess: 'medium', // Lower status and submissive, often resentful, gets used as second choice to "Alpha-widows" but still achieves reproduction
     reproductiveDescription: 'Typically achieves reproduction but as second choice or "backup" after Alpha relationships fail. Lower status and submissive positioning leads to resentful dynamics. Still manages reproduction despite being the fallback option.',
@@ -141,7 +141,7 @@ export const ARCHETYPES = {
     motivations: ['knowledge', 'freedom', 'authenticity', 'truth'],
     stressResponse: 'Withdraws, becomes more isolated, questions everything',
     growthEdge: 'Developing social skills, learning to connect',
-    subtypes: ['gamma_nu', 'gamma_theta', 'gamma_pi', 'dark_gamma'],
+    subtypes: ['gamma', 'gamma_nu', 'gamma_theta', 'gamma_pi', 'dark_gamma'],
     // Reproductive/Mating Success Metadata
     reproductiveSuccess: 'low', // Usually misses out on reproduction due to outsider positioning and intellectual focus over social connection
     reproductiveDescription: 'Typically misses out on reproduction. Intellectual focus, outsider positioning, and rebellion against social norms limit mate access. Values knowledge and authenticity over reproductive opportunities.',
@@ -209,7 +209,7 @@ export const ARCHETYPES = {
     motivations: ['duty', 'service', 'accomplishment', 'stability'],
     stressResponse: 'Works harder, becomes more dutiful, may burn out',
     growthEdge: 'Developing leadership, learning to delegate',
-    subtypes: ['delta_mu', 'dark_delta'],
+    subtypes: ['delta', 'delta_mu', 'dark_delta'],
     // Reproductive/Mating Success Metadata
     reproductiveSuccess: 'high', // Super practical and highly suitable for provisioning as a mate choice; achieves reproduction through practical value and reliability
     reproductiveDescription: 'Achieves reproduction through high practical value and provisioning capacity. Highly suitable as a mate choice due to reliability, practical competence, and provider qualities. Best long-term relationship potential.',
@@ -253,7 +253,7 @@ export const ARCHETYPES = {
     motivations: ['autonomy', 'freedom', 'independence', 'self-reliance'],
     stressResponse: 'Becomes more isolated, increases independence',
     growthEdge: 'Learning to connect, developing interdependence',
-    subtypes: ['sigma_kappa', 'sigma_lambda', 'dark_sigma_zeta'],
+    subtypes: ['sigma', 'sigma_kappa', 'sigma_lambda', 'dark_sigma_zeta'],
     // Reproductive/Mating Success Metadata
     reproductiveSuccess: 'low', // Usually misses out on reproduction due to independence and isolation; values autonomy over social connection
     reproductiveDescription: 'Typically misses out on reproduction. Independence, isolation, and operating outside social hierarchies limit mate access. Values autonomy and self-reliance over reproductive opportunities.',
@@ -312,7 +312,7 @@ export const ARCHETYPES = {
     motivations: ['acceptance', 'belonging', 'safety', 'avoidance'],
     stressResponse: 'Withdraws further, becomes more passive',
     growthEdge: 'Developing social skills, building confidence',
-    subtypes: ['dark_omega'],
+    subtypes: ['omega', 'dark_omega'],
     // Reproductive/Mating Success Metadata
     reproductiveSuccess: 'low', // Usually misses out on reproduction due to social disconnection and passivity
     reproductiveDescription: 'Typically misses out on reproduction. Social disconnection, passivity, and low social power prevent mate access. Lack of assertiveness and social skills limit reproductive opportunities.',
@@ -359,7 +359,7 @@ export const ARCHETYPES = {
     motivations: ['recognition', 'desirability', 'status', 'quality'],
     stressResponse: 'Becomes more selective, may become controlling or chaotic',
     growthEdge: 'Developing inner value beyond external validation, emotional intelligence',
-    subtypes: ['alpha_xi_female', 'alpha_unicorn_female', 'alpha_iota_female', 'dark_alpha_female'],
+    subtypes: ['alpha_female', 'alpha_xi_female', 'alpha_unicorn_female', 'alpha_iota_female', 'dark_alpha_female'],
     jungianEquivalent: 'Queen',
     vedicEquivalent: 'Shakti (Cosmic Power)',
     greekPantheon: 'Hera (Queen, Power)',
@@ -442,7 +442,7 @@ export const ARCHETYPES = {
     motivations: ['security', 'resources', 'survival', 'stability'],
     stressResponse: 'Becomes more resource-seeking, may become manipulative',
     growthEdge: 'Developing self-sufficiency, building intrinsic value',
-    subtypes: ['beta_nu_female', 'beta_kappa_female', 'beta_rho_female'],
+    subtypes: ['beta_female', 'beta_nu_female', 'beta_kappa_female', 'beta_rho_female'],
     jungianEquivalent: 'Distorted Lover',
     vedicEquivalent: 'Rati (Love, Attachment)',
     greekPantheon: 'Echo (Unreciprocated Love)',
@@ -509,7 +509,7 @@ export const ARCHETYPES = {
     motivations: ['knowledge', 'authenticity', 'independence', 'truth'],
     stressResponse: 'Becomes more resentful, may isolate',
     growthEdge: 'Releasing resentment, developing emotional intelligence',
-    subtypes: ['gamma_theta_female', 'gamma_feminist_female', 'dark_gamma_female'],
+    subtypes: ['gamma_female', 'gamma_theta_female', 'gamma_feminist_female', 'dark_gamma_female'],
     jungianEquivalent: 'Magician (Rebellious)',
     vedicEquivalent: 'Saraswati (Knowledge, Art)',
     greekPantheon: 'Hecate (Mysticism)',
@@ -576,7 +576,7 @@ export const ARCHETYPES = {
     motivations: ['nurturing', 'family', 'home', 'stability'],
     stressResponse: 'Becomes more sacrificing, may become martyr',
     growthEdge: 'Developing self-care, setting boundaries',
-    subtypes: ['delta_mu_female', 'dark_delta_female'],
+    subtypes: ['delta_female', 'delta_mu_female', 'dark_delta_female'],
     jungianEquivalent: 'Weaver (Queen-Lover)',
     vedicEquivalent: 'Aditi (Light, Nurturing)',
     greekPantheon: 'Demeter (Harvest)',
@@ -627,7 +627,7 @@ export const ARCHETYPES = {
     motivations: ['freedom', 'autonomy', 'independence', 'self-sufficiency'],
     stressResponse: 'Becomes more independent, may become isolated',
     growthEdge: 'Developing connection while maintaining autonomy',
-    subtypes: ['sigma_feminist_female', 'dark_sigma_zeta_female'],
+    subtypes: ['sigma_female', 'sigma_feminist_female', 'dark_sigma_zeta_female'],
     jungianEquivalent: 'Maiden (Lover-Magician)',
     vedicEquivalent: 'Chamunda (Autonomy)',
     greekPantheon: 'Artemis (Huntress)',
@@ -678,7 +678,7 @@ export const ARCHETYPES = {
     motivations: ['isolation', 'rejection', 'despair', 'nihilism'],
     stressResponse: 'Becomes more isolated and despairing',
     growthEdge: 'Finding value, developing connection, healing',
-    subtypes: ['dark_omega_female'],
+    subtypes: ['omega_female', 'dark_omega_female'],
     jungianEquivalent: 'Crone (Shadow Priestess)',
     vedicEquivalent: 'Dhumavati (Misfortune, Isolation)',
     greekPantheon: 'Nyx (Darkness)',
@@ -720,6 +720,23 @@ export const ARCHETYPES = {
     socialProportion: 0.01,
     archetypalNarrative: 'You live beyond the game, and most people cannot meet you there. Your peace is real, but it makes ordinary life feel distant. You are respected, sometimes idealized, and often lonely. The truth: transcendence grants freedom and removes the comfort of the crowd.',
     explanation: 'The Phi Female archetype represents full transcendence beyond social structures and games. This archetype has ascended beyond the need for external validation and operates from a place of inner peace and wisdom.'
+  },
+
+  // FAMILY NODES (class-level brackets)
+  alpha_family: { id: 'alpha_family', name: 'Alpha Family', subtypes: ['alpha', 'alpha_xi', 'alpha_rho', 'dark_alpha'] },
+  beta_family: { id: 'beta_family', name: 'Beta Family', subtypes: ['beta', 'beta_iota', 'beta_nu', 'beta_kappa', 'beta_rho'] },
+  gamma_family: { id: 'gamma_family', name: 'Gamma Family', subtypes: ['gamma', 'gamma_nu', 'gamma_theta', 'gamma_pi', 'dark_gamma'] },
+  delta_family: { id: 'delta_family', name: 'Delta Family', subtypes: ['delta', 'delta_mu', 'dark_delta'] },
+  sigma_family: { id: 'sigma_family', name: 'Sigma Family', subtypes: ['sigma', 'sigma_kappa', 'sigma_lambda', 'dark_sigma_zeta'] },
+  omega_family: { id: 'omega_family', name: 'Omega Family', subtypes: ['omega', 'dark_omega'] },
+  phi_family: { id: 'phi_family', name: 'Phi Family', subtypes: ['phi'] },
+  alpha_family_female: { id: 'alpha_family_female', name: 'Alpha Family Female', subtypes: ['alpha_female', 'alpha_xi_female', 'alpha_unicorn_female', 'alpha_iota_female', 'dark_alpha_female'] },
+  beta_family_female: { id: 'beta_family_female', name: 'Beta Family Female', subtypes: ['beta_female', 'beta_nu_female', 'beta_kappa_female', 'beta_rho_female'] },
+  gamma_family_female: { id: 'gamma_family_female', name: 'Gamma Family Female', subtypes: ['gamma_female', 'gamma_theta_female', 'gamma_feminist_female', 'dark_gamma_female'] },
+  delta_family_female: { id: 'delta_family_female', name: 'Delta Family Female', subtypes: ['delta_female', 'delta_mu_female', 'dark_delta_female'] },
+  sigma_family_female: { id: 'sigma_family_female', name: 'Sigma Family Female', subtypes: ['sigma_female', 'sigma_feminist_female', 'dark_sigma_zeta_female'] },
+  omega_family_female: { id: 'omega_family_female', name: 'Omega Family Female', subtypes: ['omega_female', 'dark_omega_female'] },
+  phi_family_female: { id: 'phi_family_female', name: 'Phi Family Female', subtypes: ['phi_female'] }
   }
 };
 

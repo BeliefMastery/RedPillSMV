@@ -8,7 +8,7 @@ Map where you fit in the modern relationship marketplace. A self-contained app o
 
 | Tool | Page | Description |
 |------|------|-------------|
-| **Modern Archetype Identification** | `archetype.html` | Identifies primary, secondary, and tertiary archetypes with subtype refinement, behavioral traits, and a stability reading (consolidation vs transition trajectory). |
+| **Modern Archetype Identification** | `archetype.html` | Identifies primary, secondary, and tertiary archetypes using family-node class rollup (all subtypes including vanilla), subtype refinement, behavioral traits, and a stability reading (consolidation vs transition trajectory). |
 | **Attraction, Status and Selection** | `attraction.html` | Gender-specific SMV: coalition rank, reproductive confidence, axis of attraction (weighted subcategory scoring for physical/fertility signifiers; optional skip on one sensitive item), market position, recommendations. |
 | **Polarity Position Mapping** | `temperament.html` | Masculine–feminine temperament mapping, dimension scores, cross-polarity detection, and context sensitivity. |
 | **Relationships** | `relationship.html` | Compatibility and strain across multiple points; viability evaluation; action strategies per strain point. |

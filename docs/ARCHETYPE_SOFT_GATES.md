@@ -12,6 +12,7 @@ This reduces false positives such as highly specific subtypes winning without th
 - Config + evaluator: [`shared/archetype-must-have-gates.mjs`](../shared/archetype-must-have-gates.mjs)
 - Integration point: [`archetype-engine.js`](../archetype-engine.js) in `calculateFinalScores()`
 - Diagnostics output: `analysisData.mustHaveGates`
+- Class/subtype selection now uses explicit family-node rollup (`*_family` / `*_family_female`) before subtype pick.
 
 ## Versioning
 

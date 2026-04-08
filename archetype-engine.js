@@ -1655,6 +1655,38 @@ showGenderSelection() {
     });
   }
 
+  getFamilyNodeIdForArchetype(archetypeId) {
+    if (!archetypeId || !ARCHETYPES) return null;
+    const id = String(archetypeId);
+    if (id.includes('_family')) return id;
+    const def = ARCHETYPES[id];
+    const base = def?.parentType || id;
+    if (base.endsWith('_female')) {
+      return `${base.replace(/_female$/, '')}_family_female`;
+    }
+    return `${base}_family`;
+  }
+
+  getFamilyBaseId(familyNodeId) {
+    if (!familyNodeId) return null;
+    if (familyNodeId.endsWith('_family_female')) {
+      return `${familyNodeId.replace(/_family_female$/, '')}_female`;
+    }
+    return familyNodeId.replace(/_family$/, '');
+  }
+
+  normalizeTopArchetypeEntry(entry) {
+    if (!entry) return null;
+    const familyType = entry.familyType || this.getFamilyNodeIdForArchetype(entry.id);
+    if (!familyType) return entry;
+    const familyBase = this.getFamilyBaseId(familyType);
+    return {
+      ...entry,
+      familyType,
+      parentType: entry.parentType || familyBase
+    };
+  }
+
   identifyArchetypes() {
     this.calculateFinalScores();
 
@@ -1683,12 +1715,12 @@ showGenderSelection() {
       'phi': this.gender === 'female' ? 'phi_female' : 'phi'
     };
 
-    // Get all archetypes sorted by weighted score, mapping to gender-specific IDs
+    // Get all scored archetypes sorted by weighted score, mapping to gender-specific IDs
     const sortedArchetypes = Object.keys(this.archetypeScores)
       .map(archId => {
         const genderSpecificId = genderMapping[archId] || archId;
         const archetype = ARCHETYPES[genderSpecificId] || ARCHETYPES[archId];
-        if (!archetype) return null;
+        if (!archetype || genderSpecificId.includes('_family')) return null;
         return {
           id: genderSpecificId,
           ...archetype,
@@ -1699,60 +1731,66 @@ showGenderSelection() {
       .filter(arch => arch !== null)
       .sort((a, b) => b.score - a.score);
 
-    // Primary archetype (highest score)
-    let primary = sortedArchetypes[0];
+    // Rank family nodes by rolled-up evidence across all subtypes in each class.
+    const familyTotals = new Map();
+    sortedArchetypes.forEach((arch) => {
+      const familyId = this.getFamilyNodeIdForArchetype(arch.id);
+      if (!familyId) return;
+      familyTotals.set(familyId, (familyTotals.get(familyId) || 0) + (arch.score || 0));
+    });
+    const rankedFamilies = [...familyTotals.entries()]
+      .map(([id, score]) => ({ id, score, archetype: ARCHETYPES[id] }))
+      .filter((x) => x.archetype && Array.isArray(x.archetype.subtypes))
+      .sort((a, b) => b.score - a.score);
+    this.analysisData.familyRollup = rankedFamilies.map((x) => ({ id: x.id, score: x.score }));
 
-    const pickSubtype = (baseArchetype) => {
-      if (!baseArchetype?.subtypes?.length) return null;
-      // Rank by full weighted evidence (all phases); tie-break on Phase 2 (dimensional refinement).
-      const subtypeScores = baseArchetype.subtypes
-        .map(id => {
-          const s = this.archetypeScores[id];
+    const pickSubtypeFromFamily = (familyNode) => {
+      if (!familyNode?.archetype?.subtypes?.length) return null;
+      const ranked = familyNode.archetype.subtypes
+        .map((id) => {
+          const s = this.archetypeScores[id] || {};
           return {
             id,
-            weighted: s?.weighted ?? 0,
-            phase2: s?.phase2 ?? 0
+            weighted: s.weighted ?? 0,
+            phase2: s.phase2 ?? 0
           };
         })
         .sort((a, b) => {
           if (b.weighted !== a.weighted) return b.weighted - a.weighted;
           return b.phase2 - a.phase2;
         });
-      const topSubtype = subtypeScores[0];
-      if (!topSubtype) return null;
-      if (topSubtype.weighted <= 0 && topSubtype.phase2 <= 0) return null;
-      const subtype = ARCHETYPES[topSubtype.id];
-      return subtype
-        ? { ...subtype, score: this.archetypeScores[topSubtype.id]?.weighted ?? topSubtype.weighted }
-        : null;
+      const top = ranked[0];
+      if (!top) return null;
+      const def = ARCHETYPES[top.id];
+      if (!def) return null;
+      const familyBase = this.getFamilyBaseId(familyNode.id);
+      return this.normalizeTopArchetypeEntry({
+        id: top.id,
+        ...def,
+        score: top.weighted,
+        parentType: def.parentType || familyBase,
+        familyType: familyNode.id
+      });
     };
 
-    const primarySubtype = pickSubtype(primary);
-    if (primarySubtype) {
-      primary = { ...primarySubtype, parentType: primary?.id || primarySubtype.parentType };
-    }
-    
-    // Secondary archetype (next highest, must be >25% of primary)
-    let secondary = sortedArchetypes[1] && sortedArchetypes[1].score > (primary.score * 0.25) 
-      ? sortedArchetypes[1] 
-      : null;
-    const secondarySubtype = pickSubtype(secondary);
-    if (secondarySubtype) {
-      secondary = { ...secondarySubtype, parentType: secondary?.id || secondarySubtype.parentType };
-    }
+    const primaryFamily = rankedFamilies[0] || null;
+    let primary = pickSubtypeFromFamily(primaryFamily);
 
-    // Tertiary archetype (next highest, must be >15% of primary)
-    let tertiary = sortedArchetypes[2] && sortedArchetypes[2].score > (primary.score * 0.15)
-      ? sortedArchetypes[2]
-      : null;
-    const tertiarySubtype = pickSubtype(tertiary);
-    if (tertiarySubtype) {
-      tertiary = { ...tertiarySubtype, parentType: tertiary?.id || tertiarySubtype.parentType };
+    let secondaryFamily = null;
+    if (rankedFamilies[1] && primaryFamily) {
+      secondaryFamily = rankedFamilies[1].score > (primaryFamily.score * 0.25) ? rankedFamilies[1] : null;
     }
+    let secondary = pickSubtypeFromFamily(secondaryFamily);
+
+    let tertiaryFamily = null;
+    if (rankedFamilies[2] && primaryFamily) {
+      tertiaryFamily = rankedFamilies[2].score > (primaryFamily.score * 0.15) ? rankedFamilies[2] : null;
+    }
+    let tertiary = pickSubtypeFromFamily(tertiaryFamily);
 
     // Calculate confidence levels
     const totalScore = sortedArchetypes.reduce((sum, arch) => sum + arch.score, 0);
-    const primaryConfidence = totalScore > 0 ? (primary.score / totalScore) * 100 : 0;
+    const primaryConfidence = primary && totalScore > 0 ? (primary.score / totalScore) * 100 : 0;
     const secondaryConfidence = secondary && totalScore > 0 ? (secondary.score / totalScore) * 100 : 0;
     const tertiaryConfidence = tertiary && totalScore > 0 ? (tertiary.score / totalScore) * 100 : 0;
 
@@ -2330,19 +2368,20 @@ showGenderSelection() {
       this.analysisData.tertiaryArchetype?.id
     ].filter(Boolean);
 
-    const allowedParentTypes = new Set();
+    const allowedFamilyTypes = new Set();
     topIds.forEach(id => {
-      const p = ARCHETYPES[id]?.parentType;
-      if (p) allowedParentTypes.add(p);
+      const f = this.getFamilyNodeIdForArchetype(id);
+      if (f) allowedFamilyTypes.add(f);
     });
-    if (allowedParentTypes.size === 0) return [];
+    if (allowedFamilyTypes.size === 0) return [];
 
     const excludeIds = new Set(topIds);
 
     return this.getShadowPatternsRaw().filter(arch => {
       const def = ARCHETYPES[arch.id];
-      if (!def?.parentType) return false;
-      if (!allowedParentTypes.has(def.parentType)) return false;
+      if (!def) return false;
+      const family = this.getFamilyNodeIdForArchetype(arch.id);
+      if (!family || !allowedFamilyTypes.has(family)) return false;
       if (excludeIds.has(arch.id)) return false;
       return true;
     });
@@ -2434,9 +2473,9 @@ showGenderSelection() {
       }).filter(Boolean).join(', ');
     };
 
-    const primaryParent = primary?.parentType ? ARCHETYPES?.[primary.parentType] : null;
-    const secondaryParent = secondary?.parentType ? ARCHETYPES?.[secondary.parentType] : null;
-    const tertiaryParent = tertiary?.parentType ? ARCHETYPES?.[tertiary.parentType] : null;
+    const primaryParent = primary?.familyType ? ARCHETYPES?.[primary.familyType] : (primary?.parentType ? ARCHETYPES?.[primary.parentType] : null);
+    const secondaryParent = secondary?.familyType ? ARCHETYPES?.[secondary.familyType] : (secondary?.parentType ? ARCHETYPES?.[secondary.parentType] : null);
+    const tertiaryParent = tertiary?.familyType ? ARCHETYPES?.[tertiary.familyType] : (tertiary?.parentType ? ARCHETYPES?.[tertiary.parentType] : null);
 
     const primaryParentSummary = primaryParent ? summarizeArchetype(primaryParent) : '';
     const secondaryParentSummary = secondaryParent ? summarizeArchetype(secondaryParent) : '';
@@ -2805,6 +2844,15 @@ showGenderSelection() {
       this.respectContextAnswers = progress.respectContextAnswers || {};
       this.archetypeScores = progress.archetypeScores || {};
       this.analysisData = progress.analysisData || this.analysisData;
+
+      // Migration: normalize older saved entries missing familyType.
+      const normalizeSavedEntry = (entry) => {
+        if (!entry?.id) return entry;
+        return this.normalizeTopArchetypeEntry(entry);
+      };
+      this.analysisData.primaryArchetype = normalizeSavedEntry(this.analysisData.primaryArchetype);
+      this.analysisData.secondaryArchetype = normalizeSavedEntry(this.analysisData.secondaryArchetype);
+      this.analysisData.tertiaryArchetype = normalizeSavedEntry(this.analysisData.tertiaryArchetype);
 
       // PRIORITY: If we have completed results, show report immediately on revisit
       if (this.analysisData.primaryArchetype) {
