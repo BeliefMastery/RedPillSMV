@@ -46,6 +46,7 @@ import { getStageGateState, getSuiteSnapshots, getArchetypeGenderForSuite } from
 import { applyAttractionSuiteCalibration } from './shared/attraction-suite-calibration.mjs';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
+const ATTRACTION_PROGRESS_KEY = 'attraction-assessment:progress';
 
 function describePartnerRangeForAria(min, max) {
   const lo = Math.max(0, Math.min(100, typeof min === 'number' ? min : 0));
@@ -80,13 +81,14 @@ export class AttractionEngine {
 
     const gate = getStageGateState();
     const restored = this.restoreLastResults();
+    const resumed = !restored ? this.restoreInProgress() : false;
     if (!gate.attractionUnlocked) {
       if (!restored) {
         this.showAttractionSuiteHardGate(gate);
         this.ui.transition('idle');
         return;
       }
-    } else if (restored) {
+    } else if (restored || resumed) {
       return;
     }
     this.ui.transition('idle');
@@ -143,6 +145,7 @@ export class AttractionEngine {
       this.setReportHeaderState(true);
       this.ui.transition('results');
       this.renderResults();
+      this.clearInProgress();
       window.scrollTo(0, 0);
       return true;
     } catch {
@@ -164,6 +167,76 @@ export class AttractionEngine {
       }
     } catch (e) {
       this.debugReporter.logError(e, 'persistResultsToStorage');
+    }
+  }
+
+  saveInProgress() {
+    try {
+      if (!this.currentGender) return;
+      localStorage.setItem(ATTRACTION_PROGRESS_KEY, JSON.stringify({
+        currentGender: this.currentGender,
+        currentPhase: this.currentPhase,
+        currentQuestionIndex: this.currentQuestionIndex,
+        responses: this.responses,
+        preferences: this.preferences,
+        savedAt: new Date().toISOString()
+      }));
+    } catch (e) {
+      this.debugReporter.logError(e, 'saveInProgress');
+    }
+  }
+
+  clearInProgress() {
+    try {
+      localStorage.removeItem(ATTRACTION_PROGRESS_KEY);
+    } catch {
+      // no-op
+    }
+  }
+
+  restoreInProgress() {
+    try {
+      const gate = getStageGateState();
+      if (!gate.attractionUnlocked) return false;
+      const raw = localStorage.getItem(ATTRACTION_PROGRESS_KEY);
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      if (!data || !data.currentGender) return false;
+      const archG = getArchetypeGenderForSuite();
+      if (archG && archG !== data.currentGender) {
+        this.clearInProgress();
+        return false;
+      }
+
+      this.currentGender = data.currentGender;
+      this.currentPhase = Number.isInteger(data.currentPhase) ? data.currentPhase : -1;
+      this.currentQuestionIndex = Number.isInteger(data.currentQuestionIndex) ? data.currentQuestionIndex : 0;
+      this.responses = data.responses || {};
+      this.preferences = data.preferences || {};
+
+      this.setReportHeaderState(false);
+      this.ui.transition('assessment');
+
+      if (this.currentPhase < 0) {
+        this.showPreferencesForm();
+        this.hydratePreferencesForm();
+        return true;
+      }
+
+      const phaseNames = Object.keys(this.getClusters());
+      if (this.currentPhase >= phaseNames.length) {
+        this.clearInProgress();
+        return false;
+      }
+      const phase = this.getClusters()[phaseNames[this.currentPhase]];
+      const qCount = phase?.questions?.length || 0;
+      this.currentQuestionIndex = Math.min(Math.max(0, this.currentQuestionIndex), Math.max(0, qCount - 1));
+
+      this.showPhaseQuestions(true);
+      return true;
+    } catch (e) {
+      this.debugReporter.logError(e, 'restoreInProgress');
+      return false;
     }
   }
 
@@ -202,6 +275,7 @@ export class AttractionEngine {
       void showAlert(gate.attractionBlockMessage);
       return;
     }
+    this.clearInProgress();
     const suiteG = getArchetypeGenderForSuite();
     this.setReportHeaderState(false);
     this.ui.transition('assessment');
@@ -323,6 +397,20 @@ export class AttractionEngine {
     }
   }
 
+  hydratePreferencesForm() {
+    const form = document.getElementById('preferencesForm');
+    if (!form || !this.preferences || typeof this.preferences !== 'object') return;
+    Object.entries(this.preferences).forEach(([k, v]) => {
+      const input = form.querySelector(`#${k}`);
+      if (input) {
+        input.value = String(v);
+        return;
+      }
+      const radio = form.querySelector(`input[type="radio"][name="${k}"][value="${String(v)}"]`);
+      if (radio) radio.checked = true;
+    });
+  }
+
   capturePreferences() {
     const form = document.getElementById('preferencesForm');
     if (!form) return;
@@ -332,6 +420,8 @@ export class AttractionEngine {
     if (!valid) { showAlert('Please complete all preference fields'); return; }
     fd.forEach((v, k) => { this.preferences[k] = isNaN(v) ? v : parseFloat(v); });
     this.currentPhase = 0;
+    this.currentQuestionIndex = 0;
+    this.saveInProgress();
     this.showPhaseIntro();
   }
 
@@ -365,7 +455,7 @@ export class AttractionEngine {
     document.getElementById('startPhaseBtn')?.addEventListener('click', () => this.showPhaseQuestions());
   }
 
-  showPhaseQuestions() {
+  showPhaseQuestions(isResume = false) {
     const clusters = this.getClusters();
     const phaseNames = Object.keys(clusters);
     const phaseName = phaseNames[this.currentPhase];
@@ -376,17 +466,19 @@ export class AttractionEngine {
     if (!container) return;
     const questions = phase.questions || [];
 
-    let html = `<div class="phase-questions"><div class="phase-header-mini"><h3>${SecurityUtils.sanitizeHTML(phase.title)}</h3><p class="question-progress" id="questionProgress">Question 1 of ${questions.length}</p></div><form id="phaseForm">`;
+    let html = `<div class="phase-questions"><div class="phase-header-mini"><h3>${SecurityUtils.sanitizeHTML(phase.title)}</h3><p class="question-progress" id="questionProgress">Question ${Math.min(this.currentQuestionIndex + 1, Math.max(questions.length, 1))} of ${questions.length}</p></div><form id="phaseForm">`;
     questions.forEach((q, idx) => {
       const opts = q.options || [1, 3, 5, 7, 10];
       let pairs = opts.map(v => ({ value: v, label: this.buildOptionLabel(q, v) }));
       if (q.shuffleOptions) pairs = this.shuffleArray(pairs);
       const req = q.optional ? '' : ' required';
-      const optsHtml = pairs.map(p => `<label class="option-label"><input type="radio" name="${SecurityUtils.sanitizeHTML(q.id)}" value="${p.value}"${req}><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(p.label)}</span></span></label>`).join('');
+      const currentVal = this.responses[q.id];
+      const optsHtml = pairs.map(p => `<label class="option-label"><input type="radio" name="${SecurityUtils.sanitizeHTML(q.id)}" value="${p.value}"${String(currentVal) === String(p.value) ? ' checked' : ''}${req}><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(p.label)}</span></span></label>`).join('');
       const subcat = phase.subcategories?.[q.subcategory]?.label || q.subcategory;
       const optHint = q.optional ? '<p class="question-optional-hint" style="color:var(--muted);font-size:0.88rem;margin:0 0 0.75rem;line-height:1.5;">Optional: press <strong>Next</strong> without choosing if you prefer not to answer—this item is omitted from scoring; your other answers still count.</p>' : '';
       const helpHint = q.helpText ? `<p class="question-help">${SecurityUtils.sanitizeHTML(q.helpText)}</p>` : '';
-      html += `<div class="question-block" data-question-index="${idx}" data-phase="${phaseName}" style="${idx === 0 ? '' : 'display:none'}">
+      const shouldShow = isResume ? idx === this.currentQuestionIndex : idx === 0;
+      html += `<div class="question-block" data-question-index="${idx}" data-phase="${phaseName}" style="${shouldShow ? '' : 'display:none'}">
         <div class="question-header"><span class="question-number">Question ${idx + 1} of ${questions.length}</span><span class="question-category">${SecurityUtils.sanitizeHTML(subcat)}</span></div>
         <p class="question-text">${SecurityUtils.sanitizeHTML(q.text)}</p>
         ${helpHint}
@@ -396,9 +488,12 @@ export class AttractionEngine {
     });
     html += `</form></div>`;
     container.innerHTML = html;
-    this.currentQuestionIndex = 0;
+    if (!isResume) this.currentQuestionIndex = 0;
     this.setNavVisibility(true);
+    const prog = document.getElementById('questionProgress');
+    if (prog) prog.textContent = `Question ${this.currentQuestionIndex + 1} of ${questions.length}`;
     this.updatePrevNextButtons();
+    this.saveInProgress();
   }
 
   updatePrevNextButtons() {
@@ -428,6 +523,7 @@ export class AttractionEngine {
     } else {
       this.responses[input.name] = parseInt(input.value, 10);
     }
+    this.saveInProgress();
 
     if (this.currentQuestionIndex >= questions.length - 1) {
       this.completePhase();
@@ -443,6 +539,7 @@ export class AttractionEngine {
       if (prog) prog.textContent = `Question ${this.currentQuestionIndex + 1} of ${questions.length}`;
     }
     this.updatePrevNextButtons();
+    this.saveInProgress();
   }
 
   prevQuestion() {
@@ -461,6 +558,7 @@ export class AttractionEngine {
       if (prog) prog.textContent = `Question ${this.currentQuestionIndex + 1} of ${questions.length}`;
     }
     this.updatePrevNextButtons();
+    this.saveInProgress();
   }
 
   completePhase() {
@@ -484,6 +582,8 @@ export class AttractionEngine {
     }
 
     this.currentPhase++;
+    this.currentQuestionIndex = 0;
+    this.saveInProgress();
     if (this.currentPhase < phaseNames.length) {
       this.showPhaseIntro();
     } else {
@@ -503,6 +603,7 @@ export class AttractionEngine {
     );
     this.finalizeSmvDerivatives(this.smv);
     this.persistResultsToStorage();
+    this.clearInProgress();
     this.setReportHeaderState(true);
     this.ui.transition('results');
     this.renderResults();
@@ -1148,6 +1249,7 @@ export class AttractionEngine {
 
   resetAssessment() {
     localStorage.removeItem(ATTRACTION_RESULTS_KEY);
+    this.clearInProgress();
     this.currentGender = null;
     this.currentPhase = -1;
     this.responses = {};

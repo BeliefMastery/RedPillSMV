@@ -5548,6 +5548,22 @@ img[data-src].loaded {
     line-height: 1.45;
 }
 
+.multi-select-badge-wrap {
+    margin-bottom: 0.75rem;
+}
+
+.multi-select-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+    background: var(--glass);
+}
+
 .results-dashboard .attraction-classification-badge-wrap {
     margin-top: 0.15rem;
     margin-bottom: 1rem;

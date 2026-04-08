@@ -1085,7 +1085,7 @@ showGenderSelection() {
     return `
       <div class="question-card">
         <h3>${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
-        <p class="form-help" style="margin-bottom: 0.75rem;"><span class="multi-select-badge" style="display: inline-block; background: var(--brand); color: #0a0a0a; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: var(--radius); font-size: 0.9rem;">Select all that apply.</span></p>
+        <p class="form-help multi-select-badge-wrap"><span class="multi-select-badge">Select all that apply.</span></p>
         <div class="options-container">
           ${optionsHTML}
         </div>

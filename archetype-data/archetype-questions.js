@@ -1197,17 +1197,31 @@ export const PHASE_5_QUESTIONS = {
       ]
     },
     {
-      id: 'p5_m_cr_competence',
-      question: 'People rely on me to solve complex problems or secure resources.',
+      id: 'p5_m_cr_problem_solving',
+      question: 'People rely on me to solve complex problems that require analysis and judgment.',
       type: 'likert',
       scale: 5,
       cluster: 'coalition_rank',
       clusterLabel: 'Coalition Rank (3Cs)',
-      markerLabel: 'Competence',
+      markerLabel: 'Competence: Problem Solving',
       archetypes: [
-        { id: 'gamma', weight: 1.4 },
-        { id: 'delta', weight: 1.2 },
-        { id: 'alpha', weight: 1.0 }
+        { id: 'gamma', weight: 0.8 },
+        { id: 'delta', weight: 0.7 },
+        { id: 'alpha', weight: 0.6 }
+      ]
+    },
+    {
+      id: 'p5_m_cr_resource_mobilization',
+      question: 'People rely on me to secure resources, logistics, or practical support when needed.',
+      type: 'likert',
+      scale: 5,
+      cluster: 'coalition_rank',
+      clusterLabel: 'Coalition Rank (3Cs)',
+      markerLabel: 'Competence: Resource Mobilization',
+      archetypes: [
+        { id: 'gamma', weight: 0.6 },
+        { id: 'delta', weight: 0.5 },
+        { id: 'alpha', weight: 0.4 }
       ]
     },
     {
