@@ -2,14 +2,14 @@
  * Profile decisiveness: how separated the top archetype *family* is from the runner-up,
  * using summed weighted scores per cluster (parent + subtypes). Versioned thresholds for tuning.
  *
- * v2 calibration: sharper "clear lead" bar (SHARP_* raised) so near-tie family totals read
- * competitive, not sharp. Tune using saved `profileDecisiveness` snapshots; values use the
- * same scale as engine `weighted` (post phaseWeights).
+ * v3 calibration: sharper "clear lead" bar + family transition-likelihood matrix so
+ * competitive / very-competitive copy can express consolidation-vs-transition trajectory.
+ * Values use the same scale as engine `weighted` (post phaseWeights).
  *
  * Callers must pass the loaded `ARCHETYPES` map from the engine (do not import archetypes.js
  * here: this package is CommonJS for Node while archetypes.js is ESM syntax-only).
  */
-export const PROFILE_DECISIVENESS_VERSION = 2;
+export const PROFILE_DECISIVENESS_VERSION = 3;
 
 /** Both required for "sharp". Raised in v2 so ~0.028 margin / ~1.38 ratio reads competitive. */
 const SHARP_MIN_MARGIN = 0.028;
@@ -17,6 +17,44 @@ const SHARP_MIN_RATIO = 1.4;
 const VERY_COMPETITIVE_MARGIN = 0.016;
 const VERY_COMPETITIVE_RATIO = 1.18;
 const SUBTYPE_BLURRY_THRESHOLD = 0.012;
+
+/**
+ * Family-level transition likelihood matrix (draft v1).
+ * Values: 0..1 where higher means more plausible primary-family drift over time.
+ * These are directional tendencies, not deterministic outcomes.
+ */
+const FAMILY_TRANSITION_LIKELIHOODS = {
+  alpha: { alpha: 1, beta: 0.06, gamma: 0.15, delta: 0.32, sigma: 0.18, omega: 0.03, phi: 0.12 },
+  beta: { alpha: 0.44, beta: 1, gamma: 0.35, delta: 0.58, sigma: 0.2, omega: 0.16, phi: 0.08 },
+  gamma: { alpha: 0.4, beta: 0.2, gamma: 1, delta: 0.46, sigma: 0.36, omega: 0.14, phi: 0.14 },
+  delta: { alpha: 0.34, beta: 0.18, gamma: 0.16, delta: 1, sigma: 0.16, omega: 0.07, phi: 0.12 },
+  sigma: { alpha: 0.18, beta: 0.08, gamma: 0.34, delta: 0.16, sigma: 1, omega: 0.14, phi: 0.12 },
+  omega: { alpha: 0.05, beta: 0.36, gamma: 0.16, delta: 0.38, sigma: 0.18, omega: 1, phi: 0.06 },
+  phi: { alpha: 0.14, beta: 0.06, gamma: 0.12, delta: 0.14, sigma: 0.12, omega: 0.04, phi: 1 }
+};
+
+function canonicalFamilyId(clusterId) {
+  if (!clusterId) return '';
+  const lower = String(clusterId).toLowerCase();
+  if (lower.endsWith('_female')) return lower.replace('_female', '');
+  return lower;
+}
+
+function transitionLikelihoodLabel(value) {
+  if (value >= 0.45) return 'high';
+  if (value >= 0.25) return 'moderate';
+  if (value >= 0.1) return 'low';
+  return 'very_low';
+}
+
+function transitionLikelihoodBetween(fromFamilyId, toFamilyId) {
+  const from = canonicalFamilyId(fromFamilyId);
+  const to = canonicalFamilyId(toFamilyId);
+  if (!from || !to) return { value: 0.2, label: 'low' };
+  const value = FAMILY_TRANSITION_LIKELIHOODS?.[from]?.[to];
+  if (typeof value !== 'number') return { value: 0.2, label: 'low' };
+  return { value, label: transitionLikelihoodLabel(value) };
+}
 
 function resolveClusterId(archId, archetypes) {
   const meta = archetypes?.[archId];
@@ -108,6 +146,7 @@ export function computeProfileDecisiveness(archetypeScores, archetypes) {
     clusterSecondWeighted: w2,
     clusterMargin,
     clusterRatio,
+    transitionLikelihoodToRunnerUp: transitionLikelihoodBetween(clusterWinnerId, clusterSecondId),
     familyBand,
     subtypeTopId,
     subtypeSecondId,
@@ -131,6 +170,7 @@ export function getProfileDecisivenessCalloutCopy(d, archetypes) {
   if (!d) return null;
 
   const other = nearestOtherGroupName(d, archetypes);
+  const transition = transitionLikelihoodBetween(d.clusterWinnerId, d.clusterSecondId);
 
   let lines = [];
 
@@ -141,13 +181,15 @@ export function getProfileDecisivenessCalloutCopy(d, archetypes) {
   } else if (d.familyBand === 'very_competitive') {
     lines = [
       other
-        ? `There is very little distance between your primary archetype group and ${other}—large conditional swings: modestly different answers could change which group leads. Secondary and tertiary results are especially important.`
-        : 'There is very little distance between your primary archetype group and other groups—large conditional swings: modestly different answers could change which group leads. Secondary and tertiary results are especially important.'
+        ? `There is very little distance between your primary archetype group and ${other}. Large conditional swings are likely: modestly different answers could change which group leads. Transition pressure toward ${other} appears ${transition.label.replace('_', ' ')}.`
+        : `There is very little distance between your primary archetype group and other groups. Large conditional swings are likely: modestly different answers could change which group leads. Transition pressure appears ${transition.label.replace('_', ' ')}.`
     ];
   } else {
     lines = [
       other
-        ? `There is only a moderate distance between your primary archetype group and ${other}. You may be consolidating into this primary pattern, or transitioning out of it.`
+        ? transition.value < 0.25
+          ? `There is only a moderate distance between your primary archetype group and ${other}. You are more likely consolidating into this primary pattern than transitioning out of it toward ${other}.`
+          : `There is only a moderate distance between your primary archetype group and ${other}. Consolidation and transition toward ${other} are both plausible; transition pressure appears ${transition.label.replace('_', ' ')}.`
         : 'There is only a moderate distance between your primary archetype group and other groups. You may be consolidating into this primary pattern, or transitioning out of it.'
     ];
   }
