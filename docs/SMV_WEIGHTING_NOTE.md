@@ -31,6 +31,16 @@ Female scoring and delusion paths are unchanged.
 4. **Male `radActivity`** overrides the subcategory percentile: weighted `rad_1`–`rad_4` plus anti-rad floor (`RAD_ACTIVITY_TYPE_MODIFIER` in `attraction-data.js`). Rad questions still participate in weighted subcategory math before override. **Product framing:** this pillar is meant to read as how *cool / novel / radical* pursuits *outside the relationship* are—benign **competition for the mate’s share of attention** and **boredom mitigation**—not generic “mission” language alone.
 5. **Overall SMV** = dot product of **cluster percentiles** with **`MALE_CLUSTER_WEIGHTS`** or **`FEMALE_CLUSTER_WEIGHTS`**.
 
+## Suite calibration (after questionnaire SMV)
+
+When **Archetype** and **Polarity** are already complete on the device, [`shared/attraction-suite-calibration.mjs`](../shared/attraction-suite-calibration.mjs) applies a **bounded** post-pass after step 5 (constants and versions: [`shared/suite-calibration-config.mjs`](../shared/suite-calibration-config.mjs)):
+
+- Cluster percentiles: **≤±3** points each vs questionnaire clusters.
+- Overall: change **≤±2** points vs questionnaire overall (even if the reweighted dot product from nudged clusters would move more).
+- Metadata is stored on `smv.suiteCalibration` (including `inputsHash` for audit).
+
+See also [`docs/SUITE_CALIBRATION.md`](./SUITE_CALIBRATION.md). Delusion and preference layers still use the **calibrated** overall/clusters after this step.
+
 ## Cluster weights (overall SMV)
 
 |        | coalitionRank | reproductiveConfidence | axisOfAttraction |

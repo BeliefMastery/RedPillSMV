@@ -48,15 +48,22 @@
       <ul class="nav-list" id="top-nav" role="menubar">
         <li role="none"><a role="menuitem" href="index.html">Home</a></li>
         <li role="none"><a role="menuitem" href="archetype.html">Archetype</a></li>
-        <li role="none"><a role="menuitem" href="attraction.html" class="active">Attraction</a></li>
         <li role="none"><a role="menuitem" href="temperament.html">Polarity</a></li>
+        <li role="none"><a role="menuitem" href="attraction.html" class="active">Attraction</a></li>
         <li role="none"><a role="menuitem" href="relationship.html">Relationships</a></li>
       </ul>
     </nav>
   </header>
 
   <main>
-     <div class="section-inner minimal-section">
+    <section id="suiteStageGate" class="integrated-map-gate suite-stage-gate" aria-label="Assessment prerequisite" hidden>
+      <h2 class="panel-title" style="margin-top:0;">Attraction is locked</h2>
+      <p id="suiteStageGateMessage" style="color:var(--muted);line-height:1.55;margin:0 0 1rem;">Complete <strong>Archetype</strong> and <strong>Polarity</strong> first. Attraction folds both into your Sexual Market Value read.</p>
+      <p style="margin:0 0 0.75rem;"><a class="btn btn-primary" id="suiteStageGateCtaPrimary" href="archetype.html">Go to Archetype assessment</a></p>
+      <p style="margin:0 0 1rem;"><a class="btn btn-secondary" id="suiteStageGateCtaSecondary" href="temperament.html">Go to Polarity assessment</a></p>
+      <p style="margin:0;"><a href="index.html">Back to home</a></p>
+    </section>
+     <div class="section-inner minimal-section suite-main-flow" id="attractionMainFlow">
         <h2 class="section-title-btn">🏆 Attraction, Status and Selection</h2>
 
       
@@ -178,9 +185,10 @@
   </main>
 
   <nav class="bottom-nav" aria-label="App navigation">
+    <a href="index.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⌂</span><span>Home</span></a>
     <a href="archetype.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◇</span><span>Archetype</span></a>
-    <a href="attraction.html" class="bottom-nav-item active"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
     <a href="temperament.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◈</span><span>Polarity</span></a>
+    <a href="attraction.html" class="bottom-nav-item active"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
     <a href="relationship.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⬡</span><span>Relationships</span></a>
   </nav>
 
@@ -200,6 +208,7 @@
 
   <script src="./shared/background.js"></script>
   <script src="./shared/style-switcher.js"></script>
+  <script type="module" src="./shared/suite-nav-gates.js"></script>
   <script type="module" src="attraction-engine.js"></script>
   
   <script>

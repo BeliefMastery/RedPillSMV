@@ -17,6 +17,8 @@ import { getDimensionNormativeClarifier } from './shared/temperament-normative-c
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import { EXPECTED_GENDER_TRENDS, formatCompositePositionDescription } from './shared/temperament-composite-meta.js';
+import { getStageGateState, getSuiteSnapshots } from './shared/suite-completion.js';
+import { applyArchetypePolarityCalibration } from './shared/archetype-polarity-calibration.mjs';
 
 // Data modules - will be loaded lazily
 let TEMPERAMENT_DIMENSIONS, INTIMATE_DYNAMICS;
@@ -184,6 +186,10 @@ export class TemperamentEngine {
    * Initialize the engine
    */
   init() {
+    const gate = getStageGateState();
+    if (!gate.polarityUnlocked) {
+      this.showPolaritySuiteHardGate();
+    }
     this.attachEventListeners();
     Promise.resolve(this.loadStoredData()).then(() => {
       if (this.shouldAutoGenerateSample()) {
@@ -192,6 +198,14 @@ export class TemperamentEngine {
     }).catch(error => {
       this.debugReporter.logError(error, 'init');
     });
+  }
+
+  /** Prerequisite banner only; main flow stays visible so Generate Sample Report remains usable (see plan: gate normal flow, not demos). */
+  showPolaritySuiteHardGate() {
+    const gateEl = document.getElementById('suiteStageGate');
+    if (gateEl) {
+      gateEl.hidden = false;
+    }
   }
 
   /**
@@ -518,6 +532,11 @@ export class TemperamentEngine {
   }
 
   async startAssessment() {
+    const gate = getStageGateState();
+    if (!gate.polarityUnlocked) {
+      void showAlert(gate.polarityBlockMessage);
+      return;
+    }
     const introSection = document.getElementById('introSection');
     const actionButtonsSection = document.getElementById('actionButtonsSection');
     const questionnaireSection = document.getElementById('questionnaireSection');
@@ -1020,7 +1039,17 @@ export class TemperamentEngine {
     const overallNet = overallMasculine - overallFeminine;
 
     // Normalize to 0-1 scale (where 1 = highly masculine, 0 = highly feminine)
-    const normalizedScore = Math.max(0, Math.min(1, (overallNet + 1) / 2));
+    const rawNormalizedScore = Math.max(0, Math.min(1, (overallNet + 1) / 2));
+    const archSnap = getSuiteSnapshots().archetype;
+    const polarityCal = applyArchetypePolarityCalibration(archSnap, rawNormalizedScore);
+    const normalizedScore = polarityCal.adjustedNormalizedScore;
+    this.analysisData.suiteCalibration = {
+      source: 'archetype',
+      version: polarityCal.version,
+      delta: polarityCal.delta,
+      rawNormalizedScore: polarityCal.rawNormalizedScore,
+      cluster: polarityCal.cluster
+    };
 
     // Determine temperament category
     let temperamentCategory = 'balanced';

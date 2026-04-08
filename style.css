@@ -918,6 +918,7 @@ header.site-header {
 }
 .bottom-nav-item:hover, .bottom-nav-item:focus { color: var(--accent); background: rgba(255, 215, 0, 0.1); }
 .bottom-nav-icon { font-size: 1.1rem; margin-bottom: 0.15rem; }
+.bottom-nav-item[href*="index"].active,
 .bottom-nav-item[href*="archetype"].active,
 .bottom-nav-item[href*="attraction"].active,
 .bottom-nav-item[href*="temperament"].active,
@@ -2032,6 +2033,79 @@ body.home-page .home-grid-section:hover {
 .suite-progress-status {
     font-size: 0.85rem;
     color: var(--muted);
+}
+.suite-progress-item--locked .suite-progress-icon {
+    opacity: 0.9;
+}
+.suite-progress-link--locked {
+    color: var(--muted);
+    cursor: default;
+    font-weight: 600;
+}
+a.suite-nav-locked {
+    opacity: 0.48;
+    cursor: not-allowed;
+    pointer-events: auto;
+    filter: grayscale(0.22);
+}
+header.site-header a.suite-nav-locked {
+    opacity: 0.5;
+}
+.home-image-grid-link.suite-nav-locked {
+    opacity: 0.5;
+    filter: grayscale(0.32);
+}
+.home-image-grid-link.suite-nav-locked img {
+    opacity: 0.78;
+}
+.btn.suite-start-locked {
+    opacity: 0.82;
+    border-style: dashed;
+    border-width: 1px;
+    border-color: rgba(255, 215, 0, 0.45);
+    box-shadow: none;
+}
+.suite-start-prereq-hint {
+    flex-basis: 100%;
+    width: 100%;
+    margin: 0.65rem 0 0;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--muted);
+    border-radius: var(--radius, 8px);
+    border: 1px solid rgba(255, 215, 0, 0.22);
+    background: rgba(255, 215, 0, 0.06);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    max-width: 32rem;
+}
+.suite-start-prereq-icon {
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    color: rgba(255, 215, 0, 0.75);
+    line-height: 0;
+}
+.suite-start-prereq-icon svg {
+    display: block;
+}
+.suite-start-prereq-text {
+    flex: 1;
+    min-width: 0;
+}
+.suite-stage-gate {
+    text-align: center;
+    max-width: 32rem;
+    margin: 1.5rem auto 2rem;
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius, 8px);
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+    background: var(--glass, rgba(255, 255, 255, 0.04));
+}
+.suite-stage-gate.hidden,
+.suite-main-flow.hidden {
+    display: none !important;
 }
 .suite-gender-badge {
     display: inline-flex;

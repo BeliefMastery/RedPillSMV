@@ -42,11 +42,11 @@ function renderGate(c) {
   return `
     <div class="integrated-map-gate">
       <h1 class="section-title-btn" style="margin-bottom:0.75rem;">Integrated map</h1>
-      <p style="color:var(--muted);max-width:26rem;margin:0 auto;line-height:1.55;">Complete Archetype, Attraction, and Polarity on this device with the same respondent gender to unlock a combined read.</p>
+      <p style="color:var(--muted);max-width:28rem;margin:0 auto;line-height:1.55;">Complete assessments in order on this device: <strong>Archetype</strong>, then <strong>Polarity</strong>, then <strong>Attraction</strong>. The integrated map unlocks when all three are done with the <strong>same respondent gender</strong>.</p>
       <ul class="suite-progress-list" role="list" aria-label="Completion status">
         ${gateListItem('archetype.html', 'Archetype', c.archetype, c.genders?.archetype)}
-        ${gateListItem('attraction.html', 'Attraction', c.attraction, c.genders?.attraction)}
         ${gateListItem('temperament.html', 'Polarity', c.polarity, c.genders?.polarity)}
+        ${gateListItem('attraction.html', 'Attraction', c.attraction, c.genders?.attraction)}
       </ul>
       ${mismatchNote}
       <p style="margin-top:1.25rem;"><a href="index.html">Back to home</a></p>

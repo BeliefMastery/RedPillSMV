@@ -50,16 +50,22 @@
       <ul class="nav-list" id="top-nav" role="menubar">
         <li role="none"><a role="menuitem" href="index.html">Home</a></li>
         <li role="none"><a role="menuitem" href="archetype.html">Archetype</a></li>
-        <li role="none"><a role="menuitem" href="attraction.html">Attraction</a></li>
         <li role="none"><a role="menuitem" href="temperament.html" class="active">Polarity</a></li>
+        <li role="none"><a role="menuitem" href="attraction.html">Attraction</a></li>
         <li role="none"><a role="menuitem" href="relationship.html">Relationships</a></li>
       </ul>
     </nav>
   </header>
 
   <main>
+    <section id="suiteStageGate" class="integrated-map-gate suite-stage-gate" aria-label="Assessment prerequisite" hidden>
+      <h2 class="panel-title" style="margin-top:0;">Polarity is locked</h2>
+      <p style="color:var(--muted);line-height:1.55;margin:0 0 1rem;">Complete <strong>Modern Archetype Identification</strong> first. Polarity calibrates your temperament read using your archetype profile.</p>
+      <p style="margin:0;"><a class="btn btn-primary" href="archetype.html">Go to Archetype assessment</a></p>
+      <p style="margin:1rem 0 0;"><a href="index.html">Back to home</a></p>
+    </section>
     <!-- Universal Tool Container -->
-     <div class="section-inner minimal-section">
+     <div class="section-inner minimal-section suite-main-flow" id="temperamentMainFlow">
         <h2 class="section-title-btn">⚖️ Polarity Position Mapping</h2>
 
       
@@ -173,9 +179,10 @@
   </main>
 
   <nav class="bottom-nav" aria-label="App navigation">
+    <a href="index.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⌂</span><span>Home</span></a>
     <a href="archetype.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◇</span><span>Archetype</span></a>
-    <a href="attraction.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
     <a href="temperament.html" class="bottom-nav-item active"><span class="bottom-nav-icon" aria-hidden="true">◈</span><span>Polarity</span></a>
+    <a href="attraction.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
     <a href="relationship.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⬡</span><span>Relationships</span></a>
   </nav>
 
@@ -187,6 +194,7 @@
   <!-- Universal background JavaScript -->
   <script src="./shared/background.js"></script>
   <script src="./shared/style-switcher.js"></script>
+  <script type="module" src="./shared/suite-nav-gates.js"></script>
 
   <script type="module" src="temperament-engine.js"></script>
   

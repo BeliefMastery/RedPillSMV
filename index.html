@@ -37,8 +37,8 @@
       <ul class="nav-list" id="top-nav" role="menubar">
         <li role="none"><a role="menuitem" href="index.html" class="active">Home</a></li>
         <li role="none"><a role="menuitem" href="archetype.html">Archetype</a></li>
-        <li role="none"><a role="menuitem" href="attraction.html">Attraction</a></li>
         <li role="none"><a role="menuitem" href="temperament.html">Polarity</a></li>
+        <li role="none"><a role="menuitem" href="attraction.html">Attraction</a></li>
         <li role="none"><a role="menuitem" href="relationship.html">Relationships</a></li>
       </ul>
     </nav>
@@ -57,14 +57,14 @@
         <!-- 2x2 image grid: clickable images only -->
         <div class="home-image-grid" role="navigation" aria-label="Assessment tools">
           <a href="archetype.html" class="home-image-grid-link"><img src="./images/redpill-cover.jpg" alt="Modern Archetype Identification" loading="lazy"></a>
-          <a href="attraction.html" class="home-image-grid-link"><img src="./images/attraction-cover.jpg" alt="Attraction, Status and Selection" loading="lazy"></a>
           <a href="temperament.html" class="home-image-grid-link"><img src="./images/temperament-analysis-cover.jpg" alt="Polarity Position Mapping" loading="lazy"></a>
+          <a href="attraction.html" class="home-image-grid-link"><img src="./images/attraction-cover.jpg" alt="Attraction, Status and Selection" loading="lazy"></a>
           <a href="relationship.html" class="home-image-grid-link"><img src="./images/relationship-optimization-cover.jpg" alt="Relationships" loading="lazy"></a>
         </div>
 
         <div class="suite-progress-wrap" aria-labelledby="suite-progress-heading">
           <h2 class="suite-progress-heading" id="suite-progress-heading">Suite progress (this device)</h2>
-          <ul class="suite-progress-list" id="suite-progress-list" role="list" aria-label="Archetype, Attraction, and Polarity completion"></ul>
+          <ul class="suite-progress-list" id="suite-progress-list" role="list" aria-label="Archetype, Polarity, and Attraction completion"></ul>
           <div id="suite-integrated-cta" class="suite-integrated-cta" hidden>
             <a href="integrated-map.html" class="suite-integrated-cta-btn">Open integrated map</a>
             <p class="suite-integrated-cta-hint">Combined read across identity, expression, and market position. Data stays on this device.</p>
@@ -75,9 +75,10 @@
   </main>
 
   <nav class="bottom-nav" aria-label="App navigation">
+    <a href="index.html" class="bottom-nav-item active"><span class="bottom-nav-icon" aria-hidden="true">⌂</span><span>Home</span></a>
     <a href="archetype.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◇</span><span>Archetype</span></a>
-    <a href="attraction.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
     <a href="temperament.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◈</span><span>Polarity</span></a>
+    <a href="attraction.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">◆</span><span>Attraction</span></a>
     <a href="relationship.html" class="bottom-nav-item"><span class="bottom-nav-icon" aria-hidden="true">⬡</span><span>Relationships</span></a>
   </nav>
 
@@ -93,6 +94,7 @@
   <script src="./shared/background.js"></script>
   <script src="./shared/style-switcher.js"></script>
   <script type="module" src="./shared/suite-index.js"></script>
+  <script type="module" src="./shared/suite-nav-gates.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const hamburger = document.querySelector('.hamburger');

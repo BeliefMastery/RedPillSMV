@@ -1,4 +1,4 @@
-import { getSuiteCompletion } from './suite-completion.js';
+import { getSuiteCompletion, getStageGateState } from './suite-completion.js';
 
 function genderBadge(gender) {
   if (!gender) return '';
@@ -8,13 +8,22 @@ function genderBadge(gender) {
   return `<span class="${cls}" aria-label="${text}">${symbol}</span>`;
 }
 
-function itemTemplate({ href, label, done, gender }) {
-  const status = done ? 'Complete' : 'Not started';
-  const icon = done ? '✓' : '○';
-  const liClass = done ? 'suite-progress-item suite-progress-item--complete' : 'suite-progress-item';
+function itemTemplate({ href, label, done, gender, locked, lockHint }) {
+  let status = done ? 'Complete' : 'Not started';
+  if (locked) status = `Locked — ${lockHint || 'complete prior steps'}`;
+  const icon = done ? '✓' : locked ? '🔒' : '○';
+  const liClass = done
+    ? 'suite-progress-item suite-progress-item--complete'
+    : locked
+      ? 'suite-progress-item suite-progress-item--locked'
+      : 'suite-progress-item';
+  const safeHint = String(lockHint || '').replace(/"/g, '&quot;');
+  const linkOrSpan = locked
+    ? `<span class="suite-progress-link suite-progress-link--locked" title="${safeHint}">${label}</span>`
+    : `<a class="suite-progress-link" href="${href}">${label}</a>`;
   return `<li class="${liClass}" role="listitem">
     <span class="suite-progress-icon" aria-hidden="true">${icon}</span>
-    <a class="suite-progress-link" href="${href}">${label}</a>
+    ${linkOrSpan}
     <span class="suite-progress-status"><span class="visually-hidden">, </span>${status}</span>
     ${done ? genderBadge(gender) : ''}
   </li>`;
@@ -27,10 +36,25 @@ export function mountSuiteIndex() {
   if (!listEl) return;
 
   const c = getSuiteCompletion();
+  const g = getStageGateState();
   const items = [
-    { href: 'archetype.html', label: 'Archetype', done: c.archetype, gender: c.genders.archetype },
-    { href: 'attraction.html', label: 'Attraction', done: c.attraction, gender: c.genders.attraction },
-    { href: 'temperament.html', label: 'Polarity', done: c.polarity, gender: c.genders.polarity }
+    { href: 'archetype.html', label: 'Archetype', done: c.archetype, gender: c.genders.archetype, locked: false },
+    {
+      href: 'temperament.html',
+      label: 'Polarity',
+      done: c.polarity,
+      gender: c.genders.polarity,
+      locked: !g.polarityUnlocked && !c.polarity,
+      lockHint: g.polarityBlockMessage
+    },
+    {
+      href: 'attraction.html',
+      label: 'Attraction',
+      done: c.attraction,
+      gender: c.genders.attraction,
+      locked: !g.attractionUnlocked && !c.attraction,
+      lockHint: g.attractionBlockMessage
+    }
   ];
   listEl.innerHTML = items.map(itemTemplate).join('');
 

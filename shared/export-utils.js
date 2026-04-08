@@ -1167,6 +1167,15 @@ function buildAttractionClassificationExportBlock(data) {
     pieces.push(`<p class="muted" style="margin:0.5rem 0;line-height:1.55;font-size:0.9rem;">${escapeHtml(gridExpl)}</p>`);
   }
   if (partnerNote) pieces.push(partnerNote);
+  if (s.suiteCalibration?.version != null) {
+    const hashNote =
+      s.suiteCalibration.inputsHash != null
+        ? ` Inputs fingerprint: ${escapeHtml(String(s.suiteCalibration.inputsHash))}.`
+        : '';
+    pieces.push(
+      `<p class="muted" style="margin:0.75rem 0 0;font-size:0.88rem;line-height:1.5;font-style:italic;">Suite calibration v${escapeHtml(String(s.suiteCalibration.version))}: cluster percentiles nudged using stored Archetype and Polarity results (≤±3 points per cluster, ≤±2 overall vs questionnaire overall).${hashNote}</p>`
+    );
+  }
 
   return `<div class="export-attraction-classification" style="margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid #e8e8e8;">${pieces.join('')}</div>`;
 }
@@ -1499,9 +1508,15 @@ function buildTemperamentSpectrumPositionExportHtml(data) {
   const maleTrend = EXPECTED_GENDER_TRENDS.man;
   const femaleTrend = EXPECTED_GENDER_TRENDS.woman;
   const compositeBadgeText = formatCompositePositionDescription(ot.normalizedScore);
+  const cal = data.suiteCalibration;
+  const calNote =
+    cal?.version != null
+      ? `<p style="margin:0 0 0.85rem;font-size:0.85rem;color:#555;font-style:italic;">Composite includes archetype-linked calibration (v${escapeHtml(String(cal.version))}, Δ ${escapeHtml((typeof cal.delta === 'number' ? (cal.delta * 100).toFixed(2) : '0'))} pts on 0–100 spectrum); capped so your answers stay primary.</p>`
+      : '';
 
   return `
 <div class="temperament-spectrum-container" style="background:#f8f9fb;padding:1.25rem;border-radius:8px;margin:1rem 0;">
+${calNote}
   <div style="display:flex;justify-content:center;margin:0 0 1.15rem;">
     <div role="status" style="display:inline-block;max-width:100%;padding:0.85rem 1.5rem;border-radius:999px;background:linear-gradient(145deg,#f8fafc,#eef2f7);border:2px solid #1a4d8c;color:#1a1a1a;font-weight:700;font-size:1.1rem;line-height:1.3;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.12);">${escapeHtml(compositeBadgeText)}</div>
   </div>

@@ -8,6 +8,7 @@ import {
   computeSmvClustersAndSubs,
   computeOverallSmv
 } from '../shared/attraction-smv-core.mjs';
+import { applyAttractionSuiteCalibration } from '../shared/attraction-suite-calibration.mjs';
 
 const RAD_ACTIVITY_TYPE_MODIFIER = { ANTI_RAD_FLOOR: 25, ANTI_RAD_THRESHOLD: 2 };
 
@@ -220,6 +221,27 @@ function main() {
   const dOverallF = rowsF[1].overall - rowsF[2].overall;
   console.log(
     `Female: swing all fert items min→max → Δ axis ≈ ${dAxisF.toFixed(2)} pct pts, Δ overall ≈ ${dOverallF.toFixed(2)} pct pts`
+  );
+
+  const smvProbe = {
+    clusters: { coalitionRank: 50, reproductiveConfidence: 55, axisOfAttraction: 48 },
+    overall: 51.2,
+    marketPosition: '',
+    delusionIndex: 0,
+    delusionBand: 'low',
+    levelClassification: '',
+    targetMarket: {},
+    recommendation: {}
+  };
+  const archSnap = { analysisData: { primaryArchetype: { id: 'alpha_male' } } };
+  const polSnap = { analysisData: { overallTemperament: { normalizedScore: 0.72 } } };
+  applyAttractionSuiteCalibration(smvProbe, archSnap, polSnap, 'male', MALE_CLUSTER_WEIGHTS);
+  console.log(
+    '\nSuite calibration fixture (male): overall',
+    smvProbe.overall,
+    'meta',
+    smvProbe.suiteCalibration,
+    smvProbe.suiteCalibration?.inputsHash ? `inputsHash=${smvProbe.suiteCalibration.inputsHash}` : ''
   );
 }
 

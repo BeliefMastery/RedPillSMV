@@ -92,6 +92,65 @@ export function getSuiteCompletion() {
 }
 
 /**
+ * Sequential suite unlock: Polarity after Archetype; Attraction after Archetype + Polarity.
+ * Relationship assessment is independent (not part of this chain).
+ * @returns {{
+ *   archetypeComplete: boolean,
+ *   polarityComplete: boolean,
+ *   attractionComplete: boolean,
+ *   polarityUnlocked: boolean,
+ *   attractionUnlocked: boolean,
+ *   polarityBlockReason: string|null,
+ *   attractionBlockReason: string|null,
+ *   polarityBlockMessage: string,
+ *   attractionBlockMessage: string
+ * }}
+ */
+export function getStageGateState() {
+  const c = getSuiteCompletion();
+  const archetypeComplete = c.archetype;
+  const polarityComplete = c.polarity;
+  const attractionComplete = c.attraction;
+
+  const polarityUnlocked = archetypeComplete;
+  const attractionUnlocked = archetypeComplete && polarityComplete;
+
+  let polarityBlockReason = null;
+  let polarityBlockMessage = '';
+  if (!polarityUnlocked) {
+    polarityBlockReason = 'needs_archetype';
+    polarityBlockMessage =
+      'Complete Modern Archetype Identification first. Polarity uses your archetype profile for calibration.';
+  }
+
+  let attractionBlockReason = null;
+  let attractionBlockMessage = '';
+  if (!attractionUnlocked) {
+    if (!archetypeComplete) {
+      attractionBlockReason = 'needs_archetype';
+      attractionBlockMessage =
+        'Complete Modern Archetype Identification first, then Polarity Position Mapping. Attraction folds both into your market read.';
+    } else {
+      attractionBlockReason = 'needs_polarity';
+      attractionBlockMessage =
+        'Complete Polarity Position Mapping first. Attraction calibrates Sexual Market Value using your archetype and polarity results.';
+    }
+  }
+
+  return {
+    archetypeComplete,
+    polarityComplete,
+    attractionComplete,
+    polarityUnlocked,
+    attractionUnlocked,
+    polarityBlockReason,
+    attractionBlockReason,
+    polarityBlockMessage,
+    attractionBlockMessage
+  };
+}
+
+/**
  * Raw snapshots for integrated map (null if that leg incomplete).
  * @returns {{
  *   archetype: object|null,

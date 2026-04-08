@@ -42,6 +42,8 @@ import {
 } from './shared/attraction-report-copy.js';
 import { computeTargetMarketSummary, partnerRangeSublineFromOverall } from './shared/attraction-target-market-summary.js';
 import { maleAgeGapContext } from './shared/male-age-gap.js';
+import { getStageGateState, getSuiteSnapshots } from './shared/suite-completion.js';
+import { applyAttractionSuiteCalibration } from './shared/attraction-suite-calibration.mjs';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 
@@ -76,9 +78,45 @@ export class AttractionEngine {
 
     this.attachEventListeners();
 
-    // Restore last report on revisit (show report unless user explicitly starts new)
-    if (this.restoreLastResults()) return;
+    const gate = getStageGateState();
+    const restored = this.restoreLastResults();
+    if (!gate.attractionUnlocked) {
+      if (!restored) {
+        this.showAttractionSuiteHardGate(gate);
+        this.ui.transition('idle');
+        return;
+      }
+    } else if (restored) {
+      return;
+    }
     this.ui.transition('idle');
+  }
+
+  showAttractionSuiteHardGate(gate) {
+    const gateEl = document.getElementById('suiteStageGate');
+    const msg = document.getElementById('suiteStageGateMessage');
+    const ctaPri = document.getElementById('suiteStageGateCtaPrimary');
+    const ctaSec = document.getElementById('suiteStageGateCtaSecondary');
+    if (msg) msg.textContent = gate.attractionBlockMessage;
+    if (!gate.archetypeComplete) {
+      if (ctaPri) {
+        ctaPri.href = 'archetype.html';
+        ctaPri.textContent = 'Go to Archetype assessment';
+      }
+      if (ctaSec) ctaSec.hidden = true;
+    } else {
+      if (ctaPri) {
+        ctaPri.href = 'temperament.html';
+        ctaPri.textContent = 'Go to Polarity assessment';
+      }
+      if (ctaSec) {
+        ctaSec.hidden = false;
+        ctaSec.href = 'archetype.html';
+        ctaSec.textContent = 'Review Archetype results';
+      }
+    }
+    if (gateEl) gateEl.hidden = false;
+    // Keep #attractionMainFlow visible so Generate Sample Report works when prerequisites are missing (plan: gate normal flow, not demos).
   }
 
   restoreLastResults() {
@@ -153,6 +191,11 @@ export class AttractionEngine {
   }
 
   startAssessment() {
+    const gate = getStageGateState();
+    if (!gate.attractionUnlocked) {
+      void showAlert(gate.attractionBlockMessage);
+      return;
+    }
     this.currentGender = null;
     this.currentPhase = -1;
     this.responses = {};
@@ -434,6 +477,15 @@ export class AttractionEngine {
 
   calculateAndShowResults() {
     this.smv = this.calculateSMV();
+    const snaps = getSuiteSnapshots();
+    applyAttractionSuiteCalibration(
+      this.smv,
+      snaps.archetype,
+      snaps.polarity,
+      this.currentGender,
+      this.getClusterWeights()
+    );
+    this.finalizeSmvDerivatives(this.smv);
     this.persistResultsToStorage();
     this.setReportHeaderState(true);
     this.ui.transition('results');
@@ -474,6 +526,15 @@ export class AttractionEngine {
     };
 
     smv.overall = computeOverallSmv(smv.clusters, weights);
+    this.finalizeSmvDerivatives(smv);
+    smv.rawResponses = { ...this.responses };
+    smv.preferences = { ...this.preferences };
+    return smv;
+  }
+
+  /** Recompute labels and copy that depend on cluster percentiles and overall (e.g. after suite calibration). */
+  finalizeSmvDerivatives(smv) {
+    if (!smv || !this.currentGender) return;
     smv.marketPosition = this.classifyMarketPosition(smv.overall);
     smv.weakestSubcategories = this.identifyWeakestSubcategories(smv);
     smv.levelClassification = this.classifyDevelopmentalLevel(smv);
@@ -485,9 +546,6 @@ export class AttractionEngine {
       smv.badBoyGoodGuy = this.placeBadBoyGoodGuy(smv);
       smv.maleSocialProofLine = this.getMaleSocialProofSignalLine(this.responses);
     } else smv.keeperSweeper = this.placeKeeperSweeper(smv);
-    smv.rawResponses = { ...this.responses };
-    smv.preferences = { ...this.preferences };
-    return smv;
   }
 
   classifyMarketPosition(overall) {
