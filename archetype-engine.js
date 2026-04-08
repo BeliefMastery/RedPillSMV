@@ -11,6 +11,10 @@ import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import { ensurePeriod, softenNarrativeTone, summarizeBehavioralAccent } from './shared/archetype-narrative-utils.js';
 import { quotedMemeticSummary } from './shared/archetype-memetic-format.js';
+import {
+  computeProfileDecisiveness,
+  getProfileDecisivenessCalloutCopy
+} from './shared/archetype-profile-decisiveness.mjs';
 
 // Data modules - will be loaded lazily
 let ARCHETYPES, CORE_GROUPS, ARCHETYPE_OPTIMIZATION;
@@ -122,6 +126,7 @@ export class ArchetypeEngine {
       secondaryArchetype: null,
       tertiaryArchetype: null,
       confidenceLevels: {},
+      profileDecisiveness: null,
       allAnswers: {},
       questionSequence: []
     };
@@ -329,6 +334,7 @@ init() {
       secondaryArchetype: null,
       tertiaryArchetype: null,
       confidenceLevels: {},
+      profileDecisiveness: null,
       allAnswers: {},
       questionSequence: []
     };
@@ -1723,6 +1729,8 @@ showGenderSelection() {
       secondary: secondaryConfidence,
       tertiary: tertiaryConfidence
     };
+
+    this.analysisData.profileDecisiveness = computeProfileDecisiveness(this.archetypeScores, ARCHETYPES);
   }
 
   async nextQuestion() {
@@ -2462,6 +2470,24 @@ showGenderSelection() {
         ? `Within-archetype strategy: ${ensurePeriod(primary.growthEdge)}${primaryTraitsSummary ? ` Leverage your strengths: ${primaryTraitsSummary}.` : ''}`
         : `Within-archetype strategy: Build stability by doubling down on your healthiest traits while expanding flexibility.${primaryTraitsSummary ? ` Leverage your strengths: ${primaryTraitsSummary}.` : ''}`;
 
+    const decisivenessHtml = (() => {
+      const d = this.analysisData?.profileDecisiveness;
+      if (!d || !ARCHETYPES) return '';
+      const copy = getProfileDecisivenessCalloutCopy(d, ARCHETYPES);
+      if (!copy) return '';
+      const body = copy.lines
+        .map(
+          (line) =>
+            `<p class="archetype-decisiveness-callout__text">${SecurityUtils.sanitizeHTML(line)}</p>`
+        )
+        .join('');
+      return `<div class="archetype-decisiveness-callout" role="note">
+        <h3 class="archetype-decisiveness-callout__title">${SecurityUtils.sanitizeHTML(copy.title)}</h3>
+        ${body}
+        <p class="archetype-decisiveness-callout__footnote">${SecurityUtils.sanitizeHTML(copy.footnote)}</p>
+      </div>`;
+    })();
+
     let resultsHTML = `
       <div class="results-container" style="max-width: 900px; margin: 0 auto;">
         <div class="archetype-profile-header">
@@ -2475,6 +2501,7 @@ showGenderSelection() {
           </div>
           ${archetypeQualitiesHtml}
         </div>
+        ${decisivenessHtml}
 
         <!-- Primary Archetype -->
         <div class="archetype-card primary" style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; border: 2px solid var(--brand);">
@@ -2693,7 +2720,8 @@ showGenderSelection() {
       notes: [
         'Weighted scores combine phases 1-5 plus context adjustments before ranking.',
         'Aspiration adjustments are bias-mitigation multipliers, not direct trait scoring.'
-      ]
+      ],
+      profileDecisiveness: this.analysisData?.profileDecisiveness || null
     };
   }
 
@@ -2875,6 +2903,7 @@ showGenderSelection() {
       secondaryArchetype: null,
       tertiaryArchetype: null,
       confidenceLevels: {},
+      profileDecisiveness: null,
       allAnswers: {},
       questionSequence: []
     };

@@ -16,6 +16,7 @@ import { reportGenderGlyphHtml } from './report-gender-glyph.js';
 import { getQualificationExplanation, getMaleYoungerPartnerAccessCopy } from './attraction-report-copy.js';
 import { computeTargetMarketSummary, partnerRangeSublineFromOverall } from './attraction-target-market-summary.js';
 import { maleAgeGapContext } from './male-age-gap.js';
+import { formatProfileDecisivenessExportLine } from './archetype-profile-decisiveness.mjs';
 
 const EXPORT_VERSION = '1.1.0';
 
@@ -850,6 +851,10 @@ function generateArchetypeExport(data) {
     csv += '\n=== PRIMARY ARCHETYPE ===\n';
     csv += `Archetype: ${data.primaryArchetype.name}\n`;
     csv += `Confidence: ${data.primaryArchetype.confidence.toFixed(1)}%\n`;
+    if (data.profileDecisiveness) {
+      const decLine = formatProfileDecisivenessExportLine(data.profileDecisiveness);
+      if (decLine) csv += `${decLine}\n`;
+    }
     if (data.primaryArchetype.description) {
       csv += `Description: ${data.primaryArchetype.description}\n`;
     }
@@ -1722,6 +1727,14 @@ function buildArchetypeReportBody(data) {
   const tertiary = data.tertiaryArchetype;
   if (primary) {
     html += buildArchetypeProfileSummaryExportHtml(data);
+    if (data.profileDecisiveness) {
+      const decLine = formatProfileDecisivenessExportLine(data.profileDecisiveness);
+      if (decLine) {
+        html += `<p class="muted">${escapeHtml(decLine)}</p>`;
+        html +=
+          '<p class="muted" style="font-size:0.9em;font-style:italic;">Reflects score separation in this model run, not certainty about real-world stability.</p>';
+      }
+    }
     html += '<h2>Primary archetype</h2>';
     if (primary.confidence != null) {
       html += `<p><strong>Confidence:</strong> ${Number(primary.confidence).toFixed(0)}%</p>`;
