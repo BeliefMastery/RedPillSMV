@@ -2,6 +2,8 @@
 
 Sequential unlock: **Archetype → Polarity → Attraction** (Relationship is independent).
 
+**Gender:** The Archetype assessment selects respondent gender first. Polarity and Attraction use that same gender automatically (`getArchetypeGenderForSuite()` in [`shared/suite-completion.js`](../shared/suite-completion.js)) so the suite cannot be completed on mixed gender paths. Cached Attraction results that disagree with the stored Archetype gender are not restored.
+
 ## Source of truth
 
 All tunables live in [`shared/suite-calibration-config.mjs`](../shared/suite-calibration-config.mjs). [`shared/archetype-polarity-calibration.mjs`](../shared/archetype-polarity-calibration.mjs) and [`shared/attraction-suite-calibration.mjs`](../shared/attraction-suite-calibration.mjs) import from it.

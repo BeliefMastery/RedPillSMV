@@ -37,6 +37,17 @@ export function normalizeGender(value) {
   return null;
 }
 
+/**
+ * Gender from the Archetype assessment (source of truth for the suite).
+ * Polarity uses man/woman in answers; Attraction uses male/female — map at call sites.
+ * @returns {'male'|'female'|null}
+ */
+export function getArchetypeGenderForSuite() {
+  const archRaw = readLocalStorage('archetype-assessment:progress');
+  const archData = parseDataStoreProgress(archRaw);
+  return normalizeGender(archData?.gender || archData?.analysisData?.gender);
+}
+
 /** @returns {{
  * archetype: boolean,
  * attraction: boolean,

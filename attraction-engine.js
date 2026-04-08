@@ -42,7 +42,7 @@ import {
 } from './shared/attraction-report-copy.js';
 import { computeTargetMarketSummary, partnerRangeSublineFromOverall } from './shared/attraction-target-market-summary.js';
 import { maleAgeGapContext } from './shared/male-age-gap.js';
-import { getStageGateState, getSuiteSnapshots } from './shared/suite-completion.js';
+import { getStageGateState, getSuiteSnapshots, getArchetypeGenderForSuite } from './shared/suite-completion.js';
 import { applyAttractionSuiteCalibration } from './shared/attraction-suite-calibration.mjs';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
@@ -121,10 +121,16 @@ export class AttractionEngine {
 
   restoreLastResults() {
     try {
+      const gate = getStageGateState();
+      if (!gate.attractionUnlocked) return false;
       const raw = localStorage.getItem(ATTRACTION_RESULTS_KEY);
       if (!raw) return false;
       const d = JSON.parse(raw);
       if (!d || !d.smv || !d.currentGender) return false;
+      const archG = getArchetypeGenderForSuite();
+      if (archG && archG !== d.currentGender) {
+        return false;
+      }
       this.smv = d.smv;
       this.responses = d.responses || {};
       this.preferences = d.preferences || {};
@@ -196,12 +202,17 @@ export class AttractionEngine {
       void showAlert(gate.attractionBlockMessage);
       return;
     }
+    const suiteG = getArchetypeGenderForSuite();
+    this.setReportHeaderState(false);
+    this.ui.transition('assessment');
+    if (suiteG === 'male' || suiteG === 'female') {
+      this.selectGender(suiteG);
+      return;
+    }
     this.currentGender = null;
     this.currentPhase = -1;
     this.responses = {};
     this.preferences = {};
-    this.setReportHeaderState(false);
-    this.ui.transition('assessment');
     this.showGenderSelection();
   }
 
@@ -282,7 +293,12 @@ export class AttractionEngine {
     const container = document.getElementById('questionContainer');
     if (!container) return;
 
-    let html = `<div class="phase-intro"><h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math. For men, stated partner ages tune realistic-options copy and delusion; if market position is below mid-tier and age preferences add friction, a short <strong>younger-partner access</strong> note may appear. Headline Sexual Market Value stays the scored model only.</p><form id="preferencesForm" class="preferences-form">`;
+    const suiteG = getArchetypeGenderForSuite();
+    const lockBanner =
+      (suiteG === 'male' || suiteG === 'female') && this.currentGender === suiteG
+        ? `<p class="form-help suite-gender-lock-notice" role="status">Gender path is fixed to your completed Archetype assessment (<strong>${suiteG === 'male' ? 'Male' : 'Female'}</strong>).</p>`
+        : '';
+    let html = `<div class="phase-intro">${lockBanner}<h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math. For men, stated partner ages tune realistic-options copy and delusion; if market position is below mid-tier and age preferences add friction, a short <strong>younger-partner access</strong> note may appear. Headline Sexual Market Value stays the scored model only.</p><form id="preferencesForm" class="preferences-form">`;
     questions.forEach(q => {
       html += `<div class="form-group"><label class="form-label">${SecurityUtils.sanitizeHTML(q.text)}</label>`;
       if (q.type === 'number') {

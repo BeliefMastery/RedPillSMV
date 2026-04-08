@@ -1,10 +1,9 @@
 /**
- * Locks suite nav links (header + bottom nav + home grid) when stage prerequisites are missing.
+ * Marks suite nav links (header + bottom nav + home grid) when stage prerequisites are missing.
  * Sample-report-only access: does not apply to inline body copy links.
  * @see getStageGateState in suite-completion.js
  */
 import { getStageGateState } from './suite-completion.js';
-import { showAlert } from './confirm-modal.js';
 
 function normalizeHref(href) {
   if (!href || typeof href !== 'string') return '';
@@ -88,27 +87,16 @@ export function initSuiteNavGates() {
       file === 'temperament.html' ? !g.polarityUnlocked : !g.attractionUnlocked;
     if (!locked) {
       a.classList.remove('suite-nav-locked');
-      a.removeAttribute('aria-disabled');
       a.removeAttribute('data-suite-locked');
+      a.removeAttribute('title');
       return;
     }
 
     a.classList.add('suite-nav-locked');
-    a.setAttribute('aria-disabled', 'true');
     a.setAttribute('data-suite-locked', 'true');
     const msg =
       file === 'temperament.html' ? g.polarityBlockMessage : g.attractionBlockMessage;
-
-    if (a.dataset.suiteGateWired === '1') return;
-    a.dataset.suiteGateWired = '1';
-    a.addEventListener(
-      'click',
-      (e) => {
-        e.preventDefault();
-        void showAlert(msg);
-      },
-      true
-    );
+    a.setAttribute('title', msg);
   });
 
   applySuiteStartGateHints();

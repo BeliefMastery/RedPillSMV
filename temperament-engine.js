@@ -17,7 +17,7 @@ import { getDimensionNormativeClarifier } from './shared/temperament-normative-c
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import { EXPECTED_GENDER_TRENDS, formatCompositePositionDescription } from './shared/temperament-composite-meta.js';
-import { getStageGateState, getSuiteSnapshots } from './shared/suite-completion.js';
+import { getStageGateState, getSuiteSnapshots, getArchetypeGenderForSuite } from './shared/suite-completion.js';
 import { applyArchetypePolarityCalibration } from './shared/archetype-polarity-calibration.mjs';
 
 // Data modules - will be loaded lazily
@@ -286,13 +286,26 @@ export class TemperamentEngine {
    * Build Phase 1 question sequence
    * @returns {Promise<void>}
    */
+  applySuiteGenderFromArchetypeIfNeeded() {
+    const suiteG = getArchetypeGenderForSuite();
+    if (suiteG !== 'male' && suiteG !== 'female') return;
+    const opt = GENDER_QUESTION.options.find(
+      (o) => (suiteG === 'male' && o.value === 'man') || (suiteG === 'female' && o.value === 'woman')
+    );
+    if (!opt) return;
+    this.answers[GENDER_QUESTION.id] = { value: opt.value, label: opt.label };
+    this.analysisData.gender = opt.value;
+    this.analysisData.genderLabel = opt.label;
+  }
+
   async buildPhase1Sequence() {
     await this.loadTemperamentData();
-    
+
     // Phase 1: Orientation Screening (7 quick questions)
     this.currentPhase = 1;
     this.currentQuestionIndex = 0;
     this.questionSequence = [GENDER_QUESTION, ...PHASE_1_ORIENTATION_QUESTIONS];
+    this.applySuiteGenderFromArchetypeIfNeeded();
     this.debugReporter.recordQuestionCount(this.questionSequence.length);
   }
 
@@ -491,6 +504,18 @@ export class TemperamentEngine {
   answerQuestionForSample(question) {
     if (!question) return;
     if (question.type === 'gender') {
+      const suiteG = getArchetypeGenderForSuite();
+      if (suiteG === 'male' || suiteG === 'female') {
+        const option = question.options.find(
+          (o) => (suiteG === 'male' && o.value === 'man') || (suiteG === 'female' && o.value === 'woman')
+        );
+        if (option) {
+          this.answers[question.id] = option;
+          this.analysisData.gender = option.value;
+          this.analysisData.genderLabel = option.label;
+        }
+        return;
+      }
       const option = question.options[Math.floor(Math.random() * question.options.length)];
       this.answers[question.id] = option;
       this.analysisData.gender = option.value;
@@ -633,7 +658,9 @@ export class TemperamentEngine {
 
   renderGenderQuestion(question) {
     const questionContainer = document.getElementById('questionContainer');
+    this.applySuiteGenderFromArchetypeIfNeeded();
     const currentAnswer = this.answers[question.id];
+    const suiteLocked = getArchetypeGenderForSuite() === 'male' || getArchetypeGenderForSuite() === 'female';
 
     SecurityUtils.safeInnerHTML(questionContainer, `
       <div class="question-block">
@@ -642,40 +669,53 @@ export class TemperamentEngine {
           <span class="question-stage">Orientation</span>
         </div>
         <h3 class="question-text">${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
-        <div class="three-point-options">
-          ${question.options.map((option, index) => `
-            <label class="three-point-option ${currentAnswer && currentAnswer.value === option.value ? 'selected' : ''}">
+        ${
+          suiteLocked
+            ? `<p class="form-help suite-gender-lock-notice" role="status">Gender matches your completed <strong>Modern Archetype Identification</strong> assessment and cannot be changed here, so suite results stay on one respondent path.</p>`
+            : ''
+        }
+        <div class="three-point-options${suiteLocked ? ' suite-gender-options--locked' : ''}">
+          ${question.options
+            .map((option, index) => {
+              const isSel = currentAnswer && currentAnswer.value === option.value;
+              const dis = suiteLocked && !isSel ? 'disabled aria-disabled="true"' : '';
+              return `
+            <label class="three-point-option ${isSel ? 'selected' : ''}${suiteLocked && !isSel ? ' suite-gender-option--disabled' : ''}">
               <input
                 type="radio"
                 name="question_${question.id}"
                 value="${index}"
                 data-option-data='${JSON.stringify(option).replace(/'/g, "&apos;")}'
-                ${currentAnswer && currentAnswer.value === option.value ? 'checked' : ''}
+                ${isSel ? 'checked' : ''}
+                ${dis}
               />
               <span class="option-text">${SecurityUtils.sanitizeHTML(option.label || '')}</span>
-            </label>
-          `).join('')}
+            </label>`;
+            })
+            .join('')}
         </div>
         <p class="question-help">This helps us contextualize your results and selection criteria standards.</p>
       </div>
     `);
 
-    const inputs = document.querySelectorAll(`input[name="question_${question.id}"]`);
-    inputs.forEach(input => {
-      input.addEventListener('change', (e) => {
-        const optionData = JSON.parse(e.target.dataset.optionData);
-        this.answers[question.id] = optionData;
-        this.analysisData.gender = optionData.value;
-        this.analysisData.genderLabel = optionData.label;
+    if (!suiteLocked) {
+      const inputs = document.querySelectorAll(`input[name="question_${question.id}"]`);
+      inputs.forEach((input) => {
+        input.addEventListener('change', (e) => {
+          const optionData = JSON.parse(e.target.dataset.optionData);
+          this.answers[question.id] = optionData;
+          this.analysisData.gender = optionData.value;
+          this.analysisData.genderLabel = optionData.label;
 
-        document.querySelectorAll('.three-point-option').forEach(opt => {
-          opt.classList.remove('selected');
+          document.querySelectorAll('.three-point-option').forEach((opt) => {
+            opt.classList.remove('selected');
+          });
+          e.target.closest('label').classList.add('selected');
+
+          this.saveProgress();
         });
-        e.target.closest('label').classList.add('selected');
-
-        this.saveProgress();
       });
-    });
+    }
 
     this.updateProgress();
     this.updateNavigationButtons();
@@ -1889,6 +1929,8 @@ export class TemperamentEngine {
    */
   async loadStoredData() {
     try {
+      const gate = getStageGateState();
+      if (!gate.polarityUnlocked) return;
       const data = this.dataStore.load('progress');
       if (!data) return;
 
@@ -1897,6 +1939,7 @@ export class TemperamentEngine {
       this.answers = data.answers || {};
       this.phase1Results = data.phase1Results || null;
       this.analysisData = data.analysisData || this.analysisData;
+      this.applySuiteGenderFromArchetypeIfNeeded();
 
       // PRIORITY: If we have completed results, show report immediately on revisit
       if (this.analysisData && this.analysisData.overallTemperament) {
