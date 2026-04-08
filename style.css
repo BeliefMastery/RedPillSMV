@@ -2034,6 +2034,36 @@ body.home-page .home-grid-section:hover {
     font-size: 0.85rem;
     color: var(--muted);
 }
+.home-info-dropdown {
+    margin: 0 auto 0.9rem;
+    max-width: 44rem;
+    text-align: left;
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius, 8px);
+    background: var(--glass);
+    padding: 0.45rem 0.75rem;
+}
+.home-info-dropdown summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 600;
+    list-style: none;
+}
+.home-info-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+.home-info-dropdown summary::after {
+    content: ' ▼';
+    font-size: 0.78em;
+}
+.home-info-dropdown[open] summary::after {
+    content: ' ▲';
+}
+.home-info-dropdown p {
+    margin: 0.65rem 0 0.25rem;
+    color: var(--muted);
+    line-height: 1.55;
+}
 .suite-progress-item--locked .suite-progress-icon {
     opacity: 0.9;
 }

@@ -162,15 +162,41 @@ export const PHASE_1_QUESTIONS = [
   },
   {
     id: 'p1_q13',
-    question: 'Your response to social conflict is typically:',
+    question: 'In a friend-group conflict where two people clash publicly, you usually:',
     type: 'forced_choice',
     options: [
-      { text: 'Step in and mediate or take control', archetypes: ['alpha'], weight: 3 },
-      { text: 'Question the underlying issues and propose solutions', archetypes: ['gamma'], weight: 3 },
-      { text: 'Try to help everyone feel heard and find peace', archetypes: ['beta'], weight: 3 },
-      { text: 'Focus on practical resolution and moving forward', archetypes: ['delta'], weight: 3 },
-      { text: 'Remove yourself from the situation', archetypes: ['sigma'], weight: 3 },
-      { text: 'Feel anxious and avoid the conflict', archetypes: ['omega'], weight: 2 }
+      { text: 'Step in quickly, set boundaries, and direct the room', archetypes: ['alpha'], weight: 2 },
+      { text: 'Deconstruct what is actually driving the clash, then suggest a workable frame', archetypes: ['gamma'], weight: 2 },
+      { text: 'Make sure each person feels heard and de-escalate tension', archetypes: ['beta'], weight: 2 },
+      { text: 'Cut through emotion and move everyone to practical next steps', archetypes: ['delta'], weight: 2 },
+      { text: 'Detach from the drama and stay out unless directly involved', archetypes: ['sigma'], weight: 2 },
+      { text: 'Freeze up, feel overloaded, or avoid engagement', archetypes: ['omega'], weight: 1 }
+    ]
+  },
+  {
+    id: 'p1_q13b',
+    question: 'In a work/team conflict that threatens delivery, you usually:',
+    type: 'forced_choice',
+    options: [
+      { text: 'Take command, assign roles, and push for an immediate decision', archetypes: ['alpha'], weight: 2 },
+      { text: 'Map root causes, expose contradictions, and redesign the approach', archetypes: ['gamma'], weight: 2 },
+      { text: 'Stabilize trust and collaboration so the team can move together', archetypes: ['beta'], weight: 2 },
+      { text: 'Prioritize execution details, sequencing, and completion discipline', archetypes: ['delta'], weight: 2 },
+      { text: 'Handle your own lane independently and minimize entanglement', archetypes: ['sigma'], weight: 2 },
+      { text: 'Shut down, procrastinate, or wait for someone else to sort it out', archetypes: ['omega'], weight: 1 }
+    ]
+  },
+  {
+    id: 'p1_q13c',
+    question: 'In an online/social-media pile-on or reputational flare-up, you usually:',
+    type: 'forced_choice',
+    options: [
+      { text: 'Set the frame publicly and defend position with authority', archetypes: ['alpha'], weight: 2 },
+      { text: 'Interrogate assumptions, language, and incentives behind the outrage', archetypes: ['gamma'], weight: 2 },
+      { text: 'Seek a calmer bridge that reduces hostility and preserves connection', archetypes: ['beta'], weight: 2 },
+      { text: 'Ignore theatrics and focus on the concrete issue to resolve', archetypes: ['delta'], weight: 2 },
+      { text: 'Withdraw from the thread/platform and protect your autonomy', archetypes: ['sigma'], weight: 2 },
+      { text: 'Feel personally destabilized and avoid participation entirely', archetypes: ['omega'], weight: 1 }
     ]
   },
   {
