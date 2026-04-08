@@ -8,7 +8,7 @@ Map where you fit in the modern relationship marketplace. A self-contained app o
 
 | Tool | Page | Description |
 |------|------|-------------|
-| **Modern Archetype Identification** | `archetype.html` | Identifies primary, secondary, and tertiary archetypes using normalized family-node class rollup (all subtypes including vanilla), subtype refinement, behavioral traits, and a stability reading (consolidation vs transition trajectory). |
+| **Modern Archetype Identification** | `archetype.html` | Identifies primary, secondary, and tertiary archetypes using normalized family-node class rollup (all subtypes including vanilla), subtype refinement, and an adaptive final determinative phase when subclass signal is sparse or tied. |
 | **Attraction, Status and Selection** | `attraction.html` | Gender-specific SMV: coalition rank, reproductive confidence, axis of attraction (weighted subcategory scoring for physical/fertility signifiers; optional skip on one sensitive item), market position, recommendations. |
 | **Polarity Position Mapping** | `temperament.html` | Masculine–feminine temperament mapping, dimension scores, cross-polarity detection, and context sensitivity. |
 | **Relationships** | `relationship.html` | Compatibility and strain across multiple points; viability evaluation; action strategies per strain point. |
@@ -138,4 +138,5 @@ Frameworks referenced in the tools: Belief Mastery, Sovereign of Mind.
 | `npm run serve:www` | Copy to `www/` then serve `www/` on port 3000. |
 | `npm run cap:sync` | Run `copy:www` then `npx cap sync android`. |
 | `npm run archetype:must-have-check` | Run soft-gate scenario checks for archetype must-have penalties. |
+| `npm run archetype:phase6-check` | Run Phase 6 trigger and determinative question bank checks. |
 | `npm run test` | Placeholder (no tests configured). |

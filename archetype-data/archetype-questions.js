@@ -1,5 +1,6 @@
 // Multi-Tier Archetype Assessment Questions
 // Following bias-mitigation principles: behavioral focus, concrete scenarios, values-neutral framing
+import { PHASE_6_DETERMINATIVE_QUESTIONS } from './archetype-determinative-questions.mjs';
 
 // PHASE 1: Core Orientation (15-20 forced-choice scenarios)
 // Purpose: Identify primary quadrant (Alpha/Beta/Gamma/Delta/Sigma/Omega/Phi)
@@ -635,6 +636,7 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
   ]
 };
 
+export { PHASE_6_DETERMINATIVE_QUESTIONS };
 // PHASE 3: Shadow/Integration Assessment (10-15 contextual questions)
 // Purpose: Identify secondary influences and developmental areas
 export const PHASE_3_QUESTIONS = [

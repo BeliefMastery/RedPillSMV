@@ -16,11 +16,17 @@ import {
   getProfileDecisivenessCalloutCopy
 } from './shared/archetype-profile-decisiveness.mjs';
 import { evaluateMustHaveGates } from './shared/archetype-must-have-gates.mjs';
+import {
+  PHASE6_WEIGHT,
+  evaluatePhase6Decision,
+  canonicalFamilyKeyFromNode
+} from './shared/archetype-phase6-logic.mjs';
 
 // Data modules - will be loaded lazily
 let ARCHETYPES, CORE_GROUPS, ARCHETYPE_OPTIMIZATION;
 let PHASE_1_QUESTIONS, PHASE_2_QUESTIONS, PHASE_3_QUESTIONS, PHASE_4_QUESTIONS, PHASE_5_QUESTIONS, RESPECT_CONTEXT_QUESTIONS;
 let SUBTYPE_REFINEMENT_QUESTIONS;
+let PHASE_6_DETERMINATIVE_QUESTIONS;
 let ARCHETYPE_SPREAD_MAP;
 let BRUTAL_TRUTHS;
 let ARCHETYPE_ROLE_ACCENTS;
@@ -122,6 +128,7 @@ export class ArchetypeEngine {
       phase3Results: {},
       phase4Results: {},
       phase5Results: {},
+      phase6Results: {},
       aspirationAnalysis: {},
       primaryArchetype: null,
       secondaryArchetype: null,
@@ -129,6 +136,7 @@ export class ArchetypeEngine {
       confidenceLevels: {},
       profileDecisiveness: null,
       mustHaveGates: null,
+      subclassDiagnostics: null,
       allAnswers: {},
       questionSequence: []
     };
@@ -330,6 +338,7 @@ init() {
       phase3Results: {},
       phase4Results: {},
       phase5Results: {},
+      phase6Results: {},
       aspirationAnalysis: {},
       respectContext: null,
       provisionContext: null,
@@ -339,6 +348,7 @@ init() {
       confidenceLevels: {},
       profileDecisiveness: null,
       mustHaveGates: null,
+      subclassDiagnostics: null,
       allAnswers: {},
       questionSequence: []
     };
@@ -494,7 +504,7 @@ init() {
       this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
       this.analyzePhase5Results();
 
-      this.finalizeResults();
+      this.finalizeResults({ skipIdentify: false });
     } catch (error) {
       this.debugReporter.logError(error, 'generateSampleReport');
       ErrorHandler.showUserError('Failed to generate sample report. Please try again.');
@@ -682,6 +692,7 @@ showGenderSelection() {
       PHASE_4_QUESTIONS = questionsModule.PHASE_4_QUESTIONS;
       PHASE_5_QUESTIONS = questionsModule.PHASE_5_QUESTIONS;
       RESPECT_CONTEXT_QUESTIONS = questionsModule.RESPECT_CONTEXT_QUESTIONS || [];
+      PHASE_6_DETERMINATIVE_QUESTIONS = questionsModule.PHASE_6_DETERMINATIVE_QUESTIONS || {};
 
       const spreadModule = await loadDataModule(
         './archetype-data/archetype-spread.js',
@@ -707,6 +718,8 @@ showGenderSelection() {
       this.debugReporter.recordSection('Phase 4', PHASE_4_QUESTIONS?.length || 0);
       const phase5Count = (PHASE_5_QUESTIONS?.male?.length || 0) + (PHASE_5_QUESTIONS?.female?.length || 0);
       this.debugReporter.recordSection('Phase 5', phase5Count);
+      const phase6Count = Object.values(PHASE_6_DETERMINATIVE_QUESTIONS || {}).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0), 0);
+      this.debugReporter.recordSection('Phase 6', phase6Count);
     } catch (error) {
       this.debugReporter.logError(error, 'loadArchetypeData');
       ErrorHandler.showUserError('Failed to load assessment data. Please refresh the page.');
@@ -927,6 +940,20 @@ showGenderSelection() {
     this.questionSequence.sort(() => Math.random() - 0.5);
   }
 
+  async buildPhase6Sequence(targetFamilyIds) {
+    await this.loadArchetypeData();
+    this.currentPhase = 6;
+    this.currentQuestionIndex = 0;
+    const sourceFamilies = Array.isArray(targetFamilyIds) ? targetFamilyIds : [];
+    const familyKeys = sourceFamilies
+      .map((id) => canonicalFamilyKeyFromNode(id))
+      .filter(Boolean);
+    const questions = familyKeys.flatMap((key) => PHASE_6_DETERMINATIVE_QUESTIONS?.[key] || []);
+    this.questionSequence = questions;
+    this.debugReporter.recordQuestionCount(questions.length);
+    this.questionSequence.sort(() => Math.random() - 0.5);
+  }
+
   renderCurrentQuestion() {
     const renderStart = performance.now();
     
@@ -1006,6 +1033,11 @@ showGenderSelection() {
         title: 'Phase 5: Status, Selection & Attraction Markers',
         description: 'This extension explores self-reported selection criteria and social positioning signals.',
         purpose: 'These markers refine archetype weighting by mapping coalition rank, reproductive confidence, and attraction signals.'
+      },
+      6: {
+        title: 'Phase 6: Determinative Subclass Clarification',
+        description: 'This conditional phase appears only when subclass signal density is low or tie pressure is high.',
+        purpose: 'It asks targeted discriminator questions for your top three family groups to improve subclass clarity.'
       }
     };
 
@@ -1269,6 +1301,8 @@ showGenderSelection() {
       this.scorePhase4Answer(question, answerValue);
     } else if (this.currentPhase === 5) {
       this.scorePhase5Answer(question, answerValue);
+    } else if (this.currentPhase === 6) {
+      this.scorePhase6Answer(question, answerValue);
     }
 
     this.saveProgress();
@@ -1317,6 +1351,7 @@ showGenderSelection() {
           phase3: 0,
           phase4: 0,
           phase5: 0,
+          phase6: 0,
           total: 0,
           weighted: 0
         };
@@ -1377,6 +1412,7 @@ showGenderSelection() {
             phase3: 0,
             phase4: 0,
             phase5: 0,
+            phase6: 0,
             total: 0,
             weighted: 0
           };
@@ -1408,6 +1444,7 @@ showGenderSelection() {
           phase3: 0,
           phase4: 0,
           phase5: 0,
+          phase6: 0,
           total: 0,
           weighted: 0
         };
@@ -1488,6 +1525,7 @@ showGenderSelection() {
           phase3: 0,
           phase4: 0,
           phase5: 0,
+          phase6: 0,
           total: 0,
           weighted: 0
         };
@@ -1541,6 +1579,7 @@ showGenderSelection() {
           phase3: 0,
           phase4: 0,
           phase5: 0,
+          phase6: 0,
           total: 0,
           weighted: 0
         };
@@ -1600,12 +1639,64 @@ showGenderSelection() {
           phase3: 0,
           phase4: 0,
           phase5: 0,
+          phase6: 0,
           total: 0,
           weighted: 0
         };
       }
       const weight = arch.weight || 1;
       this.archetypeScores[targetArchId].phase5 += normalizedValue * weight;
+    });
+  }
+
+  scorePhase6Answer(question, selectedIndex) {
+    const selectedOption = question?.options?.[selectedIndex];
+    if (!selectedOption || !Array.isArray(selectedOption.archetypes)) return;
+    selectedOption.archetypes.forEach((archId) => {
+      let targetArchId = archId;
+      if (this.gender === 'female') {
+        const femaleMapping = {
+          alpha: 'alpha_female',
+          alpha_xi: 'alpha_xi_female',
+          alpha_rho: 'alpha_xi_female',
+          dark_alpha: 'dark_alpha_female',
+          beta: 'beta_female',
+          beta_iota: 'alpha_unicorn_female',
+          beta_nu: 'beta_nu_female',
+          beta_manipulator: 'beta_kappa_female',
+          beta_kappa: 'beta_kappa_female',
+          beta_rho: 'beta_rho_female',
+          gamma: 'gamma_female',
+          gamma_nu: 'gamma_female',
+          gamma_theta: 'gamma_theta_female',
+          gamma_pi: 'gamma_feminist_female',
+          dark_gamma: 'dark_gamma_female',
+          delta: 'delta_female',
+          delta_mu: 'delta_mu_female',
+          dark_delta: 'dark_delta_female',
+          sigma: 'sigma_female',
+          sigma_kappa: 'sigma_feminist_female',
+          sigma_lambda: 'sigma_female',
+          dark_sigma_zeta: 'dark_sigma_zeta_female',
+          omega: 'omega_female',
+          dark_omega: 'dark_omega_female',
+          phi: 'phi_female'
+        };
+        targetArchId = femaleMapping[archId] || archId;
+      }
+      if (!this.archetypeScores[targetArchId]) {
+        this.archetypeScores[targetArchId] = {
+          phase1: 0,
+          phase2: 0,
+          phase3: 0,
+          phase4: 0,
+          phase5: 0,
+          phase6: 0,
+          total: 0,
+          weighted: 0
+        };
+      }
+      this.archetypeScores[targetArchId].phase6 += (selectedOption.weight || 1);
     });
   }
 
@@ -1678,6 +1769,7 @@ showGenderSelection() {
       this.archetypeScores[archId].phase3 *= mult;
       this.archetypeScores[archId].phase4 *= mult;
       this.archetypeScores[archId].phase5 *= mult;
+      this.archetypeScores[archId].phase6 *= mult;
     });
 
     // Gender-split calibrated phase weights.
@@ -1698,25 +1790,28 @@ showGenderSelection() {
           phase2: 0.0194,  // 28%
           phase3: 0.0175,  // 14% — 16 behavioral qs (p3raw ≈ 8)
           phase4: 0.0467,  //  7%
-          phase5: 0.0090   //  9% — recalibrated for 18 female Phase 5 qs (p5raw ≈ 9.9)
+          phase5: 0.0090,  //  9% — recalibrated for 18 female Phase 5 qs (p5raw ≈ 9.9)
+          phase6: PHASE6_WEIGHT
         }
       : {
           phase1: 0.025,   // 45%
           phase2: 0.0194,  // 28%
           phase3: 0.0175,  // 14% — 16 behavioral qs (p3raw ≈ 8)
           phase4: 0.0467,  //  7%
-          phase5: 0.0060   //  6% — recalibrated for 16 male Phase 5 qs (p5raw ≈ 9.9)
+          phase5: 0.0060,  //  6% — recalibrated for 16 male Phase 5 qs (p5raw ≈ 9.9)
+          phase6: PHASE6_WEIGHT
         };
 
     // Apply phase weights with Phase 5 extension
     Object.keys(this.archetypeScores).forEach(archId => {
       const scores = this.archetypeScores[archId];
-      scores.total = scores.phase1 + scores.phase2 + scores.phase3 + scores.phase4 + (scores.phase5 || 0);
+      scores.total = scores.phase1 + scores.phase2 + scores.phase3 + scores.phase4 + (scores.phase5 || 0) + (scores.phase6 || 0);
       scores.weighted = (scores.phase1 * phaseWeights.phase1)
         + (scores.phase2 * phaseWeights.phase2)
         + (scores.phase3 * phaseWeights.phase3)
         + (scores.phase4 * phaseWeights.phase4)
-        + ((scores.phase5 || 0) * phaseWeights.phase5);
+        + ((scores.phase5 || 0) * phaseWeights.phase5)
+        + ((scores.phase6 || 0) * phaseWeights.phase6);
     });
   }
 
@@ -1752,7 +1847,8 @@ showGenderSelection() {
     };
   }
 
-  identifyArchetypes() {
+  identifyArchetypes(options = {}) {
+    const restrictToFamilies = Array.isArray(options.restrictToFamilies) ? options.restrictToFamilies : null;
     this.calculateFinalScores();
 
     // Map gender-neutral archetype IDs to gender-specific ones
@@ -1807,7 +1903,7 @@ showGenderSelection() {
         familyCounts.set(familyId, (familyCounts.get(familyId) || 0) + 1);
       }
     });
-    const rankedFamilies = [...familyTotals.entries()]
+    let rankedFamilies = [...familyTotals.entries()]
       .map(([id, score]) => {
         const count = familyCounts.get(id) || 0;
         const effectiveCount = Math.max(1, count);
@@ -1816,6 +1912,10 @@ showGenderSelection() {
       })
       .filter((x) => x.archetype && Array.isArray(x.archetype.subtypes))
       .sort((a, b) => b.normalizedScore - a.normalizedScore);
+    if (restrictToFamilies && restrictToFamilies.length > 0) {
+      const allow = new Set(restrictToFamilies);
+      rankedFamilies = rankedFamilies.filter((x) => allow.has(x.id));
+    }
     this.analysisData.familyRollup = rankedFamilies.map((x) => ({
       id: x.id,
       rawScore: x.score,
@@ -1823,9 +1923,9 @@ showGenderSelection() {
       effectiveSubtypeCount: x.effectiveCount
     }));
 
-    const pickSubtypeFromFamily = (familyNode) => {
-      if (!familyNode?.archetype?.subtypes?.length) return null;
-      const ranked = familyNode.archetype.subtypes
+    const buildSubtypeTelemetry = (familyNode) => {
+      if (!familyNode?.archetype?.subtypes?.length) return [];
+      return familyNode.archetype.subtypes
         .map((id) => {
           const s = this.archetypeScores[id] || {};
           return {
@@ -1838,6 +1938,11 @@ showGenderSelection() {
           if (b.weighted !== a.weighted) return b.weighted - a.weighted;
           return b.phase2 - a.phase2;
         });
+    };
+
+    const pickSubtypeFromFamily = (familyNode) => {
+      if (!familyNode?.archetype?.subtypes?.length) return null;
+      const ranked = buildSubtypeTelemetry(familyNode);
       const top = ranked[0];
       if (!top) return null;
       const def = ARCHETYPES[top.id];
@@ -1854,6 +1959,23 @@ showGenderSelection() {
 
     const primaryFamily = rankedFamilies[0] || null;
     let primary = pickSubtypeFromFamily(primaryFamily);
+    const primarySubtypeTelemetry = buildSubtypeTelemetry(primaryFamily);
+    const familyDiagnosticsTop3 = rankedFamilies.slice(0, 3).map((f) => {
+      const subtypeRows = buildSubtypeTelemetry(f);
+      const top = subtypeRows[0];
+      const next = subtypeRows[1];
+      return {
+        familyId: f.id,
+        nonZeroSubtypeCount: subtypeRows.filter((x) => (x.weighted !== 0) || (x.phase2 !== 0)).length,
+        topSubtypes: subtypeRows.slice(0, 3),
+        tiePressure: top && next
+          ? {
+              weightedDelta: (top.weighted ?? 0) - (next.weighted ?? 0),
+              phase2Delta: (top.phase2 ?? 0) - (next.phase2 ?? 0)
+            }
+          : null
+      };
+    });
 
     let secondaryFamily = null;
     if (rankedFamilies[1] && primaryFamily) {
@@ -1889,6 +2011,29 @@ showGenderSelection() {
       primary: primaryConfidence,
       secondary: secondaryConfidence,
       tertiary: tertiaryConfidence
+    };
+    this.analysisData.subclassDiagnostics = {
+      selectionFlow: 'family_rollup_then_subtype_weighted_phase2_tiebreak',
+      winningFamilyId: primaryFamily?.id || null,
+      winningFamilyRawScore: primaryFamily?.score ?? 0,
+      winningFamilyNormalizedScore: primaryFamily?.normalizedScore ?? 0,
+      winningFamilyEffectiveSubtypeCount: primaryFamily?.effectiveCount ?? 0,
+      winningFamilyTopSubtypes: primarySubtypeTelemetry.slice(0, 5),
+      winningFamilyNonZeroSubtypeCount: primarySubtypeTelemetry.filter((x) => (x.weighted !== 0) || (x.phase2 !== 0)).length,
+      tiePressure: (() => {
+        const top = primarySubtypeTelemetry[0];
+        const next = primarySubtypeTelemetry[1];
+        if (!top || !next) return null;
+        return {
+          weightedDelta: (top.weighted ?? 0) - (next.weighted ?? 0),
+          phase2Delta: (top.phase2 ?? 0) - (next.phase2 ?? 0)
+        };
+      })(),
+      topWeightedSubtypesGlobal: sortedArchetypes.slice(0, 5).map((x) => ({
+        id: x.id,
+        weighted: x.score
+      })),
+      familyDiagnosticsTop3
     };
 
     this.analysisData.profileDecisiveness = computeProfileDecisiveness(this.archetypeScores, ARCHETYPES);
@@ -1938,7 +2083,33 @@ showGenderSelection() {
         this.renderCurrentQuestion();
       } else if (this.currentPhase === 5) {
         this.analyzePhase5Results();
-        this.finalizeResults();
+        const decision = this.preparePhase6Decision();
+        if (decision?.shouldRun && Array.isArray(decision.targetFamilyIds) && decision.targetFamilyIds.length > 0) {
+          this.analysisData.phase6Results = {
+            ...(this.analysisData.phase6Results || {}),
+            triggered: true,
+            completed: false,
+            targetFamilyIds: decision.targetFamilyIds,
+            beforePhase6: this.analysisData.subclassDiagnostics
+          };
+          await this.buildPhase6Sequence(decision.targetFamilyIds);
+          if (this.questionSequence.length > 0) {
+            this.renderCurrentQuestion();
+          } else {
+            await this.finalizeResults();
+          }
+        } else {
+          await this.finalizeResults();
+        }
+      } else if (this.currentPhase === 6) {
+        this.analyzePhase6Results();
+        const targetFamilyIds = this.analysisData.phase6Results?.targetFamilyIds || [];
+        this.identifyArchetypes({ restrictToFamilies: targetFamilyIds });
+        this.analysisData.phase6Results = {
+          ...(this.analysisData.phase6Results || {}),
+          afterPhase6: this.analysisData.subclassDiagnostics
+        };
+        await this.finalizeResults({ skipIdentify: true });
       }
     } catch (error) {
       this.debugReporter.logError(error, 'completePhase');
@@ -2207,6 +2378,35 @@ showGenderSelection() {
         adjustments
       };
     }
+  }
+
+  analyzePhase6Results() {
+    const phase6QuestionIds = (this.questionSequence || []).map((q) => q.id);
+    this.analysisData.phase6Results = {
+      ...(this.analysisData.phase6Results || {}),
+      completed: true,
+      askedQuestionIds: phase6QuestionIds,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  preparePhase6Decision() {
+    this.identifyArchetypes();
+    const decision = evaluatePhase6Decision(this.analysisData.subclassDiagnostics);
+    const topFamilyIds = [
+      this.analysisData.primaryArchetype?.familyType,
+      this.analysisData.secondaryArchetype?.familyType,
+      this.analysisData.tertiaryArchetype?.familyType
+    ].filter(Boolean);
+    const targetFamilyIds = [...new Set(topFamilyIds)];
+    this.analysisData.subclassDiagnostics = {
+      ...(this.analysisData.subclassDiagnostics || {}),
+      finalPhaseDecision: {
+        ...decision,
+        targetFamilyIds
+      }
+    };
+    return this.analysisData.subclassDiagnostics.finalPhaseDecision;
   }
 
   analyzeAspirations() {
@@ -2500,9 +2700,13 @@ showGenderSelection() {
     return aspirationalArchetypes;
   }
 
-  async finalizeResults() {
+  async finalizeResults(options = {}) {
+    const skipIdentify = Boolean(options.skipIdentify);
+    const restrictToFamilies = Array.isArray(options.restrictToFamilies) ? options.restrictToFamilies : null;
     await this.loadArchetypeData(); // Ensure data is loaded
-    this.identifyArchetypes();
+    if (!skipIdentify) {
+      this.identifyArchetypes({ restrictToFamilies });
+    }
     this.analysisData.phase3Results = this.analysisData.phase3Results || {};
     this.analysisData.phase3Results.shadowIndicators = this.getShadowPatternsForReport();
     this.analysisData.allAnswers = { ...this.answers };
@@ -2669,6 +2873,9 @@ showGenderSelection() {
         ${footnoteHtml}
       </div>`;
     })();
+    const phase6NoteHtml = this.analysisData?.phase6Results?.completed
+      ? `<p style="margin: 0.35rem 0 1.2rem; color: var(--muted); font-size: 0.9rem;">Subclass clarity refinement applied due to low signal density and/or tie pressure in the top-ranked family set.</p>`
+      : '';
 
     let resultsHTML = `
       <div class="results-container" style="max-width: 900px; margin: 0 auto;">
@@ -2684,6 +2891,7 @@ showGenderSelection() {
           ${archetypeQualitiesHtml}
         </div>
         ${decisivenessHtml}
+        ${phase6NoteHtml}
 
         <!-- Primary Archetype -->
         <div class="archetype-card primary" style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; border: 2px solid var(--brand);">
@@ -2991,9 +3199,11 @@ showGenderSelection() {
         await this.buildPhase4Sequence();
       } else if (this.currentPhase === 5) {
         await this.buildPhase5Sequence();
+      } else if (this.currentPhase === 6) {
+        await this.buildPhase6Sequence(this.analysisData?.phase6Results?.targetFamilyIds || []);
       }
 
-      if (this.currentPhase <= 5 && this.questionSequence.length > 0) {
+      if (this.currentPhase <= 6 && this.questionSequence.length > 0) {
         this.renderCurrentQuestion();
         this.showQuestionContainer();
       }
@@ -3030,6 +3240,7 @@ showGenderSelection() {
       phase3Results: {},
       phase4Results: {},
       phase5Results: {},
+      phase6Results: {},
       aspirationAnalysis: {},
       respectContext: null,
       provisionContext: null,
@@ -3039,6 +3250,7 @@ showGenderSelection() {
       confidenceLevels: {},
       profileDecisiveness: null,
       mustHaveGates: null,
+      subclassDiagnostics: null,
       allAnswers: {},
       questionSequence: []
     };
