@@ -1549,7 +1549,7 @@ function buildTemperamentReportBody(data) {
     } else {
       html += '<p><strong>What this flags:</strong> Overall pattern outside typical range for your context.</p>';
     }
-    html += '<p><strong>What it is:</strong> Structural signal for partner fit, not a character verdict.</p>';
+    html += '<p><strong>What it is:</strong> A <strong>structural fit signal</strong> from this calibration—polarity configuration, not a moral or character assessment.</p>';
     html += '<p><strong>If partner is mismatched:</strong> Same pole with a weak opposite flattens tension here; an opposite pole at <strong>similar strength</strong> restores polarity.</p>';
     html += '<p><strong>What restores it:</strong> Complementary opposite at matched intensity or intentional calibration—often worth exploring with stress, history, and context in view.</p>';
     if (data.gender === 'man' && hasHyperMascRisk) {

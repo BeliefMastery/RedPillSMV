@@ -1,6 +1,7 @@
 export const ARCHETYPE_SPREAD = [
   {
     "name": "Alpha Male",
+    "attractionMarketRead": "High initial attraction; strong long-term respect when dominance stays grounded.",
     "socialRole": "Dominant, Charismatic Leader",
     "jungianEquivalent": "King (Mature), Warrior (Assertive)",
     "vedicEquivalent": "Raja Dharma (Ruler/Protector), Artha (Power)",
@@ -10,6 +11,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Alpha-Xi Male",
+    "attractionMarketRead": "High initial draw (protector frame); long-term respect if courage stays consistent.",
     "socialRole": "Resilient, Courageous, Protector",
     "jungianEquivalent": "Knight (Warrior)",
     "vedicEquivalent": "Bhima (Strength, Courage, Loyalty)",
@@ -19,6 +21,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Alpha-Rho Male",
+    "attractionMarketRead": "High initial attraction; high long-term respect.",
     "socialRole": "Just, Fair, Lawmaker",
     "jungianEquivalent": "Judge (King)",
     "vedicEquivalent": "Yama (Justice, Death, Duty)",
@@ -28,6 +31,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Alpha Male",
+    "attractionMarketRead": "Volatile initial pull; very low long-term security (control and harm risk).",
     "socialRole": "Abusive, Tyrannical, Dominant",
     "jungianEquivalent": "The Tyrant",
     "vedicEquivalent": "Asuras (Demonic Rulers), Ravana (Overreacher)",
@@ -37,6 +41,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta Male",
+    "attractionMarketRead": "Modest initial spark; long-term hinges on reliability and rising competence.",
     "socialRole": "Reliable, Supportive but Submissive",
     "jungianEquivalent": "Lover (Loyal, Passive)",
     "vedicEquivalent": "Vaishya Dharma (Servant to Structure, Duty)",
@@ -46,6 +51,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta-Iota Male",
+    "attractionMarketRead": "Soft, innocent initial appeal; long-term mixed if naïveté reads as low status.",
     "socialRole": "Gentle, Supportive Nurturer, Pure, Innocent, Naïve-Adventurous",
     "jungianEquivalent": "Innocent (Lover)",
     "vedicEquivalent": "Bala Krishna (Youth, Playfulness, Innocence, Divinity)",
@@ -55,6 +61,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta-Kappa Male",
+    "attractionMarketRead": "Low-to-moderate initial edge; long-term weakened by approval-seeking frame.",
     "socialRole": "Ideological Ally, Approval-Seeking, Coalition Adaptor",
     "jungianEquivalent": "Lover (Appeaser/Ally)",
     "vedicEquivalent": "Bhakti (Devotional Service, Alignment)",
@@ -64,6 +71,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta-Nu Male",
+    "attractionMarketRead": "Low novelty initial; solid long-term security for tradition-minded partners.",
     "socialRole": "Traditionalist, Dutiful, Settler",
     "jungianEquivalent": "Dutiful Provider (Worker-Lover)",
     "vedicEquivalent": "Grihastha (Householder, Dharma of Duty)",
@@ -73,6 +81,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta-Rho Male",
+    "attractionMarketRead": "Nurturing pull for some; long-term friction if control reads as smothering.",
     "socialRole": "Creator, Motherly, Controlling",
     "jungianEquivalent": "Weaver (Father-Lover, Controlling Nurturer)",
     "vedicEquivalent": "Parvati (Nurturing, Fertility, Possession)",
@@ -82,6 +91,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Gamma Male",
+    "attractionMarketRead": "Niche intrigue and wit; long-term polarizing (outsider / resentment risk).",
     "socialRole": "Intellectual, Rebellious Outsider",
     "jungianEquivalent": "Magician (Rebellious, Clever, Detached from Social Norms)",
     "vedicEquivalent": "Rishi/Siddha (Esoteric Wisdom, Outcast Visionary)",
@@ -91,6 +101,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Gamma-Nu Male",
+    "attractionMarketRead": "High initial romance and idealism; long-term volatile if reality disappoints.",
     "socialRole": "Romantic, Devoted, Idealist",
     "jungianEquivalent": "Romantic (Lover)",
     "vedicEquivalent": "Kamadeva (Love, Desire, Romance, Beauty)",
@@ -100,6 +111,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Gamma-Theta Male",
+    "attractionMarketRead": "Strong mystique initial; long-term niche—partner must want the oracle frame.",
     "socialRole": "Mystic, Prophet, Divine Connection",
     "jungianEquivalent": "Magician (Visionary, Occultist, Master of Reality)",
     "vedicEquivalent": "Moksha (Liberation), Siddha (Master of Spiritual Power)",
@@ -109,6 +121,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Gamma-Pi Male",
+    "attractionMarketRead": "High initial intrigue (the gambler); low long-term security.",
     "socialRole": "Fortunate, Opportunistic, Gambler",
     "jungianEquivalent": "Trickster (Magician)",
     "vedicEquivalent": "Kubera (Wealth, Prosperity, Opportunism)",
@@ -118,6 +131,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Gamma Male",
+    "attractionMarketRead": "Low healthy initial pull; very low long-term stability and warmth.",
     "socialRole": "Isolated, Detached, Nihilistic, Seer",
     "jungianEquivalent": "Crone (Shadow Magician)",
     "vedicEquivalent": "Kapalika (Death Ascetic)",
@@ -127,6 +141,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Delta Male",
+    "attractionMarketRead": "Low initial spike; modest long-term if work ethic and loyalty are valued.",
     "socialRole": "Hardworking but Lacks Leadership",
     "jungianEquivalent": "Warrior (Subordinate), Worker",
     "vedicEquivalent": "Karma Yoga (Duty-Focused Labor, Service without Power)",
@@ -136,6 +151,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Delta-Mu Male",
+    "attractionMarketRead": "Warm, fatherly initial; high long-term security for family-oriented partners.",
     "socialRole": "Nurturing, Protective, Fatherly",
     "jungianEquivalent": "Father (King-Lover)",
     "vedicEquivalent": "Prajapati (Creator, Protector, Fertility)",
@@ -145,6 +161,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Delta Male",
+    "attractionMarketRead": "Martyr guilt can hook initially; poor long-term reciprocity and respect.",
     "socialRole": "Sacrificing, Martyr, Passive",
     "jungianEquivalent": "Distorted Provider (Shadow Worker)",
     "vedicEquivalent": "Annapurna (Self-Sustaining, Unreciprocated Giving)",
@@ -154,6 +171,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Sigma Male",
+    "attractionMarketRead": "High scarcity and mystery initial; long-term needs partner who accepts distance.",
     "socialRole": "Lone Wolf, Self-Sufficient, Adaptable by own authority.",
     "jungianEquivalent": "Magician-King Hybrid (Self-Governing, Independent Occultist, Hidden Leader)",
     "vedicEquivalent": "Yati (Renunciate, Self-Sufficient Power)",
@@ -163,6 +181,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Sigma-Kappa Male",
+    "attractionMarketRead": "Sharp, strategic intrigue initial; long-term trust cost if schemer reads through.",
     "socialRole": "Eccentric, Unpredictable Innovator, Political Schemer, Strategist",
     "jungianEquivalent": "King (Manipulative), Magician (Dark Side, Tactician)",
     "vedicEquivalent": "Neeti Shastra (Strategic Thinking, Cunning Ruler)",
@@ -172,6 +191,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Sigma-Lambda Male",
+    "attractionMarketRead": "Artistic and emotional pull initial; uneven long-term structure and provision signal.",
     "socialRole": "Creative, Artistic but detached, Solitary",
     "jungianEquivalent": "Lover-Magician Hybrid (Emotional, Expressive, Insightful)",
     "vedicEquivalent": "Bhakti Path (Emotional Devotion, Artistic Worship)",
@@ -181,6 +201,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Sigma-Zeta Male",
+    "attractionMarketRead": "Rebellion spark initial; low conventional long-term security and stability.",
     "socialRole": "Anti-Establishment, Autonomous",
     "jungianEquivalent": "Warrior-Magician Hybrid (Revolutionary, Shadow Outlaw)",
     "vedicEquivalent": "Parashurama (Ascetic-Activist, Beyond Dharma)",
@@ -190,6 +211,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Omega Male",
+    "attractionMarketRead": "Low initial market signal; long-term weak unless rare niche fit.",
     "socialRole": "Social Reject, Loner, Passive",
     "jungianEquivalent": "Lover (Disconnected, Yearning, Passive Magician)",
     "vedicEquivalent": "Aniruddha (Reclusive, Avoidant, Lacks Power)",
@@ -199,6 +221,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Omega Male",
+    "attractionMarketRead": "Chaotic or intense initial fringe; destructive long-term trajectory.",
     "socialRole": "Destructive, Entropic, Consumptive",
     "jungianEquivalent": "Devourer (Shadow Lover)",
     "vedicEquivalent": "Kali (Destroyer of Time), Rakshasas (Demons of Consumption)",
@@ -208,6 +231,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Phi Male",
+    "attractionMarketRead": "Outside conventional mating market; transcendence niche only—no typical SMV read.",
     "socialRole": "Fully Ascended, Beyond Society, Transcendent",
     "jungianEquivalent": "Saint (Transcended King)",
     "vedicEquivalent": "Siddha, Tirthankara (Jain, Buddha’s State Beyond Society)",
@@ -217,6 +241,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Alpha Female",
+    "attractionMarketRead": "Very high initial attention; long-term demands sustained beauty, poise, and value upkeep.",
     "socialRole": "High-Value, Beautiful, Desired",
     "jungianEquivalent": "Queen",
     "vedicEquivalent": "Shakti (Cosmic Power)",
@@ -226,6 +251,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Alpha-Xi Female",
+    "attractionMarketRead": "Elite, selective initial pull; high long-term respect for standards and judgment.",
     "socialRole": "Awakened, Selective, Elite Judge",
     "jungianEquivalent": "Seer (Magician)",
     "vedicEquivalent": "Gayatri (Enlightenment)",
@@ -235,6 +261,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Alpha-Unicorn Female",
+    "attractionMarketRead": "Softer initial than top queen; very high long-term loyalty and pair-bond signal.",
     "socialRole": "Ideal, Submissive, Loyal",
     "jungianEquivalent": "Maiden (Lover)",
     "vedicEquivalent": "Sita (Virtue, Devotion)",
@@ -244,6 +271,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Alpha-Iota Female",
+    "attractionMarketRead": "Balanced, harmonious initial; strong long-term stability and low drama signal.",
     "socialRole": "Balanced, Harmonious, Pure",
     "jungianEquivalent": "Healer (Lover-Magician)",
     "vedicEquivalent": "Gauri (Harmony, Grace)",
@@ -253,6 +281,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Alpha Female",
+    "attractionMarketRead": "Intense, chaotic initial draw; low long-term emotional safety.",
     "socialRole": "Over-controlling, Chaotic",
     "jungianEquivalent": "Tyrant Queen (Shadow King)",
     "vedicEquivalent": "Kali (Chaos, Power)",
@@ -262,6 +291,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta Female",
+    "attractionMarketRead": "Weak initial value signal; long-term reads as resource-seeking rather than bonded.",
     "socialRole": "Low-Value, Resource-Seeking",
     "jungianEquivalent": "Distorted Lover",
     "vedicEquivalent": "Rati (Love, Attachment)",
@@ -271,6 +301,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta-Nu Female",
+    "attractionMarketRead": "Modest initial spark; solid long-term homemaker and duty signal for traditional buyers.",
     "socialRole": "Traditionalist, Dutiful, Settler",
     "jungianEquivalent": "Dutiful Queen (Queen-Lover)",
     "vedicEquivalent": "Savitri (Loyalty, Sacrifice)",
@@ -280,6 +311,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta-Kappa Female",
+    "attractionMarketRead": "High initial intrigue and chaos; low long-term trust and security.",
     "socialRole": "Hypergamous, Deceptive, Chaotic",
     "jungianEquivalent": "Devourer (Shadow Lover)",
     "vedicEquivalent": "Mohini (Illusion, Seduction)",
@@ -289,6 +321,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Beta-Rho Female",
+    "attractionMarketRead": "Nurturing, mother-frame initial; long-term polarity cost if control dominates.",
     "socialRole": "Creator, Motherly, Controlling",
     "jungianEquivalent": "Weaver (Queen-Lover)",
     "vedicEquivalent": "Parvati (Motherhood, Fertility)",
@@ -298,6 +331,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Gamma Female",
+    "attractionMarketRead": "Quirky intellectual initial; long-term hurt if resentment leaks into the dynamic.",
     "socialRole": "Intellectual, Quirky, Resentful",
     "jungianEquivalent": "Magician (Rebellious)",
     "vedicEquivalent": "Saraswati (Knowledge, Art)",
@@ -307,6 +341,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Gamma-Theta Female",
+    "attractionMarketRead": "Commanding, fiery initial; long-term needs partner who enjoys intensity and debate.",
     "socialRole": "Visionary, Argumentative, Oracle",
     "jungianEquivalent": "Wise Woman (High Priestess)",
     "vedicEquivalent": "Durga (Protection, Defiance)",
@@ -316,6 +351,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Gamma-Feminist Female",
+    "attractionMarketRead": "Credential and status initial; long-term drag if bitterness and wall narrative dominate.",
     "socialRole": "Career-Focused, Post-Wall, Bitter",
     "jungianEquivalent": "Rebel Scholar (Magician)",
     "vedicEquivalent": "Tara (Compassion, Wisdom)",
@@ -325,6 +361,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Gamma Female",
+    "attractionMarketRead": "Low warmth initial; isolating long-term—niche dark-muse appeal only.",
     "socialRole": "Isolated, Nihilistic, Detached",
     "jungianEquivalent": "Crone (Shadow Magician)",
     "vedicEquivalent": "Dhumavati (Misfortune, Isolation)",
@@ -334,6 +371,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Delta Female",
+    "attractionMarketRead": "Warm, nurturing initial; strong long-term homemaker and stability signal.",
     "socialRole": "Nurturing, Supportive, Homemaker",
     "jungianEquivalent": "Weaver (Queen-Lover)",
     "vedicEquivalent": "Aditi (Light, Nurturing)",
@@ -343,6 +381,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Delta-Mu Female",
+    "attractionMarketRead": "Radiant, joyful initial; high long-term positive association and life-giver frame.",
     "socialRole": "Radiant, Joyful, Life-Giver",
     "jungianEquivalent": "Light Maiden (Lover)",
     "vedicEquivalent": "Lakshmi (Prosperity, Nurturing)",
@@ -352,6 +391,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Delta Female",
+    "attractionMarketRead": "Martyr sympathy initial; poor long-term balance—exhaustion and resentment risk.",
     "socialRole": "Sacrificing, Martyr, Passive",
     "jungianEquivalent": "Distorted Weaver",
     "vedicEquivalent": "Annapurna (Self-Sustaining)",
@@ -361,6 +401,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Sigma Female",
+    "attractionMarketRead": "High intrigue, elusive initial; long-term either prized independence or chronic chase fatigue.",
     "socialRole": "Independent, Elusive, High-Value",
     "jungianEquivalent": "Maiden (Lover-Magician)",
     "vedicEquivalent": "Chamunda (Autonomy)",
@@ -370,6 +411,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Sigma-Feminist Female",
+    "attractionMarketRead": "Independent, self-sufficient initial; narrow long-term polarity fit for many men.",
     "socialRole": "Self-Sustaining, Unyielding",
     "jungianEquivalent": "Distorted Maiden",
     "vedicEquivalent": "Tara (Self-Sustaining Wisdom)",
@@ -379,6 +421,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Sigma-Zeta Female",
+    "attractionMarketRead": "Fierce autonomy and edge initial; volatile long-term unless values tightly aligned.",
     "socialRole": "Anti-Establishment, Fierce Autonomy",
     "jungianEquivalent": "Revolutionary Outcast",
     "vedicEquivalent": "Kali (Fierce Autonomy)",
@@ -388,6 +431,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Omega Female",
+    "attractionMarketRead": "Low initial demand; long-term isolating—recovery narrative required to move market.",
     "socialRole": "Undesirable, Isolated, Nihilistic",
     "jungianEquivalent": "Crone (Shadow Priestess)",
     "vedicEquivalent": "Dhumavati (Misfortune, Isolation)",
@@ -397,6 +441,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Dark Omega Female",
+    "attractionMarketRead": "Drama or danger fringe initial; destructive long-term for most pair-bonds.",
     "socialRole": "Destructive, Entropic, Consumptive",
     "jungianEquivalent": "Devourer (Shadow Lover)",
     "vedicEquivalent": "Chamunda (Destruction)",
@@ -406,6 +451,7 @@ export const ARCHETYPE_SPREAD = [
   },
   {
     "name": "Phi Female",
+    "attractionMarketRead": "Outside conventional market framing; peace-and-transcendence niche—not a typical SMV arc.",
     "socialRole": "Transcendent, Beyond Society",
     "jungianEquivalent": "Saint (Transcended Lover)",
     "vedicEquivalent": "Sita in Exile (Purity, Grace)",

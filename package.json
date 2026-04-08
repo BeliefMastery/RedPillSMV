@@ -1,7 +1,7 @@
 {
   "name": "red-pill-relationships",
   "version": "1.0.0",
-  "description": "Offline toolkit: modern archetype, polarity, SMV, and relationship viability. Map where you fit in the modern relationship marketplace. No login, no tracking.",
+  "description": "Modern dating and relationship evaluation—unplugged red-pill suite: archetype, SMV, polarity, viability. Realistic, no-holds-barred calibration on selection dynamics. Offline; no login; no tracking.",
   "main": "archetype-engine.js",
   "scripts": {
     "copy:www": "node scripts/copy-to-www.js",

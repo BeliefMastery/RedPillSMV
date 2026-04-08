@@ -20,3 +20,41 @@ No account required; assessments run locally.
 
 ## Content rating
 If "Sexual Market Value" or similar appears in app or store copy, the questionnaire will likely push to Teen (13+) or Mature. Plan for at least Teen.
+
+---
+
+## Marketing copy kits (choose by channel)
+
+Use **Kit A** on owned surfaces (website, community posts, email, landing pages) where you control the full message. Use **Kit B** in Google Play and other channels that flag explicit mating-market or “red pill” wording. Same product; different packaging.
+
+### Kit A — Full fidelity (owned web / community)
+
+**Short tagline (example, not Play-limited):** Unplugged red-pill relational suite: archetype, SMV, polarity, viability—offline, private.
+
+**Elevator pitch:** Map where you fit in modern dating and selection dynamics. Four tools: modern archetype identification, percentile sexual market value with delusion index and market position, masculine–feminine polarity, and relationship viability. Runs entirely on your device; no account; no tracking.
+
+**Bullets (optional):**
+- Percentile SMV, market position, and standards-vs-reality (delusion) calibration
+- Archetype and polarity reads for role and chemistry fit
+- Relationship strain ranking and viability band
+- Save a readable HTML report; privacy by design
+
+**Transparency line (optional footer in long copy):** Weighting and cluster logic are documented for users who want method detail (see project docs / in-app extended explanations).
+
+### Kit B — Play Console / moderation-aware
+
+**Short description (max 80 characters)** — keep or refine the line below; avoid “SMV” and “red pill” in the short field if you want to reduce automated scrutiny:
+Advanced diagnostics for relationship viability, attraction dynamics, and temperament polarity.
+
+**Full description — required hook:** Include:
+"Informed by modern cognitive frameworks and intersexual dynamics."
+
+**Full description — body (example):** Four diagnostic tools that run locally on your device: relationship compatibility and viability, attraction and status profile, polarity mapping, and modern archetype identification—for clearer decisions in relationships and dating. No account required. Privacy by design: no personal data leaves your device.
+
+**If reviewers ask about content:** Describe the app as self-assessment questionnaires producing descriptive reports for personal reflection, not therapy or medical advice; honest content rating; adult audience.
+
+### Cross-kit rules
+
+- **Product definition** stays aligned with Kit A (site meta, in-app naming, Android `app_name` if policy allows).
+- **Store listing** uses Kit B as the default safe layer; expand toward Kit A only if policy and questionnaire content rating already commit you to mature framing.
+- **Data safety** line is the same in both kits: local processing; no personal data leaves the device unless the user explicitly exports or shares a report.

@@ -10,17 +10,17 @@
   <!-- base href removed for offline/local app -->
   <title>Archetype Spread | Unplugged Dynamics: Red-Pill Relational Suite</title>
   <link rel="icon" type="image/x-icon" href="favicon-redpill.ico">
-  <meta name="description" content="Comprehensive archetype table with cross-paradigm equivalents and population proportions.">
+  <meta name="description" content="Reference archetype table for the unplugged red-pill relational suite—cross-paradigm equivalents and population proportions for modern dating evaluation.">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/archetype-spread.html">
   <meta property="og:title" content="Archetype Spread | Unplugged Dynamics: Red-Pill Relational Suite">
-  <meta property="og:description" content="Comprehensive archetype table with cross-paradigm equivalents and population proportions.">
+  <meta property="og:description" content="Reference archetype table for the unplugged red-pill relational suite—cross-paradigm equivalents and population proportions for modern dating evaluation.">
   <meta property="og:image" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/images/redpill-cover.jpg">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Archetype Spread | Unplugged Dynamics: Red-Pill Relational Suite">
-  <meta name="twitter:description" content="Comprehensive archetype table with cross-paradigm equivalents and population proportions.">
+  <meta name="twitter:description" content="Reference archetype table for the unplugged red-pill relational suite—cross-paradigm equivalents and population proportions for modern dating evaluation.">
   <meta name="twitter:image" content="https://beliefmastery.github.io/site/apps/red-pill-relationships/images/redpill-cover.jpg">
 
   <link rel="stylesheet" href="style.css">
@@ -54,6 +54,12 @@
     .spread-intro-inner .lead-text { margin-bottom: 0.5rem; }
     .spread-intro-inner .tools-intro { margin-top: 0; margin-bottom: 0; max-width: 36em; margin-left: auto; margin-right: auto; }
     .archetype-spread-memetic { font-style: italic; color: var(--muted); }
+    .spread-attraction-hint { margin-top: 0.35rem; font-size: 0.95em; }
+    .archetype-table th:nth-child(3),
+    .archetype-table td:nth-child(3) {
+      min-width: 11.5rem;
+      max-width: 22rem;
+    }
   </style>
 </head>
 <body class="page-fullbleed">
@@ -78,6 +84,7 @@
       <h1 id="spread-title" class="section-title-btn">Archetype Spread Table</h1>
       <p class="lead-text">Cross-paradigm equivalents and population proportions for all archetypes.</p>
       <p class="tools-intro">Social roles with Jungian, Vedic, Greek pantheon, and Tarot correspondences. Cluster totals show each broad category's share of the population.</p>
+      <p class="tools-intro spread-attraction-hint"><strong>Attraction / market read</strong> summarizes typical early pull versus long-term security, respect, or stability—descriptive, not prescriptive.</p>
     </div>
 
     <section>
@@ -86,12 +93,13 @@
         <div class="table-wrap">
           <table class="archetype-table" aria-describedby="archetype-table-caption-male">
             <caption id="archetype-table-caption-male" class="visually-hidden">
-              Male archetype spread table with roles, equivalents, and population proportions
+              Male archetype spread table with roles, attraction or market read, equivalents, and population proportions
             </caption>
             <thead>
               <tr>
                 <th>Archetype</th>
                 <th>Memetic Summary</th>
+                <th scope="col">Attraction / market read</th>
                 <th>Social Role</th>
                 <th>Jungian/Q-KWML</th>
                 <th>Vedic</th>
@@ -112,12 +120,13 @@
         <div class="table-wrap">
           <table class="archetype-table" aria-describedby="archetype-table-caption-female">
             <caption id="archetype-table-caption-female" class="visually-hidden">
-              Female archetype spread table with roles, equivalents, and population proportions
+              Female archetype spread table with roles, attraction or market read, equivalents, and population proportions
             </caption>
             <thead>
               <tr>
                 <th>Archetype</th>
                 <th>Memetic Summary</th>
+                <th scope="col">Attraction / market read</th>
                 <th>Social Role</th>
                 <th>Jungian/Q-KWML</th>
                 <th>Vedic</th>
@@ -264,7 +273,7 @@
         const headerRow = document.createElement('tr');
         headerRow.classList.add('cluster-total-row');
         const headerCell = document.createElement('td');
-        headerCell.colSpan = 8;
+        headerCell.colSpan = 9;
         headerCell.textContent = `${cluster} — ${clusterTotal.toFixed(1)}% of population`;
         headerRow.appendChild(headerCell);
         targetBody.appendChild(headerRow);
@@ -284,6 +293,7 @@
         const cells = [
           entry.name,
           memeticSummary,
+          entry.attractionMarketRead || '—',
           entry.socialRole,
           entry.jungianEquivalent,
           entry.vedicEquivalent,
@@ -310,7 +320,7 @@
         const detailRow = document.createElement('tr');
         detailRow.classList.add('brutal-truth-row');
         const detailCell = document.createElement('td');
-        detailCell.colSpan = 8;
+        detailCell.colSpan = 9;
         const detailPanel = document.createElement('div');
         detailPanel.classList.add('brutal-truth-panel');
         detailPanel.textContent = `Archetypal Narrative: The Brutal Truth — ${brutalTruth}`;
