@@ -504,7 +504,27 @@ init() {
       this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
       this.analyzePhase5Results();
 
-      this.finalizeResults({ skipIdentify: false });
+      const decision = this.preparePhase6Decision();
+      if (decision?.shouldRun && Array.isArray(decision.targetFamilyIds) && decision.targetFamilyIds.length > 0) {
+        this.analysisData.phase6Results = {
+          ...(this.analysisData.phase6Results || {}),
+          triggered: true,
+          completed: false,
+          targetFamilyIds: decision.targetFamilyIds,
+          beforePhase6: this.analysisData.subclassDiagnostics
+        };
+        await this.buildPhase6Sequence(decision.targetFamilyIds);
+        this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
+        this.analyzePhase6Results();
+        this.identifyArchetypes({ restrictToFamilies: decision.targetFamilyIds });
+        this.analysisData.phase6Results = {
+          ...(this.analysisData.phase6Results || {}),
+          afterPhase6: this.analysisData.subclassDiagnostics
+        };
+        await this.finalizeResults({ skipIdentify: true });
+      } else {
+        await this.finalizeResults({ skipIdentify: false });
+      }
     } catch (error) {
       this.debugReporter.logError(error, 'generateSampleReport');
       ErrorHandler.showUserError('Failed to generate sample report. Please try again.');
