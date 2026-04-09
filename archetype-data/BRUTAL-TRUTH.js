@@ -14,7 +14,7 @@ const archetypes = {
     group: "alpha",
     gender: "male",
     type: "primary",
-    narrative: `Your leadership is real — but it was never entirely chosen. It was built by necessity, shaped by an early environment where being in charge was the only safe position, where weakness was exploited and vulnerability was punished. You lead because stillness feels like erasure. Your charisma is not performance — it is a very sophisticated defense against the terror of being unnecessary. The command you carry in a room is the adult resolution of a child who learned that being needed was the only reliable form of being loved.
+    narrative: `Your leadership is real — but it was never entirely chosen. It was built by necessity, shaped by an early environment where being in charge was the only safe position, where weakness was exploited and vulnerability was punished. You lead because stillness feels like erasure. Your charisma is not performance — it is a sophisticated defense against the terror of being unnecessary. The command you carry in a room is the adult resolution of a child who learned that being needed was the only reliable form of being loved.
 
 The cost of this is that you have replaced the capacity to be influenced with the need to be respected. You cannot be mentored because being beneath someone feels like returning to a state you escaped with enormous effort. You cannot rest without anxiety because rest looks like a throne with no one on it. You cannot surrender in intimacy because surrender and defeat live in the same room in your nervous system. The people around you are subordinates or rivals — there is no third category. You have never had a peer.
 
@@ -28,7 +28,7 @@ The truth: your control is a shield against irrelevance, and behind the shield i
     group: "alpha",
     gender: "male",
     type: "subtype",
-    narrative: `You built your identity inside crisis and it fits you perfectly there. When there is threat, danger, conflict to resolve — you are the most alive, most certain, most valued version of yourself, and that felt like a solution. What it is, is a dependency. You need the fight to feel real. In its absence you become restless, provoke situations that restore the emergency, generate the conditions that give you back your purpose.
+    narrative: `You built your identity inside crisis and it fits you perfectly there. When there is threat, danger, conflict to resolve — you are the most alive, most certain, most valued version of yourself, and that felt like a solution. What it is is a dependency. You need the fight to feel real. In its absence you become restless, provoke situations that reinstate the emergency or restore the sense of emergency, generate the conditions that give you back your purpose.
 
 Peace is your enemy because peace removes the role that tells you who you are. When things are stable, the question surfaces: what am I without the battle? You do not have a good answer, and you have avoided needing one by ensuring the battle never fully ends.
 
@@ -46,7 +46,7 @@ The truth: you are admired in the storm and irrelevant in the calm, and you crea
 
 The problem is that you are now applying a legal framework to relationships that do not operate by legal rules. You adjudicate intimacy. You render verdicts on affection. You hold people to standards of conduct that were never agreed upon, and you are genuinely baffled when compliance does not produce connection. You have mistaken the absence of wrongdoing for the presence of love.
 
-Your fairness is real and it costs you nothing to maintain — which is precisely why it has become a fortress. Being right requires no vulnerability. Being fair requires no exposure. You can be correct and unreachable simultaneously, and you have used that combination to keep genuine closeness at a manageable distance.
+Your fairness is real and it costs you nothing to maintain—which is precisely why it has become a fortress. Being right requires no vulnerability. Being fair requires no exposure. You can be correct and unreachable simultaneously, and you have used that combination to keep genuine closeness at a manageable distance.
 
 The truth: you win the argument and lose the relationship because winning the argument was always safer than needing the relationship.`,
   },
@@ -72,7 +72,7 @@ The truth: you rule by fear because being ruled by fear was the first thing that
     group: "beta",
     gender: "male",
     type: "primary",
-    narrative: `The wound at the center of your pattern is not that she settled for you. It is that you settled for yourself first. Long before the relationship that confirmed your secondary status, you made a private decision that wanting too much was dangerous — that desire was a liability, that assertion would cost you the belonging you needed. You learned to make yourself easy to keep: agreeable, devoted, frictionless. And it worked. You were kept.
+    narrative: `The wound at the center of your pattern is not that she settled for you; it is that you settled for yourself first. Long before the relationship that confirmed your secondary status, you made a private decision that wanting too much was dangerous — that desire was a liability, that assertion would cost you the belonging you needed. You learned to make yourself easy to keep: agreeable, devoted, frictionless. And it worked. You were kept.
 
 What you did not account for is the slow accumulation of everything you suppressed to remain keepable. The desire you never expressed. The boundary you never held. The moment you saw what you actually wanted and talked yourself out of reaching for it because the safer thing was there and available. That accumulation becomes resentment, and you carry it like a private tax — paying it in silence while maintaining the appearance of contentment.
 
@@ -114,9 +114,9 @@ The truth: you built the structure she needed and the structure holds, but you l
     group: "beta",
     gender: "male",
     type: "subtype",
-    narrative: `You have become expert at reading rooms and adjusting to them, and you experience this as social intelligence. What it actually is, is survival reflex dressed as skill. You learned early that your authentic position was a liability — that having a real opinion, a contrary view, an inconvenient truth was too costly relative to the reward. Agreement bought access. Validation bought inclusion. You refined the exchange until it became seamless and now you call it personality.
+    narrative: `You have become expert at reading rooms and adjusting to them, and you experience this as social intelligence. What it actually is is survival reflex dressed as skill. You learned early that your authentic position was a liability — that having a real opinion, a contrary view, an inconvenient truth was too costly relative to the reward. Agreement bought access. Validation bought inclusion. You refined the exchange until it became seamless and now you call it personality.
 
-The cost is that you have traded every room you have entered for a form of access that never quite becomes belonging. You are welcomed because you are useful, included because you remove friction, valued because you affirm whatever is already believed. But you are not trusted, because trust requires the possibility of disagreement — the knowledge that someone's yes means something because they are capable of no. You have made yourself incapable of no, and everyone at some level feels it.
+The cost is that you have traded every room you have entered for a form of access that never quite becomes belonging. You are welcomed because you are useful, included because you remove friction, valued because you affirm whatever is already believed. But you are not trusted, because trust requires the possibility of disagreement — the knowledge that someone's yes means something because they are capable of saying no. You have made yourself incapable of saying no, and everyone at some level feels it.
 
 The approval you are chasing recedes as you approach it. The more completely you mirror others, the less they see when they look at you. You have made yourself invisible in the act of making yourself acceptable.
 
@@ -128,7 +128,7 @@ The truth: you traded your conviction for a seat at the table, and you sit there
     group: "beta",
     gender: "male",
     type: "subtype",
-    narrative: `Your care is genuine — that much is true. What is not honest is what the care is doing. You provide for, tend to, arrange around, and absorb the discomforts of the people close to you, and you call it love. What it also is, is architecture. By making yourself indispensable you ensure that leaving becomes structurally difficult, that dependency forms, that the space for others to fully function on their own — and therefore to choose to stay rather than to be retained — never quite opens.
+    narrative: `Your care is genuine — that much is true. What is not honest is what the care is doing. You provide for, tend to, arrange around, and absorb the discomforts of the people close to you, and you call it love. What it also is is architecture. By making yourself indispensable you ensure that leaving becomes structurally difficult, that dependency forms, that the space for others to fully function on their own — and therefore to choose to stay rather than to be retained — never quite opens.
 
 The people in your care start to feel managed before they feel loved, and they are not wrong. There is a quality to your nurturing that forecloses their agency while appearing to serve it. You are the first to notice what someone needs, and the last to let them discover it themselves. What you call protection is also a form of possession.
 
@@ -188,7 +188,7 @@ The truth: you trade intimacy for revelation and end up alone with insights that
     type: "subtype",
     narrative: `The unpredictability that defines your life is not courage — it is structure-avoidance. Building something requires tolerating the period where it is not yet impressive, where the gains are incremental and the scorecard is not dramatic. That period is unbearable to you because it offers no signal about whether you are exceptional, and the question of whether you are exceptional is the question your entire pattern is organized around answering.
 
-So you gamble. You bet large because large bets produce large outcomes — wins that confirm you, losses that at least confirm the stakes were worthy of someone important. The middle — the patient accumulation of ordinary people building ordinary lives — is the thing you cannot face, because the middle does not distinguish you from anyone.
+So you gamble. You bet large because large bets produce large outcomes — wins that confirm you, losses that at least confirm the stakes were worthy of someone important. The middle—the patient accumulation of ordinary people building ordinary lives—is the thing you cannot face, because the middle does not distinguish you from anyone.
 
 The people who enjoy your spark do not trust your consistency because there is no consistency to trust. Every stabilizing force in your life eventually gets sacrificed to the next bet, the next venture, the next version of the story in which this time the gamble was the one that was supposed to happen.
 
@@ -200,7 +200,7 @@ The truth: you gamble with your future to avoid the verdict that a steady life w
     group: "gamma",
     gender: "male",
     type: "shadow",
-    narrative: `Your nihilism is not a conclusion reached by clear-eyed analysis. It is a retreat from an arena you entered, lost in, and could not emotionally survive losing in. The contempt you carry for the world — for its shallowness, its mediocrity, its failure to meet you — is the reverse image of how desperately you once wanted to be met by it. When it did not happen, or when it happened and was then taken away, the wound became a worldview.
+    narrative: `Your nihilism is not a conclusion reached by clear-eyed analysis. It is a retreat from an arena you entered, lost in, and could not emotionally survive losing in. The contempt you carry for the world—for its shallowness, its mediocrity, its failure to meet you—is the reverse image of how desperately you once wanted to be met by it. When it did not happen, or when it happened and was then taken away, the wound became a worldview.
 
 You push people away before they can disappoint you and call it clarity. The clarity is real but it is serving a purpose that has nothing to do with truth — it is serving your protection. By seeing through everyone you ensure that no one can get close enough to see through you. The detachment you have cultivated is not wisdom; it is the moat around the specific vulnerability of still caring in a place you will not admit to anyone.
 
@@ -230,7 +230,7 @@ The truth: you are foundational and foundations are rarely celebrated, but you n
     type: "subtype",
     narrative: `Your over-functioning has a logic to it: if you are the one who makes everything run, you cannot be the one who is left behind. The dependency you engineer is not malicious — it emerged from a real fear that without your role, you would be without your place. You keep the family running, the logistics solved, the gaps filled, and in doing so you ensure that removing you would create immediate and visible problems. That is not love. That is a retention strategy disguised as devotion.
 
-The people in your care are simultaneously grateful and quietly stunted by it. They have not developed their own capacity in the areas you have colonised with your competence. When they eventually need to function without you — and they will — they struggle, which confirms in you the belief that they needed you, rather than the truth, which is that you prevented them from not needing you.
+The people in your care are simultaneously grateful and quietly stunted by it. They have not developed their own capacity in the areas you have colonised with your competence. When they eventually need to function without you — and they will — they struggle, which confirms your belief that they needed you, rather than the truth, which is that you prevented them from not needing you.
 
 What you protect yourself from by filling every gap is the experience of being chosen without function. You do not know if you would be wanted if you stopped being needed, and you have never created the conditions to find out.
 
@@ -262,7 +262,7 @@ The women who do not choose you are not primarily failing to read your value. Th
 
 What lives underneath the independence is the question you are hiding from: what if you broadcast yourself fully and were still not chosen? That is the fear. The non-broadcast life forecloses the question. You age with your autonomy intact and that question permanently unanswered.
 
-The truth: you stayed outside the game because you found it beneath you, but you also found it dangerous — and beneath you is a more comfortable story than afraid of it.`,
+The truth: you stayed outside the game because you found it beneath you, but you also found it dangerous — and calling it beneath you spares you from having to say you were afraid of it.`,
   },
 
   sigma_kappa: {
@@ -362,9 +362,9 @@ The truth: you won the inner game and the outer one kept going. The question tha
     type: "primary",
     narrative: `Your power is real, but it has been used primarily as protection. The high standards, the selectivity, the management of access — these are not simply the rational filtering of a high-value woman. They are also the architecture of someone who learned early that men who seemed strong were not, that the ones who got close caused damage, and that maintaining control of the selection process was the only way to remain safe. Your standards protect you. They also screen out the men capable of genuine containment, because genuine containment would require you to be held rather than to hold.
 
-What circulates around you is attraction to your persona — the combination of beauty, standards, and scarcity that produces pursuit. What is pursued is not you. The men circling you want access to what you project. The ones capable of depth encounter your filters and read them correctly as signals that the door is not open. They do not push through. They leave. The men who stay are the ones who interpret your barriers as a challenge rather than a boundary — and those are precisely the wrong men.
+What circulates around you is an attraction to your persona — the combination of beauty, standards, and scarcity that produces pursuit. What is pursued is not you. The men circling you want access to what you project. The ones capable of depth encounter your filters and read them correctly as signals that the door is not open. They do not push through. They leave. The men who stay are the ones who interpret your barriers as a challenge rather than a boundary — and those are precisely the wrong men.
 
-Your window is real. You know this and do not say it aloud because naming it feels like capitulation to something you have been taught to resist. But the compounding of selectivity over the years has a shape: the field of genuinely compatible men who are also available does not remain constant. The women who form lasting bonds of real quality tend to do so while their options were still open rather than waiting until the conditions were perfect, because perfect conditions never arrive — they are made.
+Your window is real. You know this and do not say it aloud because naming it feels like capitulation to something you have been taught to resist. But the compounding of selectivity over the years has a shape: the field of genuinely compatible men who are also available does not remain constant. The women who form lasting bonds of real quality tend to do so while their options are still open rather than waiting until the conditions were perfect, because perfect conditions never arrive — they are made.
 
 The truth: you are desired for the projection, rarely encountered as the person, and the strategies that protected you from being hurt have also kept you from being known — and known is what you actually want.`,
   },
@@ -376,7 +376,7 @@ The truth: you are desired for the projection, rarely encountered as the person,
     type: "subtype",
     narrative: `Your discernment is a faculty, but you have turned it into a verdict machine. Every man who approaches is processed through a set of criteria assembled from every disappointment you have already accumulated, and the assessment happens before the person has had a chance to be anyone. You are not evaluating individuals — you are pattern-matching against a threat model, and the threat model is thorough enough that almost no one clears it.
 
-The men you dismiss would often deserve dismissal. The problem is in the ones who do not — the ones who had something real to offer but encountered your assessment posture and experienced being evaluated rather than met. They left before the criteria were ever satisfied, not because they failed them, but because being tested before being welcomed is its own kind of rejection.
+The men you dismiss would often deserve dismissal. The problem is in the ones who do not — the ones who had something real to offer, but encountered your assessment posture and experienced being evaluated rather than met. They left before the criteria were ever satisfied, not because they failed them, but because being tested before being welcomed is its own kind of rejection.
 
 You wonder, sometimes, why so few feel worthy. The honest answer is that worthiness is not being assessed. You are assessing threat. Those are different measurements and they produce different outcomes.
 
@@ -390,7 +390,7 @@ The truth: your discernment protects you from bad partners and has become thorou
     type: "subtype",
     narrative: `You give loyalty as if it were the thing that creates safety, rather than the thing that should follow it. The bonding comes before the vetting because bonding feels like the solution — like the act of giving yourself fully to someone will produce the relationship that makes it worthwhile. The result is that men who want a deeply loyal woman without having earned one arrive at the front of the queue, because they can read the signal you are transmitting and they are not the ones who will be slowed by questions about whether they deserve it.
 
-You stay in bonds that have turned bad because leaving feels like proof of your own failure — as if loyalty that has an end was never real loyalty. You absorb damage to demonstrate commitment, which means the men most likely to cause damage are also the ones who most benefit from your core quality. The men capable of honouring your devotion rarely get through to you — you are already given by the time they arrive.
+You stay in bonds that have turned bad because leaving feels like proof of your own failure — as if loyalty that has an end was never real loyalty. You absorb damage to demonstrate commitment, which means the men most likely to cause damage are also the ones who most benefit from your core quality. The men capable of honouring your devotion rarely get through to you — you are already committed by the time they arrive.
 
 The tragedy here is not that you love too much. It is that you deploy love before trust is established, and love without trust is not a bond — it is a vulnerability with no container.
 
@@ -460,7 +460,7 @@ The truth: you became so completely the dutiful partner that the part of you he 
     group: "beta",
     gender: "female",
     type: "shadow",
-    narrative: `The calculation has been running so long that it now feels like personality. The reading of rooms, the assessment of what can be extracted from whom, the management of access and affection as a resource — this began as survival adaptation in an environment where you genuinely had no other tools. It has continued into circumstances where you do, but the reflex is faster than the reflection.
+    narrative: `The calculation has been running so long that it now feels like personality. The reading of rooms, the assessment of who can provide what, the management of access and affection as a resource — this began as survival adaptation in an environment where you genuinely had no other tools. It has continued into circumstances where you do, but the reflex is faster than the reflection.
 
 People feel the extraction before they can name it. There is a quality to your affection that registers as conditional in a way that most people cannot articulate but all respond to — a slight sense that the warmth is instrumental, that the attention is purposeful, that the connection is an asset being managed rather than a person being encountered. Trust does not form. You wonder why.
 
@@ -518,7 +518,7 @@ The truth: your wisdom wins debates and loses softness, and the debates are not 
     type: "subtype",
     narrative: `The strategy was coherent. Invest in yourself, build capability, establish independence, refuse to compromise your development for the convenience of partnership before you were ready. That is a legitimate approach, and the competence it produced is real.
 
-What was not fully modelled was the market dynamic running in parallel. The men most compatible with you were forming their most significant bonds during the same years you were building your professional self. They were not waiting. The ones who are now available to a woman of your accomplishment and age are a different pool — smaller, and shaped by different circumstances — than the ones who were available at 27 when you were not looking.
+What was not fully modeled was the market dynamic running in parallel. The men most compatible with you were forming their most significant bonds during the same years you were building your professional self. They were not waiting. The ones who are now available to a woman of your accomplishment and age are a different pool—smaller, and shaped by different circumstances—than the ones who were available at 27 when you were not looking.
 
 Your independence signals low need. Men who want to be genuinely wanted, who need to feel like their presence changes something for the woman they are with, read your self-sufficiency as a closed door and move toward women for whom they can make a visible difference. It is not that you are too accomplished. It is that accomplishment, presented without porousness, reads as unavailability.
 
@@ -560,7 +560,7 @@ The truth: you gave your care so completely that your desirability disappeared i
     group: "delta",
     gender: "female",
     type: "subtype",
-    narrative: `Your joy is real, but you have made it a service. The radiance you carry into rooms began as genuine expression and has gradually become a role — something you perform for the benefit of the people around you because you have learned, through accumulated evidence, that your light is what they came for and your darkness is what makes them uncomfortable. So you manage the darkness privately and bring only the light into the shared space.
+    narrative: `Your joy is real, but you have made it a service. The radiance you carry into rooms began as genuine expression and has gradually become a role — something you perform for the benefit of the people around you because you have learned, through accumulated evidence, that your light is what they came for, and your darkness is what makes them uncomfortable. So you manage the darkness privately and bring only the light into the shared space.
 
 The cost of this is that the people who love you do not know all of you. They know the version of you that shows up resourced, warm, and carrying the emotional weather of the room. They do not know what you carry alone. When you finally need something — when the resource runs out, when the darkness requires acknowledgment rather than management — the people around you are genuinely unprepared, because you have spent years ensuring they would never need to be.
 
@@ -630,7 +630,7 @@ The truth: you trade belonging for rebellion and call it freedom, and the freedo
     group: "omega",
     gender: "female",
     type: "primary",
-    narrative: `The invisibility you feel is partly accurate and partly constructed. The accurate part: you have had genuine experiences of being unseen, overlooked, unmattered to — and those experiences formed a belief about your fundamental desirability that has become the lens through which you interpret every subsequent interaction. The constructed part: the belief, once formed, began producing the outcomes that confirmed it. You withdraw before connection can be tested. You interpret ambiguous signals as rejection. You pre-abandon yourself so that the abandonment, when it comes, feels like confirmation rather than surprise.
+    narrative: `The invisibility you feel is partly accurate and partly constructed. The accurate part: you have had genuine experiences of being unseen, overlooked, and treated as unimportant — and those experiences formed a belief about your fundamental desirability that has become the lens through which you interpret every subsequent interaction. The constructed part: the belief, once formed, began producing the outcomes that confirmed it. You withdraw before connection can be tested. You interpret ambiguous signals as rejection. You pre-abandon yourself so that the abandonment, when it comes, feels like confirmation rather than surprise.
 
 The self-fulfilling quality of this pattern is the thing that makes it particularly difficult to interrupt. From inside it, every outcome is evidence of the original wound — evidence that you were right about yourself. From outside it, the pattern is visible as the mechanism producing the outcome. You expect not to be chosen, and you make yourself subtly unavailable in the ways that ensure you will not be.
 
@@ -662,7 +662,9 @@ The truth: you stay broken because breaking feels like power, and power is the o
     type: "primary",
     narrative: `The peace you carry is genuine and it cost something to arrive at. The work was real — the integration, the release of the social games that most women play for most of their lives, the development of an inner life stable enough to not require the crowd's constant confirmation. That is rare and it is not to be minimised.
 
-What is also true is that the cost of it is relational in ways that are worth naming. Female social belonging is primarily organized around shared stakes — the negotiations, the hierarchies, the mutual investment in the dramas of connection. You have moved beyond most of this, which means you have also moved beyond the primary language in which women know each other. Other women experience your peace as either inspiring or alienating, and the ones who find it alienating are the majority.
+What is also true is that the cost of it is relational in ways that are worth naming. Female social belonging is primarily organized around shared stakes — the negotiations, the hierarchies, the mutual investment in the dramas of connection. You have moved beyond most of this, which means you have also moved beyond the primary language in which women know each other.
+
+Other women experience your peace as either inspiring or alienating, and the ones who find it alienating are the majority.
 
 In partnership, the transcendence can present as a kind of unreachability. A man who wants to matter to you — to move something in you, to be the person who changes your weather — encounters a woman whose weather is already settled, and the encounter can feel less like a relationship than an audience with someone who has already arrived.
 

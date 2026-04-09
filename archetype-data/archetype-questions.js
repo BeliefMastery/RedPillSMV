@@ -2,13 +2,14 @@
 // Following bias-mitigation principles: behavioral focus, concrete scenarios, values-neutral framing
 import { PHASE_6_DETERMINATIVE_QUESTIONS } from './archetype-determinative-questions.mjs';
 
-// PHASE 1: Core Orientation (15-20 forced-choice scenarios)
+// PHASE 1: Core Orientation — mostly value_allocation (100% shared across domains) + lighter forced-choice conflict items
 // Purpose: Identify primary quadrant (Alpha/Beta/Gamma/Delta/Sigma/Omega/Phi)
 export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q1',
     question: 'You\'re invited to join a community project. What most appeals to you?',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Leading the initiative and setting the vision', archetypes: ['alpha'], weight: 3 },
       { text: 'Contributing specialized expertise and knowledge', archetypes: ['gamma'], weight: 3 },
@@ -21,7 +22,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q2',
     question: 'When a project you\'re involved in fails, you typically:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Take responsibility and lead the recovery effort', archetypes: ['alpha'], weight: 3 },
       { text: 'Analyze what went wrong and propose solutions', archetypes: ['gamma'], weight: 3 },
@@ -34,7 +36,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q3',
     question: 'At a party where you know few people, you:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Introduce yourself to groups and take leadership in conversations', archetypes: ['alpha'], weight: 3 },
       { text: 'Find interesting people to have deep conversations with', archetypes: ['gamma'], weight: 3 },
@@ -46,8 +49,9 @@ export const PHASE_1_QUESTIONS = [
   },
   {
     id: 'p1_q4',
-    question: 'If you could only choose one:',
-    type: 'forced_choice',
+    question: 'When you think about what keeps you engaged over time, what pulls you most?',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Recognition from peers for your achievements', archetypes: ['alpha'], weight: 3 },
       { text: 'Freedom from obligation and social expectations', archetypes: ['sigma'], weight: 3 },
@@ -60,7 +64,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q5',
     question: 'When someone challenges your approach with less experience:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Assert your authority and explain why your method works', archetypes: ['alpha'], weight: 3 },
       { text: 'Engage in debate and explore their perspective', archetypes: ['gamma'], weight: 3 },
@@ -73,7 +78,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q6',
     question: 'In a group decision, you prefer to:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Make the final call after hearing input', archetypes: ['alpha'], weight: 3 },
       { text: 'Question assumptions and propose alternatives', archetypes: ['gamma'], weight: 3 },
@@ -86,7 +92,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q7',
     question: 'When you see injustice or unfairness, you:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Take action to correct it directly', archetypes: ['alpha', 'alpha_rho'], weight: 3 },
       { text: 'Question the system and propose alternatives', archetypes: ['gamma'], weight: 3 },
@@ -99,7 +106,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q8',
     question: 'Your ideal work environment is:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Leading a team with clear hierarchy', archetypes: ['alpha'], weight: 3 },
       { text: 'Independent research or creative work', archetypes: ['gamma', 'sigma'], weight: 3 },
@@ -112,7 +120,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q9',
     question: 'When you disagree with someone in authority:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Challenge them directly and assert your position', archetypes: ['alpha'], weight: 3 },
       { text: 'Question their reasoning and propose alternatives', archetypes: ['gamma'], weight: 3 },
@@ -125,7 +134,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q10',
     question: 'In relationships, you value most:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Respect and recognition of your leadership', archetypes: ['alpha'], weight: 3 },
       { text: 'Intellectual connection and deep conversations', archetypes: ['gamma'], weight: 3 },
@@ -138,7 +148,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q11',
     question: 'When you need to learn something new, you:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Take charge of the learning process and teach others', archetypes: ['alpha'], weight: 3 },
       { text: 'Deep dive into theory and explore multiple perspectives', archetypes: ['gamma'], weight: 3 },
@@ -151,7 +162,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q12',
     question: 'When facing a major life decision, you primarily:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Make the decision confidently and take responsibility', archetypes: ['alpha'], weight: 3 },
       { text: 'Analyze all options deeply and question assumptions', archetypes: ['gamma'], weight: 3 },
@@ -205,7 +217,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q14',
     question: 'When you achieve something significant, you:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Share it widely and expect recognition', archetypes: ['alpha'], weight: 3 },
       { text: 'Reflect on what it means and what you learned', archetypes: ['gamma'], weight: 3 },
@@ -218,7 +231,8 @@ export const PHASE_1_QUESTIONS = [
   {
     id: 'p1_q15',
     question: 'In a crisis, your natural response is to:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Take charge and direct the response', archetypes: ['alpha', 'alpha_xi'], weight: 3 },
       { text: 'Analyze the situation and propose strategic solutions', archetypes: ['gamma', 'sigma_kappa'], weight: 3 },
@@ -504,13 +518,14 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
   alpha: [
     {
       id: 'p2_alpha_refine_1',
-      question: 'Which leadership posture feels most natural to you?',
-      type: 'forced_choice',
+      question: 'How do you think others would describe your leadership style?',
+      type: 'value_allocation',
+      allocationTotal: 100,
       options: [
-        { text: 'Dominant, charismatic leadership', archetypes: ['alpha'], weight: 2 },
-        { text: 'Resilient protector who defends others', archetypes: ['alpha_xi'], weight: 2 },
-        { text: 'Just, fair, rule-setting authority', archetypes: ['alpha_rho'], weight: 2 },
-        { text: 'Hard-edged dominance that can become tyrannical', archetypes: ['dark_alpha'], weight: 2 }
+        { text: 'They see me as the one who sets direction—people look to me when things need to move', archetypes: ['alpha'], weight: 2 },
+        { text: 'They see me as shielding others or absorbing pressure for the group', archetypes: ['alpha_xi'], weight: 2 },
+        { text: 'They see me as strict about standards, rules, and what\'s fair', archetypes: ['alpha_rho'], weight: 2 },
+        { text: 'They might say I come on too strong or won’t yield when I’m challenged', archetypes: ['dark_alpha'], weight: 2 }
       ]
     },
     {
@@ -637,59 +652,63 @@ export const SUBTYPE_REFINEMENT_QUESTIONS = {
 };
 
 export { PHASE_6_DETERMINATIVE_QUESTIONS };
-// PHASE 3: Shadow/Integration Assessment (10-15 contextual questions)
+// PHASE 3: Shadow/Integration — core rows + p3_t4 value_allocation (100%); other temperament items p3_t1–t3,t5,t6 forced_choice. Lane weights: primary options 2, pure-omega row 1.33 (matches Phase 1 core:omega 3:2 ratio on the same 1× phase-3 scale).
 // Purpose: Identify secondary influences and developmental areas
 export const PHASE_3_QUESTIONS = [
   {
     id: 'p3_q1',
     question: 'Under high stress, I\'m most likely to:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Take charge and push harder', archetypes: ['alpha'], weight: 2 },
       { text: 'Withdraw and analyze alone', archetypes: ['gamma', 'sigma'], weight: 2 },
       { text: 'Seek support from trusted others', archetypes: ['beta'], weight: 2 },
       { text: 'Focus on practical tasks', archetypes: ['delta'], weight: 2 },
       { text: 'Become destructive or nihilistic', archetypes: ['dark_omega', 'dark_gamma'], weight: 2 },
-      { text: 'Feel overwhelmed and shut down', archetypes: ['omega'], weight: 2 }
+      { text: 'Feel overwhelmed and shut down', archetypes: ['omega'], weight: 1.33 }
     ]
   },
   {
     id: 'p3_q2',
     question: 'In intimate relationships, I tend to:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Take a leadership role', archetypes: ['alpha'], weight: 2 },
       { text: 'Seek deep intellectual connection', archetypes: ['gamma'], weight: 2 },
       { text: 'Prioritize harmony and support', archetypes: ['beta'], weight: 2 },
       { text: 'Focus on practical partnership', archetypes: ['delta'], weight: 2 },
       { text: 'Maintain independence and space', archetypes: ['sigma'], weight: 2 },
-      { text: 'Feel insecure and seek constant reassurance', archetypes: ['omega'], weight: 2 }
+      { text: 'Feel insecure and seek constant reassurance', archetypes: ['omega'], weight: 1.33 }
     ]
   },
   {
     id: 'p3_q3',
     question: 'When I feel I\'m not getting what I need, I:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Assert my needs directly', archetypes: ['alpha'], weight: 2 },
       { text: 'Question why and analyze the situation', archetypes: ['gamma'], weight: 2 },
       { text: 'Try to meet others\' needs hoping they\'ll reciprocate', archetypes: ['beta'], weight: 2 },
       { text: 'Work harder to earn what I need', archetypes: ['delta'], weight: 2 },
       { text: 'Withdraw and handle it independently', archetypes: ['sigma'], weight: 2 },
-      { text: 'Feel powerless and resentful', archetypes: ['omega'], weight: 2 }
+      { text: 'Feel powerless and resentful', archetypes: ['omega'], weight: 1.33 }
     ]
   },
   {
     id: 'p3_q4',
-    question: 'Which of these considerations produces the most resistance in you?',
-    type: 'forced_choice',
+    question: 'Which of these considerations produce resistance in you (split 100% across what applies)?',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Losing control or authority', archetypes: ['alpha'], weight: 2 },
       { text: 'Being wrong or ignorant', archetypes: ['gamma'], weight: 2 },
       { text: 'Being rejected or unloved', archetypes: ['beta'], weight: 2 },
       { text: 'Failing in my duties', archetypes: ['delta'], weight: 2 },
       { text: 'Losing my independence', archetypes: ['sigma'], weight: 2 },
-      { text: 'Being completely alone', archetypes: ['omega'], weight: 2 }
+      { text: 'Being completely alone', archetypes: ['omega'], weight: 1.33 }
     ]
   },
   // ASPIRATION TEST: Bias mitigation through reverse psychology
@@ -755,8 +774,9 @@ export const PHASE_3_QUESTIONS = [
   },
   {
     id: 'p3_aspiration_5',
-    question: 'Which of these would be the most unbearable for you?',
-    type: 'forced_choice',
+    question: 'How difficult would these hurdles be for you to have to live with enduringly?',
+    type: 'value_allocation',
+    allocationTotal: 100,
     isAspiration: true,
     options: [
       { text: 'A burden of responsibility and constant pressure to lead', archetypes: ['alpha'], aspirationTarget: 'alpha', weight: 1 },
@@ -771,72 +791,78 @@ export const PHASE_3_QUESTIONS = [
   {
     id: 'p3_q5',
     question: 'When others succeed where I haven\'t, I:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Feel competitive and work harder', archetypes: ['alpha'], weight: 2 },
       { text: 'Analyze what they did differently', archetypes: ['gamma'], weight: 2 },
       { text: 'Feel happy for them and supportive', archetypes: ['beta'], weight: 2 },
       { text: 'Focus on my own work and improvement', archetypes: ['delta'], weight: 2 },
       { text: 'Don\'t compare, focus on my own path', archetypes: ['sigma'], weight: 2 },
-      { text: 'Feel inadequate and discouraged', archetypes: ['omega'], weight: 2 }
+      { text: 'Feel inadequate and discouraged', archetypes: ['omega'], weight: 1.33 }
     ]
   },
   {
     id: 'p3_q6',
     question: 'In group settings, I often feel:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Natural taking leadership', archetypes: ['alpha'], weight: 2 },
       { text: 'Curious about different perspectives', archetypes: ['gamma'], weight: 2 },
       { text: 'Responsible for others\' comfort', archetypes: ['beta'], weight: 2 },
       { text: 'Useful when given clear tasks', archetypes: ['delta'], weight: 2 },
       { text: 'More comfortable observing', archetypes: ['sigma'], weight: 2 },
-      { text: 'Uncomfortable and out of place', archetypes: ['omega'], weight: 2 }
+      { text: 'Uncomfortable and out of place', archetypes: ['omega'], weight: 1.33 }
     ]
   },
   {
     id: 'p3_q7',
     question: 'When I make a mistake, I typically:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Take responsibility and fix it immediately', archetypes: ['alpha'], weight: 2 },
       { text: 'Analyze what went wrong and learn from it', archetypes: ['gamma'], weight: 2 },
       { text: 'Feel bad and try to make it up to others', archetypes: ['beta'], weight: 2 },
       { text: 'Focus on practical correction', archetypes: ['delta'], weight: 2 },
       { text: 'Handle it independently without involving others', archetypes: ['sigma'], weight: 2 },
-      { text: 'Feel overwhelmed and may avoid dealing with it', archetypes: ['omega'], weight: 2 }
+      { text: 'Feel overwhelmed and may avoid dealing with it', archetypes: ['omega'], weight: 1.33 }
     ]
   },
   {
     id: 'p3_q8',
-    question: 'I aspire to be more:',
-    type: 'forced_choice',
+    question: 'I aspire to be more (weight each pull, 100% total):',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Wise and integrated in my leadership', archetypes: ['alpha'], weight: 2, isAspirational: true },
       { text: 'Connected and understood by others', archetypes: ['gamma'], weight: 2, isAspirational: true },
       { text: 'Assertive and able to set boundaries', archetypes: ['beta'], weight: 2, isAspirational: true },
       { text: 'Confident in taking leadership', archetypes: ['delta'], weight: 2, isAspirational: true },
       { text: 'Able to connect and collaborate', archetypes: ['sigma'], weight: 2, isAspirational: true },
-      { text: 'Confident and socially skilled', archetypes: ['omega'], weight: 2, isAspirational: true }
+      { text: 'Confident and socially skilled', archetypes: ['omega'], weight: 1.33, isAspirational: true }
     ]
   },
   {
     id: 'p3_q9',
     question: 'When I feel most authentic, I am:',
-    type: 'forced_choice',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Leading and making decisions', archetypes: ['alpha'], weight: 2 },
       { text: 'Exploring ideas and questioning', archetypes: ['gamma'], weight: 2 },
       { text: 'Caring for and supporting others', archetypes: ['beta'], weight: 2 },
       { text: 'Working on practical, meaningful tasks', archetypes: ['delta'], weight: 2 },
       { text: 'Operating independently on my own terms', archetypes: ['sigma'], weight: 2 },
-      { text: 'Alone and free from expectations', archetypes: ['omega'], weight: 2 }
+      { text: 'Alone and free from expectations', archetypes: ['omega'], weight: 1.33 }
     ]
   },
   {
     id: 'p3_q10',
-    question: 'My shadow side (what I try to hide) includes:',
-    type: 'forced_choice',
+    question: 'My shadow side (what I try to hide) includes (share 100% across patterns):',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'Need for control and dominance', archetypes: ['dark_alpha'], weight: 2, isShadow: true },
       { text: 'Isolation and nihilism', archetypes: ['dark_gamma'], weight: 2, isShadow: true },
@@ -850,7 +876,7 @@ export const PHASE_3_QUESTIONS = [
   // TEMPERAMENT INDICATORS: 6 questions probing the underlying processing and orientation
   // dimensions that differentiate archetypes with similar behavioral outputs.
   // Covers: shame vs fear, emotional contagion, processing mode,
-  // achievement drive, risk posture, and attachment orientation.
+  // success criteria (p3_t4: value_allocation), risk posture, and attachment orientation.
   {
     id: 'p3_t1',
     question: 'After a serious falling-out with someone who matters to you, what lingers longest?',
@@ -889,8 +915,9 @@ export const PHASE_3_QUESTIONS = [
   },
   {
     id: 'p3_t4',
-    question: 'When you reflect on how your life is going, you measure success primarily by:',
-    type: 'forced_choice',
+    question: 'When you reflect on how your life is going, what counts most toward success for you?',
+    type: 'value_allocation',
+    allocationTotal: 100,
     options: [
       { text: 'How I\'m doing relative to my peers and competitors', archetypes: ['alpha', 'gamma'], weight: 2 },
       { text: 'Whether the people closest to me are genuinely thriving', archetypes: ['beta', 'delta'], weight: 2 },

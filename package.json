@@ -14,7 +14,8 @@
     "smv:sensitivity": "node scripts/smv-sensitivity-check.mjs",
     "suite:calibration-check": "node scripts/suite-calibration-check.mjs",
     "archetype:must-have-check": "node scripts/must-have-gates-check.mjs",
-    "archetype:phase6-check": "node scripts/phase6-determinative-check.mjs"
+    "archetype:phase6-check": "node scripts/phase6-determinative-check.mjs",
+    "archetype:pst-check": "node scripts/pst-global-subtype-check.mjs"
   },
   "keywords": [],
   "author": "",

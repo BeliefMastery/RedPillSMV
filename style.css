@@ -5402,6 +5402,46 @@ img[data-src].loaded {
     margin-bottom: 1rem;
 }
 
+.value-allocation-total-line {
+    font-size: 0.95rem;
+    color: var(--muted);
+    margin: 0 0 1rem;
+}
+
+.value-allocation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.value-allocation-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.value-allocation-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.35;
+}
+
+.value-allocation-pct {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--brand);
+    flex-shrink: 0;
+}
+
+input[type="range"].value-allocation-slider {
+    width: 100%;
+    max-width: 100%;
+    accent-color: var(--brand, #1a4d8c);
+}
+
 .sov-error-card {
     background: rgba(255, 0, 0, 0.1);
     border-left: 4px solid #ff4444;

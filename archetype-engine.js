@@ -22,6 +22,12 @@ import {
   canonicalFamilyKeyFromNode
 } from './shared/archetype-phase6-logic.mjs';
 
+// Share of identification ranking that follows within-family refinement (phase2+phase6) vs raw weighted.
+// Reduces defaulting to vanilla subtypes when questions mostly tag the base id (e.g. alpha) but variants show clearer subtype signal.
+const INTRACLASS_HYBRID_ALPHA = 0.36;
+const INTRACLASS_REFINEMENT_EPS = 0.015;
+const INTRACLASS_PHASE2_WEIGHT = 0.0194; // must match calculateFinalScores phase2 slot
+
 // Data modules - will be loaded lazily
 let ARCHETYPES, CORE_GROUPS, ARCHETYPE_OPTIMIZATION;
 let PHASE_1_QUESTIONS, PHASE_2_QUESTIONS, PHASE_3_QUESTIONS, PHASE_4_QUESTIONS, PHASE_5_QUESTIONS, RESPECT_CONTEXT_QUESTIONS;
@@ -101,6 +107,52 @@ function memeticSummaryHtml(archetype, { margin = '0.15rem 0 0.9rem', fontSize =
   const q = quotedMemeticSummary(archetypeSlogan(archetype));
   if (!q) return '';
   return `<p class="archetype-memetic-summary" style="margin: ${margin}; color: var(--muted); font-size: ${fontSize}; font-style: italic;">${SecurityUtils.sanitizeHTML(q)}</p>`;
+}
+
+/** When one slider moves, adjust the others so all values still sum to `total` (fixed impression budget). */
+function redistributeAllocationPercents(current, changedIndex, newValue, total) {
+  const n = current.length;
+  if (n === 0) return [];
+  newValue = Math.max(0, Math.min(total, Math.round(Number(newValue) || 0)));
+  const old = current.map((x) => Math.round(Number(x) || 0));
+  const oldK = old[changedIndex];
+  const othersOldSum = total - oldK;
+  const newOthersSum = total - newValue;
+  const next = old.slice();
+  next[changedIndex] = newValue;
+  if (n === 1) return next;
+  if (othersOldSum <= 0) {
+    const m = n - 1;
+    const base = Math.floor(newOthersSum / m);
+    let rem = newOthersSum - base * m;
+    for (let i = 0; i < n; i++) {
+      if (i === changedIndex) continue;
+      next[i] = base + (rem > 0 ? 1 : 0);
+      if (rem > 0) rem--;
+    }
+  } else {
+    for (let i = 0; i < n; i++) {
+      if (i === changedIndex) continue;
+      next[i] = Math.round((old[i] * newOthersSum) / othersOldSum);
+    }
+  }
+  let sum = next.reduce((a, b) => a + b, 0);
+  let drift = total - sum;
+  let guard = 0;
+  while (drift !== 0 && guard < n * 200) {
+    for (let i = 0; i < n && drift !== 0; i++) {
+      if (i === changedIndex) continue;
+      if (drift > 0) {
+        next[i]++;
+        drift--;
+      } else if (next[i] > 0) {
+        next[i]--;
+        drift++;
+      }
+    }
+    guard++;
+  }
+  return next;
 }
 
 export class ArchetypeEngine {
@@ -462,6 +514,21 @@ init() {
       this.processAnswer(question, selected);
       return;
     }
+    if (question.type === 'value_allocation' && Array.isArray(question.options)) {
+      const n = question.options.length;
+      const totalPts = question.allocationTotal || 100;
+      const weights = question.options.map((opt) => this.getSampleOptionWeight(opt, question, sampleTarget));
+      const wsum = weights.reduce((a, b) => a + b, 0) || 1;
+      const raw = weights.map((w) => (w / wsum) * totalPts);
+      const percents = raw.map((x) => Math.floor(x));
+      let drift = totalPts - percents.reduce((a, b) => a + b, 0);
+      for (let i = 0; drift > 0; i = (i + 1) % n) {
+        percents[i]++;
+        drift--;
+      }
+      this.processAnswer(question, percents);
+      return;
+    }
     if (question.options && Array.isArray(question.options)) {
       const weighted = question.options.map((opt) => this.getSampleOptionWeight(opt, question, sampleTarget));
       const selectedIndex = this.pickWeightedIndex(weighted);
@@ -506,7 +573,7 @@ init() {
 
       const prePhase6BaseScores = JSON.parse(JSON.stringify(this.archetypeScores || {}));
       const decision = this.preparePhase6Decision();
-      if (decision?.shouldRun && Array.isArray(decision.targetFamilyIds) && decision.targetFamilyIds.length > 0) {
+      if (decision?.shouldRun && Array.isArray(decision.phase6FamilyIds) && decision.phase6FamilyIds.length > 0) {
         // Restore pre-decision baseline so Phase 6 scoring applies once on raw phase evidence.
         this.archetypeScores = JSON.parse(JSON.stringify(prePhase6BaseScores));
         this.analysisData.phase6Results = {
@@ -514,12 +581,13 @@ init() {
           triggered: true,
           completed: false,
           targetFamilyIds: decision.targetFamilyIds,
+          phase6FamilyIds: decision.phase6FamilyIds,
           beforePhase6: this.analysisData.subclassDiagnostics
         };
-        await this.buildPhase6Sequence(decision.targetFamilyIds);
+        await this.buildPhase6Sequence(decision.phase6FamilyIds);
         this.questionSequence.forEach(q => this.answerQuestionForSample(q, sampleTarget));
         this.analyzePhase6Results();
-        this.identifyArchetypes({ restrictToFamilies: decision.targetFamilyIds });
+        this.identifyArchetypes({ restrictToFamilies: decision.phase6FamilyIds });
         this.analysisData.phase6Results = {
           ...(this.analysisData.phase6Results || {}),
           afterPhase6: this.analysisData.subclassDiagnostics
@@ -770,6 +838,8 @@ showGenderSelection() {
     this.debugReporter.recordQuestionCount(questions.length);
     // Shuffle to mitigate order bias
     this.questionSequence.sort(() => Math.random() - 0.5);
+    this.currentPhase = 1;
+    this.currentQuestionIndex = 0;
   }
 
   /**
@@ -1003,6 +1073,8 @@ showGenderSelection() {
     // Render the current question only (replace previous content)
     if (question.type === 'forced_choice') {
       html += this.renderForcedChoiceQuestion(question, isLocked);
+    } else if (question.type === 'value_allocation') {
+      html += this.renderValueAllocationQuestion(question, isLocked);
     } else if (question.type === 'multi_select') {
       html += this.renderMultiSelectQuestion(question, isLocked);
     } else if (question.type === 'likert') {
@@ -1132,6 +1204,86 @@ showGenderSelection() {
         <h3>${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
         <div class="options-container">
           ${optionsHTML}
+        </div>
+        ${lockedNotice}
+      </div>
+    `;
+  }
+
+  renderValueAllocationQuestion(question, isLocked = false) {
+    const n = question.options?.length || 0;
+    const total = question.allocationTotal || 100;
+    const existing = this.answers[question.id]?.allocationPercents;
+    let percents;
+    if (Array.isArray(existing) && existing.length === n) {
+      percents = existing.map((x) => Math.round(Number(x) || 0));
+    } else {
+      const base = Math.floor(total / n);
+      percents = Array(n).fill(base);
+      let rem = total - base * n;
+      for (let i = 0; rem > 0; i = (i + 1) % n, rem--) {
+        percents[i]++;
+      }
+    }
+
+    const rowsHTML = question.options.map((option, index) => `
+      <div class="value-allocation-row" data-allocation-index="${index}">
+        <div class="value-allocation-label">
+          <span>${SecurityUtils.sanitizeHTML(option.text || '')}</span>
+          <span class="value-allocation-pct" id="pct_${question.id}_${index}">${percents[index]}%</span>
+        </div>
+        <input type="range" class="value-allocation-slider" id="alloc_${question.id}_${index}"
+          min="0" max="${total}" value="${percents[index]}"
+          ${isLocked ? 'disabled' : ''}
+          aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${percents[index]}"
+          aria-label="${SecurityUtils.sanitizeHTML(option.text || `Domain ${index + 1}`)}">
+      </div>
+    `).join('');
+
+    const lockedNotice = '';
+
+    if (!isLocked) {
+      setTimeout(() => {
+        const qid = question.id;
+        let state = percents.slice();
+        const syncDom = () => {
+          for (let i = 0; i < n; i++) {
+            const slider = document.getElementById(`alloc_${qid}_${i}`);
+            const pctEl = document.getElementById(`pct_${qid}_${i}`);
+            if (slider) {
+              slider.value = String(state[i]);
+              slider.setAttribute('aria-valuenow', String(state[i]));
+            }
+            if (pctEl) pctEl.textContent = `${state[i]}%`;
+          }
+          const sumEl = document.getElementById(`alloc_sum_${qid}`);
+          if (sumEl) sumEl.textContent = String(state.reduce((a, b) => a + b, 0));
+        };
+
+        for (let k = 0; k < n; k++) {
+          const el = document.getElementById(`alloc_${qid}_${k}`);
+          if (!el) continue;
+          el.addEventListener('input', () => {
+            const raw = parseInt(el.value, 10);
+            state = redistributeAllocationPercents(state, k, raw, total);
+            syncDom();
+            this.processAnswer(question, state.slice());
+          });
+        }
+
+        if (!this.answers[qid]?.allocationPercents) {
+          this.processAnswer(question, state.slice());
+        }
+      }, 0);
+    }
+
+    return `
+      <div class="question-card value-allocation-card">
+        <h3>${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
+        <p class="question-helper">One shared budget: ${total}%. Moving a slider up lowers the others in proportion to how much each still had left.</p>
+        <p class="value-allocation-total-line">Total: <strong id="alloc_sum_${question.id}">${percents.reduce((a, b) => a + b, 0)}%</strong></p>
+        <div class="value-allocation-list">
+          ${rowsHTML}
         </div>
         ${lockedNotice}
       </div>
@@ -1295,13 +1447,26 @@ showGenderSelection() {
   }
 
   processAnswer(question, answerValue) {
-    this.answers[question.id] = {
+    const prevAllocationPercents =
+      question.type === 'value_allocation' && Array.isArray(answerValue)
+        ? (this.answers[question.id]?.allocationPercents?.slice() ?? null)
+        : null;
+
+    const answerEntry = {
       questionId: question.id,
       value: answerValue,
-      selectedIndex: Array.isArray(answerValue) ? undefined : answerValue,
-      selectedIndices: Array.isArray(answerValue) ? answerValue : undefined,
       timestamp: new Date().toISOString()
     };
+    if (typeof answerValue === 'number') {
+      answerEntry.selectedIndex = answerValue;
+    } else if (Array.isArray(answerValue)) {
+      if (question.type === 'multi_select') {
+        answerEntry.selectedIndices = answerValue;
+      } else if (question.type === 'value_allocation') {
+        answerEntry.allocationPercents = answerValue.slice();
+      }
+    }
+    this.answers[question.id] = answerEntry;
 
     // Respect context: store only, do not score as archetype
     if (this.currentPhase === 3 && question.isRespectContext) {
@@ -1316,11 +1481,11 @@ showGenderSelection() {
 
     // Score based on phase
     if (this.currentPhase === 1) {
-      this.scorePhase1Answer(question, answerValue);
+      this.scorePhase1Answer(question, answerValue, prevAllocationPercents);
     } else if (this.currentPhase === 2) {
-      this.scorePhase2Answer(question, answerValue);
+      this.scorePhase2Answer(question, answerValue, prevAllocationPercents);
     } else if (this.currentPhase === 3) {
-      this.scorePhase3Answer(question, answerValue);
+      this.scorePhase3Answer(question, answerValue, prevAllocationPercents);
     } else if (this.currentPhase === 4) {
       this.scorePhase4Answer(question, answerValue);
     } else if (this.currentPhase === 5) {
@@ -1332,7 +1497,12 @@ showGenderSelection() {
     this.saveProgress();
   }
 
-  scorePhase1Answer(question, selectedIndex) {
+  scorePhase1Answer(question, answerValue, prevAllocationPercents = null) {
+    if (question.type === 'value_allocation' && Array.isArray(answerValue)) {
+      this.scorePhase1ValueAllocation(question, answerValue, prevAllocationPercents);
+      return;
+    }
+    const selectedIndex = answerValue;
     // Phase 1: 50% weight
     const selectedOption = question.options[selectedIndex];
     if (!selectedOption) return;
@@ -1386,7 +1556,78 @@ showGenderSelection() {
     });
   }
 
-  scorePhase2Answer(question, value) {
+  scorePhase1ValueAllocation(question, percents, prevPercents) {
+    const n = question.options?.length || 0;
+    if (!Array.isArray(percents) || percents.length !== n || n === 0) return;
+    const sumP = percents.reduce((a, b) => a + (Number(b) || 0), 0);
+    const shares = sumP > 0
+      ? percents.map((p) => (Number(p) || 0) / sumP)
+      : percents.map(() => 1 / n);
+
+    let prevShares = null;
+    if (prevPercents && prevPercents.length === n) {
+      const s = prevPercents.reduce((a, b) => a + (Number(b) || 0), 0);
+      prevShares = s > 0 ? prevPercents.map((p) => (Number(p) || 0) / s) : null;
+    }
+
+    const femaleMapping = {
+      alpha: 'alpha_female',
+      alpha_xi: 'alpha_xi_female',
+      alpha_rho: 'alpha_xi_female',
+      dark_alpha: 'dark_alpha_female',
+      beta: 'beta_female',
+      beta_iota: 'alpha_unicorn_female',
+      beta_nu: 'beta_nu_female',
+      beta_manipulator: 'beta_kappa_female',
+      beta_kappa: 'beta_kappa_female',
+      beta_rho: 'beta_rho_female',
+      gamma: 'gamma_female',
+      gamma_theta: 'gamma_theta_female',
+      dark_gamma: 'dark_gamma_female',
+      delta: 'delta_female',
+      delta_mu: 'delta_mu_female',
+      dark_delta: 'dark_delta_female',
+      sigma: 'sigma_female',
+      sigma_kappa: 'sigma_feminist_female',
+      sigma_lambda: 'sigma_female',
+      dark_sigma_zeta: 'dark_sigma_zeta_female',
+      omega: 'omega_female',
+      dark_omega: 'dark_omega_female',
+      phi: 'phi_female'
+    };
+
+    const applyShares = (normShares, sign) => {
+      normShares.forEach((share, i) => {
+        const opt = question.options[i];
+        if (!opt?.archetypes) return;
+        const w = opt.weight || 1;
+        opt.archetypes.forEach((archId) => {
+          let targetArchId = archId;
+          if (this.gender === 'female') {
+            targetArchId = femaleMapping[archId] || archId;
+          }
+          if (!this.archetypeScores[targetArchId]) {
+            this.archetypeScores[targetArchId] = {
+              phase1: 0,
+              phase2: 0,
+              phase3: 0,
+              phase4: 0,
+              phase5: 0,
+              phase6: 0,
+              total: 0,
+              weighted: 0
+            };
+          }
+          this.archetypeScores[targetArchId].phase1 += sign * share * w * 3;
+        });
+      });
+    };
+
+    if (prevShares) applyShares(prevShares, -1);
+    applyShares(shares, 1);
+  }
+
+  scorePhase2Answer(question, value, prevAllocationPercents = null) {
     // Phase 2: 30% weight
     // Likert scale: 1-5, convert to -2 to +2 for scoring
     const normalizedValue = value - 3; // -2 to +2
@@ -1411,6 +1652,8 @@ showGenderSelection() {
         'delta_mu': 'delta_mu_female',
         'dark_delta': 'dark_delta_female',
         'sigma': 'sigma_female',
+        'sigma_kappa': 'sigma_feminist_female',
+        'sigma_lambda': 'sigma_female',
         'dark_sigma_zeta': 'dark_sigma_zeta_female',
         'omega': 'omega_female',
         'dark_omega': 'dark_omega_female',
@@ -1419,8 +1662,14 @@ showGenderSelection() {
       return femaleMapping[archId] || archId;
     };
 
+    if (question.type === 'value_allocation' && Array.isArray(value)) {
+      this.scorePhase2ValueAllocation(question, value, prevAllocationPercents);
+      return;
+    }
+
     // Handle forced-choice refinement questions that use options instead of archetypes
     if (question.options && Array.isArray(question.options)) {
+      if (typeof value !== 'number') return;
       const selectedOption = question.options[value];
       if (!selectedOption || !Array.isArray(selectedOption.archetypes)) {
         this.debugReporter.logError(new Error('Phase 2 forced-choice option missing archetypes array'), 'scorePhase2Answer');
@@ -1479,9 +1728,91 @@ showGenderSelection() {
     });
   }
 
-  scorePhase3Answer(question, selectedIndex) {
+  scorePhase2ValueAllocation(question, percents, prevPercents) {
+    const n = question.options?.length || 0;
+    if (!Array.isArray(percents) || percents.length !== n || n === 0) return;
+    const sumP = percents.reduce((a, b) => a + (Number(b) || 0), 0);
+    const shares = sumP > 0
+      ? percents.map((p) => (Number(p) || 0) / sumP)
+      : percents.map(() => 1 / n);
+
+    let prevShares = null;
+    if (prevPercents && prevPercents.length === n) {
+      const s = prevPercents.reduce((a, b) => a + (Number(b) || 0), 0);
+      prevShares = s > 0 ? prevPercents.map((p) => (Number(p) || 0) / s) : null;
+    }
+
+    const femaleMapping = {
+      alpha: 'alpha_female',
+      alpha_xi: 'alpha_xi_female',
+      alpha_rho: 'alpha_xi_female',
+      dark_alpha: 'dark_alpha_female',
+      beta: 'beta_female',
+      beta_iota: 'alpha_unicorn_female',
+      beta_nu: 'beta_nu_female',
+      beta_manipulator: 'beta_kappa_female',
+      beta_kappa: 'beta_kappa_female',
+      beta_rho: 'beta_rho_female',
+      gamma: 'gamma_female',
+      gamma_theta: 'gamma_theta_female',
+      dark_gamma: 'dark_gamma_female',
+      delta: 'delta_female',
+      delta_mu: 'delta_mu_female',
+      dark_delta: 'dark_delta_female',
+      sigma: 'sigma_female',
+      sigma_kappa: 'sigma_feminist_female',
+      sigma_lambda: 'sigma_female',
+      dark_sigma_zeta: 'dark_sigma_zeta_female',
+      omega: 'omega_female',
+      dark_omega: 'dark_omega_female',
+      phi: 'phi_female'
+    };
+
+    const applyShares = (normShares, sign) => {
+      normShares.forEach((share, i) => {
+        const opt = question.options[i];
+        if (!opt?.archetypes) return;
+        const w = opt.weight || 1;
+        opt.archetypes.forEach((archId) => {
+          let targetArchId = archId;
+          if (this.gender === 'female') {
+            targetArchId = femaleMapping[archId] || archId;
+          }
+          if (!this.archetypeScores[targetArchId]) {
+            this.archetypeScores[targetArchId] = {
+              phase1: 0,
+              phase2: 0,
+              phase3: 0,
+              phase4: 0,
+              phase5: 0,
+              phase6: 0,
+              total: 0,
+              weighted: 0
+            };
+          }
+          this.archetypeScores[targetArchId].phase2 += sign * share * w * 2;
+        });
+      });
+    };
+
+    if (prevShares) applyShares(prevShares, -1);
+    applyShares(shares, 1);
+  }
+
+  scorePhase3Answer(question, answerValue, prevAllocationPercents = null) {
     // Phase 3: 15% weight
     if (!Array.isArray(question.options)) return;
+
+    if (question.type === 'value_allocation' && Array.isArray(answerValue)) {
+      if (question.isAspiration) {
+        this.recordAspirationFromValueAllocation(question, answerValue);
+        return;
+      }
+      this.scorePhase3ValueAllocation(question, answerValue, prevAllocationPercents);
+      return;
+    }
+
+    const selectedIndex = answerValue;
 
     // Track aspiration answers separately for bias mitigation
     if (question.isAspiration) {
@@ -1533,6 +1864,8 @@ showGenderSelection() {
           'delta_mu': 'delta_mu_female',
           'dark_delta': 'dark_delta_female',
           'sigma': 'sigma_female',
+          'sigma_kappa': 'sigma_feminist_female',
+          'sigma_lambda': 'sigma_female',
           'dark_sigma_zeta': 'dark_sigma_zeta_female',
           'omega': 'omega_female',
           'dark_omega': 'dark_omega_female',
@@ -1559,6 +1892,108 @@ showGenderSelection() {
       this.archetypeScores[targetArchId].phase3 += weight * 1; // Phase 3 gets 1x multiplier
       });
     });
+  }
+
+  /**
+   * Maps a 100% budget across aspiration hurdles into aspirationTargets for analyzeAspirations.
+   * Replaces prior entries for this question on each update (slider input). No direct phase3 scoring.
+   */
+  recordAspirationFromValueAllocation(question, percents) {
+    const n = question.options?.length || 0;
+    if (!Array.isArray(percents) || percents.length !== n || n === 0) return;
+    const sumP = percents.reduce((a, b) => a + (Number(b) || 0), 0);
+    const shares = sumP > 0
+      ? percents.map((p) => (Number(p) || 0) / sumP)
+      : percents.map(() => 1 / n);
+    const baseline = 1 / n + 0.005;
+    const picked = [];
+    shares.forEach((share, i) => {
+      const opt = question.options[i];
+      if (share > baseline && opt?.aspirationTarget) {
+        picked.push(opt.aspirationTarget);
+      }
+    });
+    if (picked.length === 0) {
+      let bestI = 0;
+      for (let i = 1; i < n; i++) {
+        if (shares[i] > shares[bestI]) bestI = i;
+      }
+      const t = question.options[bestI]?.aspirationTarget;
+      this.aspirationAnswers[question.id] = t ? [t] : [];
+      return;
+    }
+    this.aspirationAnswers[question.id] = picked;
+  }
+
+  scorePhase3ValueAllocation(question, percents, prevPercents) {
+    const n = question.options?.length || 0;
+    if (!Array.isArray(percents) || percents.length !== n || n === 0) return;
+    const sumP = percents.reduce((a, b) => a + (Number(b) || 0), 0);
+    const shares = sumP > 0
+      ? percents.map((p) => (Number(p) || 0) / sumP)
+      : percents.map(() => 1 / n);
+
+    let prevShares = null;
+    if (prevPercents && prevPercents.length === n) {
+      const s = prevPercents.reduce((a, b) => a + (Number(b) || 0), 0);
+      prevShares = s > 0 ? prevPercents.map((p) => (Number(p) || 0) / s) : null;
+    }
+
+    const femaleMapping = {
+      alpha: 'alpha_female',
+      alpha_xi: 'alpha_xi_female',
+      alpha_rho: 'alpha_xi_female',
+      dark_alpha: 'dark_alpha_female',
+      beta: 'beta_female',
+      beta_iota: 'alpha_unicorn_female',
+      beta_nu: 'beta_nu_female',
+      beta_manipulator: 'beta_kappa_female',
+      beta_kappa: 'beta_kappa_female',
+      beta_rho: 'beta_rho_female',
+      gamma: 'gamma_female',
+      gamma_theta: 'gamma_theta_female',
+      dark_gamma: 'dark_gamma_female',
+      delta: 'delta_female',
+      delta_mu: 'delta_mu_female',
+      dark_delta: 'dark_delta_female',
+      sigma: 'sigma_female',
+      sigma_kappa: 'sigma_feminist_female',
+      sigma_lambda: 'sigma_female',
+      dark_sigma_zeta: 'dark_sigma_zeta_female',
+      omega: 'omega_female',
+      dark_omega: 'dark_omega_female',
+      phi: 'phi_female'
+    };
+
+    const applyShares = (normShares, sign) => {
+      normShares.forEach((share, i) => {
+        const opt = question.options[i];
+        if (!opt?.archetypes) return;
+        const w = opt.weight || 1;
+        opt.archetypes.forEach((archId) => {
+          let targetArchId = archId;
+          if (this.gender === 'female') {
+            targetArchId = femaleMapping[archId] || archId;
+          }
+          if (!this.archetypeScores[targetArchId]) {
+            this.archetypeScores[targetArchId] = {
+              phase1: 0,
+              phase2: 0,
+              phase3: 0,
+              phase4: 0,
+              phase5: 0,
+              phase6: 0,
+              total: 0,
+              weighted: 0
+            };
+          }
+          this.archetypeScores[targetArchId].phase3 += sign * share * w * 1;
+        });
+      });
+    };
+
+    if (prevShares) applyShares(prevShares, -1);
+    applyShares(shares, 1);
   }
 
   scorePhase4Answer(question, selectedIndex) {
@@ -1900,21 +2335,56 @@ showGenderSelection() {
       'phi': this.gender === 'female' ? 'phi_female' : 'phi'
     };
 
-    // Get all scored archetypes sorted by weighted score, mapping to gender-specific IDs
-    const sortedArchetypes = Object.keys(this.archetypeScores)
-      .map(archId => {
+    // Scored rows (gender-specific id) with raw weighted + intraclass hybrid rank score.
+    const subtypeRowsRaw = Object.keys(this.archetypeScores)
+      .map((archId) => {
         const genderSpecificId = genderMapping[archId] || archId;
         const archetype = ARCHETYPES[genderSpecificId] || ARCHETYPES[archId];
         if (!archetype || genderSpecificId.includes('_family')) return null;
+        const sc = this.archetypeScores[archId];
+        const weighted = sc.weighted;
+        const refinement =
+          (sc.phase2 || 0) * INTRACLASS_PHASE2_WEIGHT + (sc.phase6 || 0) * PHASE6_WEIGHT;
         return {
+          scoreKey: archId,
           id: genderSpecificId,
           ...archetype,
-          score: this.archetypeScores[archId].weighted,
-          totalScore: this.archetypeScores[archId].total
+          weighted,
+          refinement,
+          totalScore: sc.total,
+          rankScore: weighted
         };
       })
-      .filter(arch => arch !== null)
-      .sort((a, b) => b.score - a.score);
+      .filter((arch) => arch !== null);
+
+    const byFamilyForHybrid = new Map();
+    for (const row of subtypeRowsRaw) {
+      const familyId = this.getFamilyNodeIdForArchetype(row.id);
+      if (!familyId) continue;
+      if (!byFamilyForHybrid.has(familyId)) byFamilyForHybrid.set(familyId, []);
+      byFamilyForHybrid.get(familyId).push(row);
+    }
+    for (const group of byFamilyForHybrid.values()) {
+      const wTotal = group.reduce((s, r) => s + r.weighted, 0);
+      const rSum = group.reduce((s, r) => s + (r.refinement + INTRACLASS_REFINEMENT_EPS), 0);
+      for (const r of group) {
+        const share = (r.refinement + INTRACLASS_REFINEMENT_EPS) / rSum;
+        r.rankScore = (1 - INTRACLASS_HYBRID_ALPHA) * r.weighted + INTRACLASS_HYBRID_ALPHA * wTotal * share;
+      }
+    }
+
+    const sortedArchetypes = subtypeRowsRaw.sort((a, b) => {
+      if (b.rankScore !== a.rankScore) return b.rankScore - a.rankScore;
+      if (b.refinement !== a.refinement) return b.refinement - a.refinement;
+      if (b.weighted !== a.weighted) return b.weighted - a.weighted;
+      const br = (this.archetypeScores[b.scoreKey]?.phase2 || 0) + (this.archetypeScores[b.scoreKey]?.phase6 || 0);
+      const ar = (this.archetypeScores[a.scoreKey]?.phase2 || 0) + (this.archetypeScores[a.scoreKey]?.phase6 || 0);
+      return br - ar;
+    });
+    // Confidence / gates / reporting use raw weighted totals; global ordering uses rankScore.
+    sortedArchetypes.forEach((r) => {
+      r.score = r.weighted;
+    });
 
     // Rank family nodes by rolled-up evidence across all subtypes in each class.
     const familyTotals = new Map();
@@ -1922,8 +2392,8 @@ showGenderSelection() {
     sortedArchetypes.forEach((arch) => {
       const familyId = this.getFamilyNodeIdForArchetype(arch.id);
       if (!familyId) return;
-      familyTotals.set(familyId, (familyTotals.get(familyId) || 0) + (arch.score || 0));
-      if ((arch.score || 0) !== 0) {
+      familyTotals.set(familyId, (familyTotals.get(familyId) || 0) + (arch.weighted || 0));
+      if ((arch.weighted || 0) !== 0) {
         familyCounts.set(familyId, (familyCounts.get(familyId) || 0) + 1);
       }
     });
@@ -1964,25 +2434,57 @@ showGenderSelection() {
         });
     };
 
-    const pickSubtypeFromFamily = (familyNode) => {
-      if (!familyNode?.archetype?.subtypes?.length) return null;
-      const ranked = buildSubtypeTelemetry(familyNode);
-      const top = ranked[0];
-      if (!top) return null;
-      const def = ARCHETYPES[top.id];
+    const entryFromSubtypeRow = (row) => {
+      if (!row?.id) return null;
+      const def = ARCHETYPES[row.id];
       if (!def) return null;
-      const familyBase = this.getFamilyBaseId(familyNode.id);
+      const familyType = this.getFamilyNodeIdForArchetype(row.id);
+      const familyBase = this.getFamilyBaseId(familyType);
       return this.normalizeTopArchetypeEntry({
-        id: top.id,
+        id: row.id,
         ...def,
-        score: top.weighted,
+        score: row.score,
         parentType: def.parentType || familyBase,
-        familyType: familyNode.id
+        familyType
       });
     };
 
-    const primaryFamily = rankedFamilies[0] || null;
-    let primary = pickSubtypeFromFamily(primaryFamily);
+    const allowFamilies = restrictToFamilies && restrictToFamilies.length > 0
+      ? new Set(restrictToFamilies)
+      : null;
+    const candidateSubtypes = allowFamilies
+      ? sortedArchetypes.filter((arch) => {
+          const fid = this.getFamilyNodeIdForArchetype(arch.id);
+          return fid && allowFamilies.has(fid);
+        })
+      : sortedArchetypes;
+
+    const seenSubtypeIds = new Set();
+    const distinctSubtypeRows = [];
+    for (const arch of candidateSubtypes) {
+      if (seenSubtypeIds.has(arch.id)) continue;
+      seenSubtypeIds.add(arch.id);
+      distinctSubtypeRows.push(arch);
+      if (distinctSubtypeRows.length >= 3) break;
+    }
+
+    const primaryRow = distinctSubtypeRows[0] || null;
+    const primaryWeighted = primaryRow ? primaryRow.score : 0;
+    let primary = entryFromSubtypeRow(primaryRow);
+
+    const row2 = distinctSubtypeRows[1] || null;
+    const row3 = distinctSubtypeRows[2] || null;
+    const secondary = row2 && primaryWeighted > 0 && row2.score > primaryWeighted * 0.25
+      ? entryFromSubtypeRow(row2)
+      : null;
+    const tertiary = row3 && primaryWeighted > 0 && row3.score > primaryWeighted * 0.15
+      ? entryFromSubtypeRow(row3)
+      : null;
+
+    const primaryFamilyId = primary ? this.getFamilyNodeIdForArchetype(primary.id) : null;
+    const primaryFamily = (primaryFamilyId
+      ? rankedFamilies.find((f) => f.id === primaryFamilyId)
+      : null) || rankedFamilies[0] || null;
     const primarySubtypeTelemetry = buildSubtypeTelemetry(primaryFamily);
     const familyDiagnosticsTop3 = rankedFamilies.slice(0, 3).map((f) => {
       const subtypeRows = buildSubtypeTelemetry(f);
@@ -2000,18 +2502,6 @@ showGenderSelection() {
           : null
       };
     });
-
-    let secondaryFamily = null;
-    if (rankedFamilies[1] && primaryFamily) {
-      secondaryFamily = rankedFamilies[1].normalizedScore > (primaryFamily.normalizedScore * 0.25) ? rankedFamilies[1] : null;
-    }
-    let secondary = pickSubtypeFromFamily(secondaryFamily);
-
-    let tertiaryFamily = null;
-    if (rankedFamilies[2] && primaryFamily) {
-      tertiaryFamily = rankedFamilies[2].normalizedScore > (primaryFamily.normalizedScore * 0.15) ? rankedFamilies[2] : null;
-    }
-    let tertiary = pickSubtypeFromFamily(tertiaryFamily);
 
     // Calculate confidence levels
     const totalScore = sortedArchetypes.reduce((sum, arch) => sum + arch.score, 0);
@@ -2037,7 +2527,13 @@ showGenderSelection() {
       tertiary: tertiaryConfidence
     };
     this.analysisData.subclassDiagnostics = {
-      selectionFlow: 'family_rollup_then_subtype_weighted_phase2_tiebreak',
+      selectionFlow: 'global_top3_by_intraclass_hybrid_rank_then_weighted_gates_0p25_0p15_family_rollup_phase6',
+      intraclassHybridAlpha: INTRACLASS_HYBRID_ALPHA,
+      globalTopThreeSubtypes: distinctSubtypeRows.map((r) => ({
+        id: r.id,
+        weighted: r.weighted,
+        rankScore: r.rankScore
+      })),
       winningFamilyId: primaryFamily?.id || null,
       winningFamilyRawScore: primaryFamily?.score ?? 0,
       winningFamilyNormalizedScore: primaryFamily?.normalizedScore ?? 0,
@@ -2055,7 +2551,8 @@ showGenderSelection() {
       })(),
       topWeightedSubtypesGlobal: sortedArchetypes.slice(0, 5).map((x) => ({
         id: x.id,
-        weighted: x.score
+        weighted: x.weighted,
+        rankScore: x.rankScore
       })),
       familyDiagnosticsTop3
     };
@@ -2109,7 +2606,7 @@ showGenderSelection() {
         this.analyzePhase5Results();
         const prePhase6BaseScores = JSON.parse(JSON.stringify(this.archetypeScores || {}));
         const decision = this.preparePhase6Decision();
-        if (decision?.shouldRun && Array.isArray(decision.targetFamilyIds) && decision.targetFamilyIds.length > 0) {
+        if (decision?.shouldRun && Array.isArray(decision.phase6FamilyIds) && decision.phase6FamilyIds.length > 0) {
           // Restore pre-decision baseline so Phase 6 scoring applies once on raw phase evidence.
           this.archetypeScores = JSON.parse(JSON.stringify(prePhase6BaseScores));
           this.analysisData.phase6Results = {
@@ -2117,9 +2614,10 @@ showGenderSelection() {
             triggered: true,
             completed: false,
             targetFamilyIds: decision.targetFamilyIds,
+            phase6FamilyIds: decision.phase6FamilyIds,
             beforePhase6: this.analysisData.subclassDiagnostics
           };
-          await this.buildPhase6Sequence(decision.targetFamilyIds);
+          await this.buildPhase6Sequence(decision.phase6FamilyIds);
           if (this.questionSequence.length > 0) {
             this.renderCurrentQuestion();
           } else {
@@ -2131,8 +2629,11 @@ showGenderSelection() {
         }
       } else if (this.currentPhase === 6) {
         this.analyzePhase6Results();
-        const targetFamilyIds = this.analysisData.phase6Results?.targetFamilyIds || [];
-        this.identifyArchetypes({ restrictToFamilies: targetFamilyIds });
+        const restrictFamilies =
+          this.analysisData.phase6Results?.phase6FamilyIds
+          || this.analysisData.phase6Results?.targetFamilyIds
+          || [];
+        this.identifyArchetypes({ restrictToFamilies: restrictFamilies });
         this.analysisData.phase6Results = {
           ...(this.analysisData.phase6Results || {}),
           afterPhase6: this.analysisData.subclassDiagnostics
@@ -2427,11 +2928,17 @@ showGenderSelection() {
       this.analysisData.tertiaryArchetype?.familyType
     ].filter(Boolean);
     const targetFamilyIds = [...new Set(topFamilyIds)];
+    const triggerFamilyIds = Array.isArray(decision.triggerFamilyIds)
+      ? decision.triggerFamilyIds.filter(Boolean)
+      : [];
+    // Union: P/S/T families plus any top-3-rollup family flagged for low signal / tie (may not appear in P/S/T when slots share one class).
+    const phase6FamilyIds = [...new Set([...targetFamilyIds, ...triggerFamilyIds])];
     this.analysisData.subclassDiagnostics = {
       ...(this.analysisData.subclassDiagnostics || {}),
       finalPhaseDecision: {
         ...decision,
-        targetFamilyIds
+        targetFamilyIds,
+        phase6FamilyIds
       }
     };
     return this.analysisData.subclassDiagnostics.finalPhaseDecision;
@@ -3228,7 +3735,11 @@ showGenderSelection() {
       } else if (this.currentPhase === 5) {
         await this.buildPhase5Sequence();
       } else if (this.currentPhase === 6) {
-        await this.buildPhase6Sequence(this.analysisData?.phase6Results?.targetFamilyIds || []);
+        await this.buildPhase6Sequence(
+          this.analysisData?.phase6Results?.phase6FamilyIds
+            || this.analysisData?.phase6Results?.targetFamilyIds
+            || []
+        );
       }
 
       if (this.currentPhase <= 6 && this.questionSequence.length > 0) {
