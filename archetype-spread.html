@@ -30,16 +30,124 @@
     .archetype-row { cursor: pointer; transition: background 0.2s ease; }
     .archetype-row:hover { background: rgba(255, 255, 255, 0.05); }
     .archetype-row.is-open { background: rgba(255, 184, 0, 0.12); }
-    .brutal-truth-row { display: none; }
-    .brutal-truth-row.is-open { display: table-row; }
-    .brutal-truth-panel {
-      background: rgba(100, 0, 0, 0.15);
-      border-left: 4px solid #cc0000;
+    .archetype-spread-popout {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    .archetype-spread-popout[hidden] {
+      display: none !important;
+    }
+    .archetype-spread-popout__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      cursor: pointer;
+    }
+    .archetype-spread-popout__panel {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 32rem;
+      max-height: min(90vh, 42rem);
+      overflow: auto;
+      margin: 0;
+      padding: 1.25rem 1.35rem 1.35rem;
+      background: var(--glass);
+      border: 1px solid var(--border-medium);
       border-radius: var(--radius);
-      padding: 1rem 1.25rem;
+      box-shadow: var(--shadow-lg, 0 12px 40px rgba(0, 0, 0, 0.35));
+      color: var(--text);
+      text-align: left;
+    }
+    .archetype-spread-popout__close {
+      position: absolute;
+      top: 0.65rem;
+      right: 0.65rem;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--brand);
+      font-size: 1.35rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .archetype-spread-popout__close:hover {
+      background: rgba(255, 184, 0, 0.12);
+    }
+    .archetype-spread-popout__title {
+      margin: 0 2.5rem 1rem 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--brand);
+      line-height: 1.25;
+    }
+    .archetype-spread-popout__details {
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.65rem 0;
+    }
+    .archetype-spread-popout__details > div {
+      display: grid;
+      grid-template-columns: minmax(0, 10.5rem) 1fr;
+      gap: 0.35rem 0.75rem;
+      align-items: start;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .archetype-spread-popout__details > div:last-of-type {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .archetype-spread-popout__dt {
+      margin: 0;
+      font-weight: 700;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+    .archetype-spread-popout__dd {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      color: var(--text);
+    }
+    .archetype-spread-popout__dd--memetic {
+      font-style: italic;
+      color: var(--muted);
+    }
+    .archetype-spread-popout__brutal {
+      margin-top: 1.15rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-medium);
+    }
+    .archetype-spread-popout__brutal h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      color: #e57373;
+      font-weight: 700;
+    }
+    .archetype-spread-popout__brutal p {
+      margin: 0;
       color: var(--muted);
       font-style: italic;
-      line-height: 1.7;
+      line-height: 1.65;
+      font-size: 0.95rem;
+    }
+    @media (max-width: 520px) {
+      .archetype-spread-popout__details > div {
+        grid-template-columns: 1fr;
+      }
     }
     .cluster-total-row td {
       background: rgba(255, 184, 0, 0.12);
@@ -52,7 +160,6 @@
     .cluster-total-row:first-child td { border-top: none; }
     .spread-intro-inner { text-align: center; }
     .spread-intro-inner .lead-text { margin-bottom: 0.5rem; }
-    .spread-intro-inner .tools-intro { margin-top: 0; margin-bottom: 0; max-width: 36em; margin-left: auto; margin-right: auto; }
     .table-explainer {
       margin: 0.75rem auto 0;
       max-width: 56rem;
@@ -91,7 +198,6 @@
       .table-explainer-compare { grid-template-columns: 1fr; }
     }
     .archetype-spread-memetic { font-style: italic; color: var(--muted); }
-    .spread-attraction-hint { margin-top: 0.35rem; font-size: 0.95em; }
     .archetype-table th:nth-child(3),
     .archetype-table td:nth-child(3) {
       min-width: 11.5rem;
@@ -120,11 +226,11 @@
     <div class="section-inner minimal-section spread-intro-inner">
       <h1 id="spread-title" class="section-title-btn">Archetype Spread Table</h1>
       <p class="lead-text">Cross-paradigm equivalents and population proportions for all archetypes.</p>
-      <p class="tools-intro">Social roles with Jungian, Vedic, Greek pantheon, and Tarot correspondences. Cluster totals show each broad category's share of the population.</p>
-      <p class="tools-intro spread-attraction-hint"><strong>Attraction / market read</strong> summarizes typical early pull versus long-term security, respect, or stability—descriptive, not prescriptive.</p>
       <details class="table-explainer">
         <summary>Table explanation</summary>
         <div class="table-explainer-body">
+          <p><strong>Columns.</strong> Social roles sit alongside Jungian, Vedic, Greek pantheon, and Tarot correspondences. Cluster totals show each broad category's share of the population.</p>
+          <p><strong>Attraction / market read</strong> summarizes typical early pull versus long-term security, respect, or stability—descriptive, not prescriptive.</p>
           <p>This version is sharp. It strips away the "soft" framing and replaces it with the mechanical precision of a systems architect. It treats the mating market as a functional environment with distinct logic gates for each role.</p>
           <p>Here is the finalized recomposition, formatted to serve as the definitive companion guide for the <code>archetype-spread.html</code> page.</p>
 
@@ -217,6 +323,24 @@
     </section>
   </main>
 
+  <div id="archetypeSpreadPopout" class="archetype-spread-popout" hidden>
+    <div class="archetype-spread-popout__backdrop" data-popout-dismiss="" aria-hidden="true"></div>
+    <div
+      class="archetype-spread-popout__panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="archetypeSpreadPopoutTitle"
+    >
+      <button type="button" class="archetype-spread-popout__close" aria-label="Close details" data-popout-dismiss="">×</button>
+      <h2 id="archetypeSpreadPopoutTitle" class="archetype-spread-popout__title"></h2>
+      <div id="archetypeSpreadPopoutDetails" class="archetype-spread-popout__details"></div>
+      <section class="archetype-spread-popout__brutal" aria-label="Archetypal narrative">
+        <h3>Archetypal Narrative: The Brutal Truth</h3>
+        <p id="archetypeSpreadPopoutBrutal"></p>
+      </section>
+    </div>
+  </div>
+
   <footer>
     <p>
       <a href="https://instagram.com/belief.mastery" target="_blank" rel="noopener">@belief.mastery</a> |
@@ -235,6 +359,88 @@
 
     const tbodyMale = document.getElementById('archetypeTableBodyMale');
     const tbodyFemale = document.getElementById('archetypeTableBodyFemale');
+    const popoutEl = document.getElementById('archetypeSpreadPopout');
+    const popoutTitle = document.getElementById('archetypeSpreadPopoutTitle');
+    const popoutDetails = document.getElementById('archetypeSpreadPopoutDetails');
+    const popoutBrutal = document.getElementById('archetypeSpreadPopoutBrutal');
+    const popoutCloseBtn = popoutEl?.querySelector('.archetype-spread-popout__close');
+
+    let openRow = null;
+    let focusBeforeOpen = null;
+
+    const closeArchetypePopout = () => {
+      if (!popoutEl) return;
+      popoutEl.hidden = true;
+      document.body.style.overflow = '';
+      if (openRow) {
+        openRow.classList.remove('is-open');
+        openRow.setAttribute('aria-expanded', 'false');
+      }
+      openRow = null;
+      if (focusBeforeOpen && typeof focusBeforeOpen.focus === 'function') {
+        focusBeforeOpen.focus();
+      }
+      focusBeforeOpen = null;
+    };
+
+    const openArchetypePopout = (row, payload) => {
+      if (!popoutEl || !popoutTitle || !popoutDetails || !popoutBrutal) return;
+      if (openRow === row && !popoutEl.hidden) {
+        closeArchetypePopout();
+        return;
+      }
+      if (openRow && openRow !== row) {
+        openRow.classList.remove('is-open');
+        openRow.setAttribute('aria-expanded', 'false');
+      }
+      focusBeforeOpen = document.activeElement;
+      openRow = row;
+      row.classList.add('is-open');
+      row.setAttribute('aria-expanded', 'true');
+
+      popoutTitle.textContent = payload.name;
+      popoutDetails.replaceChildren();
+      const detailRows = [
+        ['Memetic Summary', payload.memeticDisplay],
+        ['Attraction / market read', payload.attraction],
+        ['Social Role', payload.socialRole],
+        ['Jungian/Q-KWML', payload.jungian],
+        ['Vedic', payload.vedic],
+        ['Greek Pantheon', payload.greek],
+        ['Tarot', payload.tarot],
+        ['Population', payload.population]
+      ];
+      detailRows.forEach(([label, val]) => {
+        const wrap = document.createElement('div');
+        const dt = document.createElement('p');
+        dt.className = 'archetype-spread-popout__dt';
+        dt.textContent = label;
+        const dd = document.createElement('p');
+        dd.className =
+          'archetype-spread-popout__dd' +
+          (label === 'Memetic Summary' ? ' archetype-spread-popout__dd--memetic' : '');
+        const s = val != null && String(val).trim() !== '' ? String(val) : '—';
+        dd.textContent = s;
+        wrap.appendChild(dt);
+        wrap.appendChild(dd);
+        popoutDetails.appendChild(wrap);
+      });
+
+      popoutBrutal.textContent = payload.brutalTruth;
+      popoutEl.hidden = false;
+      document.body.style.overflow = 'hidden';
+      popoutCloseBtn?.focus();
+    };
+
+    popoutEl?.querySelectorAll('[data-popout-dismiss]').forEach((el) => {
+      el.addEventListener('click', () => closeArchetypePopout());
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && popoutEl && !popoutEl.hidden) {
+        e.preventDefault();
+        closeArchetypePopout();
+      }
+    });
 
     const archetypeNameMap = new Map(
       Object.values(ARCHETYPES || {}).map(archetype => [archetype.name, archetype])
@@ -358,6 +564,7 @@
         row.classList.add('archetype-row');
         row.setAttribute('tabindex', '0');
         row.setAttribute('aria-expanded', 'false');
+        row.setAttribute('aria-haspopup', 'dialog');
 
         const archetype = resolveArchetype(entry.name);
         const brutalTruth = buildNarrative(archetype?.archetypalNarrative);
@@ -392,28 +599,29 @@
         });
         targetBody.appendChild(row);
 
-        const detailRow = document.createElement('tr');
-        detailRow.classList.add('brutal-truth-row');
-        const detailCell = document.createElement('td');
-        detailCell.colSpan = 9;
-        const detailPanel = document.createElement('div');
-        detailPanel.classList.add('brutal-truth-panel');
-        detailPanel.textContent = `Archetypal Narrative: The Brutal Truth — ${brutalTruth}`;
-        detailCell.appendChild(detailPanel);
-        detailRow.appendChild(detailCell);
-        targetBody.appendChild(detailRow);
+        const memeticDisplay =
+          memeticSummary && memeticSummary !== '—' ? quotedMemeticSummary(memeticSummary) : '—';
 
-        const toggleDetail = () => {
-          const isOpen = row.classList.toggle('is-open');
-          detailRow.classList.toggle('is-open', isOpen);
-          row.setAttribute('aria-expanded', String(isOpen));
+        const showPopout = () => {
+          openArchetypePopout(row, {
+            name: entry.name,
+            memeticDisplay,
+            attraction: entry.attractionMarketRead,
+            socialRole: entry.socialRole,
+            jungian: entry.jungianEquivalent,
+            vedic: entry.vedicEquivalent,
+            greek: entry.greekPantheon,
+            tarot: entry.tarotCard,
+            population: populationLabel,
+            brutalTruth
+          });
         };
 
-        row.addEventListener('click', toggleDetail);
+        row.addEventListener('click', showPopout);
         row.addEventListener('keydown', (event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            toggleDetail();
+            showPopout();
           }
         });
       });
