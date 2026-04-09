@@ -174,34 +174,45 @@ export function getProfileDecisivenessCalloutCopy(d, archetypes, primaryPatternN
 
   const other = nearestOtherGroupName(d, archetypes);
   const transition = transitionLikelihoodBetween(d.clusterWinnerId, d.clusterSecondId);
+  const transitionLabel = transition.label.replace('_', ' ');
+
+  const subtypeBoundaryText = (() => {
+    if (!d.subtypeBlurry) return '';
+    const topSubtypeName = d.subtypeTopId && archetypes?.[d.subtypeTopId]?.name
+      ? String(archetypes[d.subtypeTopId].name).trim()
+      : '';
+    const secondSubtypeName = d.subtypeSecondId && archetypes?.[d.subtypeSecondId]?.name
+      ? String(archetypes[d.subtypeSecondId].name).trim()
+      : '';
+    if (topSubtypeName && secondSubtypeName) {
+      return `Within your primary family, the boundary between *${topSubtypeName}* and *${secondSubtypeName}* remains narrow; targeted follow-up responses can shift which subtype leads.`;
+    }
+    return 'Within your primary family, subtype boundaries are still narrow; targeted follow-up responses can shift which subtype leads.';
+  })();
 
   let lines = [];
 
   if (d.familyBand === 'sharp') {
     lines = [
-      `There is a large distance between your primary archetype group and every other group. Short of dramatic personality transformation, you are most likely **entrenched permanently into ${primaryPatternName}** as your primary pattern.`
+      `Your profile is strongly anchored in **${primaryPatternName}**. The distance to adjacent archetype families is large, so family-level reclassification is unlikely without major and sustained behavioral change.`
     ];
   } else if (d.familyBand === 'very_competitive') {
     lines = [
       other
-        ? `There is very little distance between your primary archetype group and *${other}*. Large conditional swings are likely: modestly different answers could change which group leads. Transition pressure toward *${other}* appears ${transition.label.replace('_', ' ')}.`
-        : 'There is very little distance between your primary archetype group and other groups. Large conditional swings are likely: modestly different answers could change which group leads.'
+        ? `Your top-family boundary is highly competitive between **${primaryPatternName}** and *${other}*. Small answer shifts can change which family leads; transition pressure toward *${other}* is **${transitionLabel}**.`
+        : `Your top-family boundary is highly competitive. Small answer shifts can change which family leads.`
     ];
   } else {
     lines = [
       other
         ? transition.value < 0.25
-          ? `There is a moderate distance between your primary archetype group and *${other}*. You are more likely **consolidating into ${primaryPatternName}** as your primary pattern than transitioning out of it toward *${other}*.`
-          : `There is a moderate distance between your primary archetype group and *${other}*. **Consolidating into ${primaryPatternName}** and transitioning toward *${other}* are both plausible; transition pressure appears ${transition.label.replace('_', ' ')}.`
-        : `There is a moderate distance between your primary archetype group and other groups. You are more likely **consolidating into ${primaryPatternName}** than transitioning out of it.`
+          ? `You are currently consolidating into **${primaryPatternName}**. The nearest competing family is *${other}*, but transition pressure toward it is **${transitionLabel}**.`
+          : `You are currently in a competitive consolidation zone between **${primaryPatternName}** and *${other}*. Both stabilization and family transition are plausible; transition pressure is **${transitionLabel}**.`
+        : `You are currently in moderate consolidation around **${primaryPatternName}** with no single competing family exerting dominant pressure.`
     ];
   }
 
-  if (d.subtypeBlurry) {
-    lines.push(
-      'Within your primary family, subtype scores are also close—nuance may move more easily than the family label.'
-    );
-  }
+  if (subtypeBoundaryText) lines.push(subtypeBoundaryText);
 
   return {
     title: 'Stability of this reading',

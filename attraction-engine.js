@@ -64,6 +64,7 @@ export class AttractionEngine {
     this.currentPhase = -1;
     this.currentQuestionIndex = 0;
     this.responses = {};
+    this.allocationResponses = {};
     this.preferences = {};
     this.smv = {};
     this.baseSectionTitleText = null;
@@ -135,6 +136,7 @@ export class AttractionEngine {
       }
       this.smv = d.smv;
       this.responses = d.responses || {};
+      this.allocationResponses = d.allocationResponses || {};
       this.preferences = d.preferences || {};
       this.currentGender = d.currentGender;
       if (this.smv && typeof this.smv.overall === 'number') {
@@ -160,6 +162,7 @@ export class AttractionEngine {
         localStorage.setItem(ATTRACTION_RESULTS_KEY, JSON.stringify({
           smv: this.smv,
           responses: this.responses,
+          allocationResponses: this.allocationResponses,
           preferences: this.preferences,
           currentGender: this.currentGender,
           savedAt: new Date().toISOString()
@@ -178,6 +181,7 @@ export class AttractionEngine {
         currentPhase: this.currentPhase,
         currentQuestionIndex: this.currentQuestionIndex,
         responses: this.responses,
+        allocationResponses: this.allocationResponses,
         preferences: this.preferences,
         savedAt: new Date().toISOString()
       }));
@@ -212,6 +216,7 @@ export class AttractionEngine {
       this.currentPhase = Number.isInteger(data.currentPhase) ? data.currentPhase : -1;
       this.currentQuestionIndex = Number.isInteger(data.currentQuestionIndex) ? data.currentQuestionIndex : 0;
       this.responses = data.responses || {};
+      this.allocationResponses = data.allocationResponses || {};
       this.preferences = data.preferences || {};
 
       this.setReportHeaderState(false);
@@ -286,6 +291,7 @@ export class AttractionEngine {
     this.currentGender = null;
     this.currentPhase = -1;
     this.responses = {};
+    this.allocationResponses = {};
     this.preferences = {};
     this.showGenderSelection();
   }
@@ -325,6 +331,7 @@ export class AttractionEngine {
     this.currentGender = gender;
     this.currentPhase = -1;
     this.responses = {};
+    this.allocationResponses = {};
     this.preferences = {};
     this.showPreferencesForm();
   }
@@ -359,6 +366,109 @@ export class AttractionEngine {
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
+  }
+
+  getInitialAllocationPercents(question) {
+    const existing = this.allocationResponses?.[question.id];
+    const n = question.options?.length || 0;
+    const total = question.allocationTotal || 100;
+    if (Array.isArray(existing) && existing.length === n) {
+      return existing.map((x) => Math.round(Number(x) || 0));
+    }
+    if (!n) return [];
+    const base = Math.floor(total / n);
+    const percents = Array(n).fill(base);
+    let rem = total - (base * n);
+    for (let i = 0; rem > 0; i = (i + 1) % n, rem--) {
+      percents[i]++;
+    }
+    return percents;
+  }
+
+  redistributeAllocationPercents(state, changedIdx, desiredValue, total) {
+    const n = state.length;
+    const next = state.slice();
+    const bounded = Math.max(0, Math.min(total, Math.round(Number(desiredValue) || 0)));
+    const prev = next[changedIdx];
+    next[changedIdx] = bounded;
+    let delta = bounded - prev;
+    if (delta === 0) return next;
+
+    const others = [];
+    for (let i = 0; i < n; i++) if (i !== changedIdx) others.push(i);
+
+    if (delta > 0) {
+      let remaining = delta;
+      while (remaining > 0) {
+        const sumOthers = others.reduce((s, i) => s + next[i], 0);
+        if (sumOthers <= 0) {
+          next[changedIdx] -= remaining;
+          break;
+        }
+        for (const i of others) {
+          if (remaining <= 0) break;
+          if (next[i] <= 0) continue;
+          const share = Math.max(1, Math.round((next[i] / sumOthers) * remaining));
+          const take = Math.min(share, next[i], remaining);
+          next[i] -= take;
+          remaining -= take;
+        }
+      }
+    } else {
+      let give = -delta;
+      for (let k = 0; give > 0; k = (k + 1) % others.length) {
+        next[others[k]] += 1;
+        give--;
+      }
+    }
+
+    const currentSum = next.reduce((a, b) => a + b, 0);
+    if (currentSum !== total) {
+      next[changedIdx] += (total - currentSum);
+    }
+    return next;
+  }
+
+  projectAllocationToScalar(question, percents) {
+    const opts = question.options || [];
+    const n = opts.length;
+    if (!Array.isArray(percents) || percents.length !== n || n === 0) return null;
+    const sum = percents.reduce((a, b) => a + (Number(b) || 0), 0);
+    const shares = sum > 0
+      ? percents.map((p) => (Number(p) || 0) / sum)
+      : percents.map(() => 1 / n);
+    return shares.reduce((acc, share, i) => {
+      const anchor = Number(opts[i]) || 0;
+      return acc + (share * anchor);
+    }, 0);
+  }
+
+  setupAllocationControls(block, question) {
+    if (!block || question.type !== 'value_allocation') return;
+    const sliders = Array.from(block.querySelectorAll('.value-allocation-slider'));
+    if (!sliders.length) return;
+    const total = Number(question.allocationTotal) || 100;
+    let state = this.getInitialAllocationPercents(question);
+    const sumEl = block.querySelector('.value-allocation-total');
+    const sync = () => {
+      sliders.forEach((slider, i) => {
+        slider.value = String(state[i]);
+        const pctEl = block.querySelector(`#alloc_pct_${question.id}_${i}`);
+        if (pctEl) pctEl.textContent = `${state[i]}%`;
+      });
+      if (sumEl) sumEl.textContent = `${state.reduce((a, b) => a + b, 0)}%`;
+      this.allocationResponses[question.id] = state.slice();
+      const projected = this.projectAllocationToScalar(question, state);
+      if (typeof projected === 'number') this.responses[question.id] = projected;
+    };
+    sliders.forEach((slider) => {
+      const idx = Number(slider.dataset.allocIndex);
+      slider.addEventListener('input', () => {
+        state = this.redistributeAllocationPercents(state, idx, slider.value, total);
+        sync();
+      });
+    });
+    sync();
   }
 
   showPreferencesForm() {
@@ -469,16 +579,49 @@ export class AttractionEngine {
     let html = `<div class="phase-questions"><div class="phase-header-mini"><h3>${SecurityUtils.sanitizeHTML(phase.title)}</h3><p class="question-progress" id="questionProgress">Question ${Math.min(this.currentQuestionIndex + 1, Math.max(questions.length, 1))} of ${questions.length}</p></div><form id="phaseForm">`;
     questions.forEach((q, idx) => {
       const opts = q.options || [1, 3, 5, 7, 10];
-      let pairs = opts.map(v => ({ value: v, label: this.buildOptionLabel(q, v) }));
-      if (q.shuffleOptions) pairs = this.shuffleArray(pairs);
-      const req = q.optional ? '' : ' required';
-      const currentVal = this.responses[q.id];
-      const optsHtml = pairs.map(p => `<label class="option-label"><input type="radio" name="${SecurityUtils.sanitizeHTML(q.id)}" value="${p.value}"${String(currentVal) === String(p.value) ? ' checked' : ''}${req}><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(p.label)}</span></span></label>`).join('');
+      let optsHtml = '';
+      if (q.type === 'value_allocation') {
+        const labels = opts.map(v => this.buildOptionLabel(q, v));
+        const initial = this.getInitialAllocationPercents(q);
+        const total = Number(q.allocationTotal) || 100;
+        optsHtml = `
+          <div class="value-allocation-question" data-allocation-question="${SecurityUtils.sanitizeHTML(q.id)}">
+            <p class="value-allocation-helper">One shared budget: ${total}%. Moving one slider up lowers the others proportionally.</p>
+            <div class="value-allocation-list">
+              ${labels.map((label, i) => `
+                <div class="value-allocation-item">
+                  <label class="value-allocation-item-head" for="alloc_${SecurityUtils.sanitizeHTML(q.id)}_${i}">
+                    <span class="value-allocation-item-label">${SecurityUtils.sanitizeHTML(label)}</span>
+                    <span class="value-allocation-item-pct" id="alloc_pct_${SecurityUtils.sanitizeHTML(q.id)}_${i}">${initial[i]}%</span>
+                  </label>
+                  <input
+                    id="alloc_${SecurityUtils.sanitizeHTML(q.id)}_${i}"
+                    class="value-allocation-slider"
+                    type="range"
+                    min="0"
+                    max="${total}"
+                    step="1"
+                    value="${initial[i]}"
+                    data-alloc-index="${i}"
+                  >
+                </div>
+              `).join('')}
+            </div>
+            <p class="value-allocation-total-wrap">Total allocated: <strong class="value-allocation-total">${initial.reduce((a, b) => a + b, 0)}%</strong></p>
+          </div>
+        `;
+      } else {
+        let pairs = opts.map(v => ({ value: v, label: this.buildOptionLabel(q, v) }));
+        if (q.shuffleOptions) pairs = this.shuffleArray(pairs);
+        const req = q.optional ? '' : ' required';
+        const currentVal = this.responses[q.id];
+        optsHtml = pairs.map(p => `<label class="option-label"><input type="radio" name="${SecurityUtils.sanitizeHTML(q.id)}" value="${p.value}"${String(currentVal) === String(p.value) ? ' checked' : ''}${req}><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(p.label)}</span></span></label>`).join('');
+      }
       const subcat = phase.subcategories?.[q.subcategory]?.label || q.subcategory;
       const optHint = q.optional ? '<p class="question-optional-hint" style="color:var(--muted);font-size:0.88rem;margin:0 0 0.75rem;line-height:1.5;">Optional: press <strong>Next</strong> without choosing if you prefer not to answer—this item is omitted from scoring; your other answers still count.</p>' : '';
       const helpHint = q.helpText ? `<p class="question-help">${SecurityUtils.sanitizeHTML(q.helpText)}</p>` : '';
       const shouldShow = isResume ? idx === this.currentQuestionIndex : idx === 0;
-      html += `<div class="question-block" data-question-index="${idx}" data-phase="${phaseName}" style="${shouldShow ? '' : 'display:none'}">
+      html += `<div class="question-block" data-question-index="${idx}" data-question-id="${SecurityUtils.sanitizeHTML(q.id)}" data-phase="${phaseName}" style="${shouldShow ? '' : 'display:none'}">
         <div class="question-header"><span class="question-number">Question ${idx + 1} of ${questions.length}</span><span class="question-category">${SecurityUtils.sanitizeHTML(subcat)}</span></div>
         <p class="question-text">${SecurityUtils.sanitizeHTML(q.text)}</p>
         ${helpHint}
@@ -492,6 +635,11 @@ export class AttractionEngine {
     this.setNavVisibility(true);
     const prog = document.getElementById('questionProgress');
     if (prog) prog.textContent = `Question ${this.currentQuestionIndex + 1} of ${questions.length}`;
+    questions.forEach((q, idx) => {
+      if (q.type !== 'value_allocation') return;
+      const block = container.querySelector(`.question-block[data-question-index="${idx}"][data-phase="${phaseName}"]`);
+      this.setupAllocationControls(block, q);
+    });
     this.updatePrevNextButtons();
     this.saveInProgress();
   }
@@ -512,16 +660,33 @@ export class AttractionEngine {
     const questions = phase?.questions || [];
     const block = document.querySelector(`[data-question-index="${this.currentQuestionIndex}"][data-phase="${phaseName}"]`);
     const qCurrent = questions[this.currentQuestionIndex];
-    const input = block?.querySelector('input[type="radio"]:checked');
-    if (!input) {
-      if (qCurrent?.optional) {
-        delete this.responses[qCurrent.id];
-      } else {
-        showAlert('Please select an answer.');
+    if (qCurrent?.type === 'value_allocation') {
+      const sliders = Array.from(block?.querySelectorAll('.value-allocation-slider') || []);
+      if (!sliders.length && !qCurrent.optional) {
+        showAlert('Please complete the allocation.');
         return;
       }
+      if (!sliders.length && qCurrent.optional) {
+        delete this.responses[qCurrent.id];
+        delete this.allocationResponses[qCurrent.id];
+      } else {
+        const percents = sliders.map((s) => Math.round(Number(s.value) || 0));
+        this.allocationResponses[qCurrent.id] = percents;
+        const projected = this.projectAllocationToScalar(qCurrent, percents);
+        if (typeof projected === 'number') this.responses[qCurrent.id] = projected;
+      }
     } else {
-      this.responses[input.name] = parseInt(input.value, 10);
+      const input = block?.querySelector('input[type="radio"]:checked');
+      if (!input) {
+        if (qCurrent?.optional) {
+          delete this.responses[qCurrent.id];
+        } else {
+          showAlert('Please select an answer.');
+          return;
+        }
+      } else {
+        this.responses[input.name] = parseInt(input.value, 10);
+      }
     }
     this.saveInProgress();
 
@@ -569,16 +734,33 @@ export class AttractionEngine {
     const questions = phase?.questions || [];
     const block = document.querySelector(`[data-question-index="${this.currentQuestionIndex}"][data-phase="${phaseName}"]`);
     const qLast = questions[this.currentQuestionIndex];
-    const input = block?.querySelector('input[type="radio"]:checked');
-    if (!input) {
-      if (qLast?.optional) {
-        delete this.responses[qLast.id];
-      } else {
-        showAlert('Please select an answer.');
+    if (qLast?.type === 'value_allocation') {
+      const sliders = Array.from(block?.querySelectorAll('.value-allocation-slider') || []);
+      if (!sliders.length && !qLast.optional) {
+        showAlert('Please complete the allocation.');
         return;
       }
+      if (!sliders.length && qLast.optional) {
+        delete this.responses[qLast.id];
+        delete this.allocationResponses[qLast.id];
+      } else {
+        const percents = sliders.map((s) => Math.round(Number(s.value) || 0));
+        this.allocationResponses[qLast.id] = percents;
+        const projected = this.projectAllocationToScalar(qLast, percents);
+        if (typeof projected === 'number') this.responses[qLast.id] = projected;
+      }
     } else {
-      this.responses[input.name] = parseInt(input.value, 10);
+      const input = block?.querySelector('input[type="radio"]:checked');
+      if (!input) {
+        if (qLast?.optional) {
+          delete this.responses[qLast.id];
+        } else {
+          showAlert('Please select an answer.');
+          return;
+        }
+      } else {
+        this.responses[input.name] = parseInt(input.value, 10);
+      }
     }
 
     this.currentPhase++;
@@ -645,6 +827,7 @@ export class AttractionEngine {
     smv.overall = computeOverallSmv(smv.clusters, weights);
     this.finalizeSmvDerivatives(smv);
     smv.rawResponses = { ...this.responses };
+    smv.rawAllocationResponses = { ...this.allocationResponses };
     smv.preferences = { ...this.preferences };
     return smv;
   }
@@ -1226,6 +1409,7 @@ export class AttractionEngine {
   generateSampleReport() {
     this.currentGender = Math.random() < 0.5 ? 'male' : 'female';
     this.responses = {};
+    this.allocationResponses = {};
     this.preferences = {};
     const prefQ = this.getPreferenceQuestions();
     prefQ.forEach(q => {
@@ -1237,7 +1421,19 @@ export class AttractionEngine {
     Object.values(clusters).forEach(cluster => {
       (cluster.questions || []).forEach(q => {
         const opts = q.options || [1, 3, 5, 7, 10];
-        this.responses[q.id] = opts[Math.floor(Math.random() * opts.length)];
+        if (q.type === 'value_allocation' && opts.length) {
+          const alloc = opts.map(() => Math.random());
+          const sum = alloc.reduce((a, b) => a + b, 0) || 1;
+          const total = Number(q.allocationTotal) || 100;
+          const perc = alloc.map((v) => Math.round((v / sum) * total));
+          const diff = total - perc.reduce((a, b) => a + b, 0);
+          if (perc.length) perc[0] += diff;
+          this.allocationResponses[q.id] = perc;
+          const projected = this.projectAllocationToScalar(q, perc);
+          this.responses[q.id] = typeof projected === 'number' ? projected : opts[Math.floor(Math.random() * opts.length)];
+        } else {
+          this.responses[q.id] = opts[Math.floor(Math.random() * opts.length)];
+        }
       });
     });
     this.calculateAndShowResults();

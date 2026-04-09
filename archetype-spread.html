@@ -53,6 +53,43 @@
     .spread-intro-inner { text-align: center; }
     .spread-intro-inner .lead-text { margin-bottom: 0.5rem; }
     .spread-intro-inner .tools-intro { margin-top: 0; margin-bottom: 0; max-width: 36em; margin-left: auto; margin-right: auto; }
+    .table-explainer {
+      margin: 0.75rem auto 0;
+      max-width: 56rem;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: var(--radius);
+      padding: 0.6rem 0.8rem;
+    }
+    .table-explainer > summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--brand);
+      outline: none;
+    }
+    .table-explainer > summary::-webkit-details-marker { color: var(--brand); }
+    .table-explainer-body {
+      margin-top: 0.65rem;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+    .table-explainer-body p { margin: 0.5rem 0; }
+    .table-explainer-body h3 {
+      margin: 0.75rem 0 0.35rem;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .table-explainer-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem 1rem;
+    }
+    .table-explainer-compare strong { color: var(--text); }
+    @media (max-width: 780px) {
+      .table-explainer-compare { grid-template-columns: 1fr; }
+    }
     .archetype-spread-memetic { font-style: italic; color: var(--muted); }
     .spread-attraction-hint { margin-top: 0.35rem; font-size: 0.95em; }
     .archetype-table th:nth-child(3),
@@ -85,6 +122,44 @@
       <p class="lead-text">Cross-paradigm equivalents and population proportions for all archetypes.</p>
       <p class="tools-intro">Social roles with Jungian, Vedic, Greek pantheon, and Tarot correspondences. Cluster totals show each broad category's share of the population.</p>
       <p class="tools-intro spread-attraction-hint"><strong>Attraction / market read</strong> summarizes typical early pull versus long-term security, respect, or stability—descriptive, not prescriptive.</p>
+      <details class="table-explainer">
+        <summary>Table explanation</summary>
+        <div class="table-explainer-body">
+          <p>This version is sharp. It strips away the "soft" framing and replaces it with the mechanical precision of a systems architect. It treats the mating market as a functional environment with distinct logic gates for each role.</p>
+          <p>Here is the finalized recomposition, formatted to serve as the definitive companion guide for the <code>archetype-spread.html</code> page.</p>
+
+          <h3>Why the male and female archetype spreads look different</h3>
+          <p><strong>The core concept: two maps, one system.</strong> This table does not show one distribution split into men and women. It shows two parallel maps of the same system: male side - how men position themselves to be chosen; female side - how women filter and select what gets chosen. These are connected, but they are not mirror images. They describe different roles inside the same environment.</p>
+
+          <h3>1) Same label does not mean same role</h3>
+          <p>A common mistake is assuming that a "Beta Male" and a "Beta Female" represent equivalent types. They do not. The label marks a position in the system. The role defines what that position actually does. Even when behavior looks similar, the effect can differ sharply. What matters is how that behavior is interpreted and responded to - not just how it appears.</p>
+
+          <h3>2) Why there is no 1:1 match</h3>
+          <p>If the categories or proportions do not line up, that is expected.</p>
+          <p><strong>Different internal structure:</strong> Male archetypes tend to split into finer distinctions. Female archetypes tend to group patterns more tightly. This reflects how differences matter within each side of the system.</p>
+          <p><strong>Same signal, different effect:</strong> The same behavior can produce opposite outcomes. A withdrawn man may reduce his chances of being selected. A withdrawn woman may signal higher selectivity. The action is the same; the meaning is not.</p>
+          <p><strong>Category alignment:</strong> Some patterns are grouped or redirected to fit how they are actually perceived within each side. This keeps output stable and readable instead of forcing strict but misleading symmetry.</p>
+
+          <h3>3) How to read this table</h3>
+          <div class="table-explainer-compare">
+            <div>
+              <p><strong>You CAN compare:</strong></p>
+              <p>Behavioral tendencies (dominance, stability, independence).</p>
+              <p>Signaling style (direct, indirect, visible, restrained).</p>
+              <p>Broad archetype families.</p>
+            </div>
+            <div>
+              <p><strong>Avoid comparing:</strong></p>
+              <p>Male and female versions of the same label as identity equivalents.</p>
+              <p>Expected market outcomes or desirability rankings.</p>
+              <p>Percentages across the two sides as direct parity claims.</p>
+            </div>
+          </div>
+
+          <h3>4) What the difference means</h3>
+          <p>The variation is not an error. It reflects that the same traits can play different roles, and the same behaviors can produce different responses. The system models interaction, not symmetry. If both sides looked identical, the model would be flattening real differences rather than describing them. The discrepancy is a marker of model fidelity.</p>
+        </div>
+      </details>
     </div>
 
     <section>

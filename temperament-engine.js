@@ -23,7 +23,6 @@ import { applyArchetypePolarityCalibration } from './shared/archetype-polarity-c
 // Data modules - will be loaded lazily
 let TEMPERAMENT_DIMENSIONS, INTIMATE_DYNAMICS;
 let ATTRACTION_RESPONSIVENESS, TEMPERAMENT_SCORING;
-let PHASE_1_ORIENTATION_QUESTIONS;
 
 const GENDER_QUESTION = {
   id: 'p1_gender',
@@ -38,6 +37,31 @@ const GENDER_QUESTION = {
 // Cross-polarity: respondent scores significantly beyond their gender's typical range
 // toward the opposite pole (e.g. man more feminine than avg woman, woman more masculine than avg man).
 const CROSS_POLARITY_THRESHOLD = 0.12;
+
+/**
+ * Progress v3: removed redundant p1_orientation_* block (duplicated temperament-dimensions.js items).
+ * QA mapping: p1_1→log_1, p1_2→ach_2, p1_3→prov_1, p1_4→ctrl_1, p1_5→ctrl_3, p1_6→ctrl_4, p1_7→dir_1.
+ */
+const TEMPERAMENT_PROGRESS_SCHEMA_VERSION = 3;
+
+/**
+ * Map a response to [-1, 1]: +1 = full emphasis on poleLabels.high, -1 = full on poleLabels.low.
+ * Equivalent to legacy 0–10 slider (5 → 0, 10 → +1, 0 → -1).
+ */
+function getTemperamentPolarityNormalizedAnswer(answer) {
+  if (answer && typeof answer === 'object' && answer.type === 'value_allocation' && Array.isArray(answer.allocationPercents) && answer.allocationPercents.length >= 2) {
+    const left = Math.max(0, Math.min(100, Number(answer.allocationPercents[0]) || 0));
+    const right = Math.max(0, Math.min(100, Number(answer.allocationPercents[1]) || 0));
+    const sum = left + right;
+    if (sum <= 0) return 0;
+    return (right - left) / sum;
+  }
+  if (typeof answer === 'number' && !Number.isNaN(answer)) {
+    const clamped = Math.max(0, Math.min(10, answer));
+    return (clamped - 5) / 5;
+  }
+  return 0;
+}
 
 // Single spectrum 0–100 (normalized 0–1): feminine pole 0 → masculine pole 100
 // Bands: 0–13.33 Hyper-femme, 13.33–26.66 Strongly Femme, 26.66–40 Femme, 40–60 Balanced,
@@ -114,6 +138,59 @@ function getSpectrumBandLabel(bandKey) {
 
 function getSpectrumBandBadgeColors(bandKey) {
   return SPECTRUM_BADGE_COLORS[bandKey] || SPECTRUM_BADGE_COLORS.balanced;
+}
+
+function isRemovedTemperamentOpeningId(id) {
+  return typeof id === 'string' && id.startsWith('p1_orientation');
+}
+
+/**
+ * Filter legacy opening ids from saved sequences and remap the current index for resume.
+ * @returns {{ ids: string[], currentQuestionIndex: number, hadLegacy: boolean }}
+ */
+function stripRemovedTemperamentOpeningsFromProgress(rawIds, rawIndex) {
+  const ids = Array.isArray(rawIds) ? [...rawIds] : [];
+  const hadLegacy = ids.some(isRemovedTemperamentOpeningId);
+  const filtered = ids.filter((id) => !isRemovedTemperamentOpeningId(id));
+  const idx = Math.max(0, Number(rawIndex) || 0);
+  if (!hadLegacy) {
+    const max = Math.max(0, filtered.length - 1);
+    return { ids: filtered, currentQuestionIndex: Math.min(idx, max), hadLegacy: false };
+  }
+  let mapped;
+  const idAt = ids[idx];
+  if (idAt != null && !isRemovedTemperamentOpeningId(idAt)) {
+    mapped = ids.slice(0, idx + 1).filter((x) => !isRemovedTemperamentOpeningId(x)).length - 1;
+  } else {
+    let j = idx;
+    while (j < ids.length && isRemovedTemperamentOpeningId(ids[j])) {
+      j += 1;
+    }
+    if (j < ids.length) {
+      mapped = ids.slice(0, j + 1).filter((x) => !isRemovedTemperamentOpeningId(x)).length - 1;
+    } else {
+      mapped = Math.max(0, filtered.length - 1);
+    }
+  }
+  const max = Math.max(0, filtered.length - 1);
+  return { ids: filtered, currentQuestionIndex: Math.max(0, Math.min(mapped, max)), hadLegacy: true };
+}
+
+function purgeLegacyTemperamentOpeningAnswers(answers) {
+  if (!answers || typeof answers !== 'object') return;
+  Object.keys(answers).forEach((k) => {
+    if (isRemovedTemperamentOpeningId(k)) delete answers[k];
+  });
+}
+
+function purgeLegacyTemperamentOrientationDimension(analysisData) {
+  if (!analysisData) return;
+  if (analysisData.dimensionScores && analysisData.dimensionScores.temperament_orientation) {
+    delete analysisData.dimensionScores.temperament_orientation;
+  }
+  if (analysisData.dimensionDisplayNames && analysisData.dimensionDisplayNames.temperament_orientation) {
+    delete analysisData.dimensionDisplayNames.temperament_orientation;
+  }
 }
 
 /** How to read + spectrum caveat + Tier 2 `<details>` (static copy only). */
@@ -213,10 +290,9 @@ export class TemperamentEngine {
    * @returns {Promise<void>}
    */
   async loadTemperamentData() {
-    // Require every module — a partial failed load can leave orientation+dims set while
-    // attraction/scoring stay undefined; early-returning then breaks Phase 2 and scoring.
+    // Require every module — a partial failed load can leave dims set while
+    // attraction/scoring stay undefined; early-returning then breaks scoring.
     if (
-      PHASE_1_ORIENTATION_QUESTIONS &&
       TEMPERAMENT_DIMENSIONS &&
       INTIMATE_DYNAMICS &&
       ATTRACTION_RESPONSIVENESS &&
@@ -228,13 +304,6 @@ export class TemperamentEngine {
     }
 
     try {
-      // Load orientation questions
-      const orientationModule = await loadDataModule(
-        './temperament-data/temperament-orientation.js',
-        'Orientation Questions'
-      );
-      PHASE_1_ORIENTATION_QUESTIONS = orientationModule.PHASE_1_ORIENTATION_QUESTIONS;
-
       // Load dimensions data
       const dimensionsModule = await loadDataModule(
         './temperament-data/temperament-dimensions.js',
@@ -272,9 +341,6 @@ export class TemperamentEngine {
       if (!TEMPERAMENT_SCORING?.dimensionWeights || !TEMPERAMENT_SCORING?.thresholds) {
         throw new Error('Temperament scoring module missing dimensionWeights or thresholds');
       }
-
-      const phase1Count = (PHASE_1_ORIENTATION_QUESTIONS?.length || 0) + 1;
-      this.debugReporter.recordSection('Phase 1', phase1Count);
     } catch (error) {
       this.debugReporter.logError(error, 'loadTemperamentData');
       ErrorHandler.showUserError('Failed to load assessment data. Please refresh the page.');
@@ -282,10 +348,6 @@ export class TemperamentEngine {
     }
   }
 
-  /**
-   * Build Phase 1 question sequence
-   * @returns {Promise<void>}
-   */
   applySuiteGenderFromArchetypeIfNeeded() {
     const suiteG = getArchetypeGenderForSuite();
     if (suiteG !== 'male' && suiteG !== 'female') return;
@@ -298,81 +360,13 @@ export class TemperamentEngine {
     this.analysisData.genderLabel = opt.label;
   }
 
-  async buildPhase1Sequence() {
-    await this.loadTemperamentData();
-
-    // Phase 1: Orientation Screening (7 quick questions)
-    this.currentPhase = 1;
-    this.currentQuestionIndex = 0;
-    this.questionSequence = [GENDER_QUESTION, ...PHASE_1_ORIENTATION_QUESTIONS];
-    this.applySuiteGenderFromArchetypeIfNeeded();
-    this.debugReporter.recordQuestionCount(this.questionSequence.length);
-  }
-
-  /**
-   * Analyze Phase 1 results and proceed to Phase 2
-   * @returns {Promise<void>}
-   */
-  async analyzePhase1Results() {
-    await this.loadTemperamentData();
-    
-    try {
-      // Calculate preliminary orientation scores
-      let totalMasculine = 0;
-      let totalFeminine = 0;
-      let totalWeight = 0;
-
-      PHASE_1_ORIENTATION_QUESTIONS.forEach(question => {
-        const answer = this.answers[question.id];
-        if (answer && answer.mapsTo) {
-          const weight = answer.mapsTo.weight || 1;
-          totalMasculine += (answer.mapsTo.masculine || 0) * weight;
-          totalFeminine += (answer.mapsTo.feminine || 0) * weight;
-          totalWeight += weight;
-        }
-      });
-
-      const avgMasculine = totalWeight > 0 ? totalMasculine / totalWeight : 0;
-      const avgFeminine = totalWeight > 0 ? totalFeminine / totalWeight : 0;
-      const net = avgMasculine - avgFeminine;
-      const normalizedScore = (net + 2) / 4; // Normalize to 0-1 scale
-
-      this.phase1Results = {
-        masculine: avgMasculine,
-        feminine: avgFeminine,
-        net: net,
-        normalizedScore: normalizedScore
-      };
-
-      this.analysisData.phase1Results = this.phase1Results;
-
-      // Build Phase 2 sequence
-      await this.buildPhase2Sequence();
-    } catch (error) {
-      this.debugReporter.logError(error, 'analyzePhase1Results');
-      ErrorHandler.showUserError('Failed to analyze Phase 1 results. Please try again.');
-    }
-  }
-
-  /**
-   * Build Phase 2 question sequence
-   * @returns {Promise<void>}
-   */
-  async buildPhase2Sequence() {
-    await this.loadTemperamentData();
-    
-    try {
-      // Phase 2: Deep Mapping (all remaining questions)
-      this.currentPhase = 2;
-      this.currentQuestionIndex = 0;
-      this.questionSequence = [];
-      
-      // Add questions from all dimension categories
-      Object.keys(TEMPERAMENT_DIMENSIONS || {}).forEach(dimKey => {
+  collectDeepMappingQuestions() {
+    const out = [];
+    Object.keys(TEMPERAMENT_DIMENSIONS || {}).forEach((dimKey) => {
       const dimension = TEMPERAMENT_DIMENSIONS[dimKey];
       if (!dimension?.questions) return;
-      dimension.questions.forEach(q => {
-        this.questionSequence.push({
+      dimension.questions.forEach((q) => {
+        out.push({
           id: q.id,
           type: 'dimension',
           dimension: dimKey,
@@ -386,13 +380,11 @@ export class TemperamentEngine {
         });
       });
     });
-
-    // Add intimate dynamics questions
-    Object.keys(INTIMATE_DYNAMICS || {}).forEach(catKey => {
+    Object.keys(INTIMATE_DYNAMICS || {}).forEach((catKey) => {
       const category = INTIMATE_DYNAMICS[catKey];
       if (!category?.questions) return;
-      category.questions.forEach(q => {
-        this.questionSequence.push({
+      category.questions.forEach((q) => {
+        out.push({
           id: q.id,
           type: 'intimate',
           category: catKey,
@@ -406,13 +398,11 @@ export class TemperamentEngine {
         });
       });
     });
-
-    // Add attraction responsiveness questions
-    Object.keys(ATTRACTION_RESPONSIVENESS || {}).forEach(catKey => {
+    Object.keys(ATTRACTION_RESPONSIVENESS || {}).forEach((catKey) => {
       const category = ATTRACTION_RESPONSIVENESS[catKey];
       if (!category?.questions) return;
-      category.questions.forEach(q => {
-        this.questionSequence.push({
+      category.questions.forEach((q) => {
+        out.push({
           id: q.id,
           type: 'attraction',
           category: catKey,
@@ -427,13 +417,44 @@ export class TemperamentEngine {
         });
       });
     });
+    return out;
+  }
 
-    // Shuffle questions to mitigate bias
-    this.questionSequence.sort(() => Math.random() - 0.5);
-    } catch (error) {
-      this.debugReporter.logError(error, 'buildPhase2Sequence');
-      ErrorHandler.showUserError('Failed to build Phase 2 sequence. Please try again.');
-    }
+  buildDeepQuestionByIdMap() {
+    return new Map(this.collectDeepMappingQuestions().map((q) => [q.id, q]));
+  }
+
+  async materializeQuestionSequence(ids) {
+    await this.loadTemperamentData();
+    const deepMap = this.buildDeepQuestionByIdMap();
+    return ids
+      .map((id) => {
+        if (id === GENDER_QUESTION.id) return GENDER_QUESTION;
+        return deepMap.get(id) || null;
+      })
+      .filter(Boolean);
+  }
+
+  /**
+   * Gender, then shuffled deep mapping (intimate + attraction + core dimensions).
+   */
+  async buildAssessmentSequence() {
+    await this.loadTemperamentData();
+    this.currentPhase = 1;
+    this.currentQuestionIndex = 0;
+    const deep = this.collectDeepMappingQuestions();
+    deep.sort(() => Math.random() - 0.5);
+    this.questionSequence = [GENDER_QUESTION, ...deep];
+    this.applySuiteGenderFromArchetypeIfNeeded();
+    this.debugReporter.recordQuestionCount(this.questionSequence.length);
+  }
+
+  async buildPhase1Sequence() {
+    await this.buildAssessmentSequence();
+  }
+
+  async buildPhase2Sequence() {
+    await this.buildAssessmentSequence();
   }
 
   attachEventListeners() {
@@ -527,6 +548,19 @@ export class TemperamentEngine {
       this.answers[question.id] = option;
       return;
     }
+    if (question.type === 'value_allocation') {
+      const left = this.getRandomInt(0, 100);
+      this.answers[question.id] = {
+        type: 'value_allocation',
+        allocationPercents: [left, 100 - left]
+      };
+      return;
+    }
+    if (question.type === 'dimension' || question.type === 'intimate' || question.type === 'attraction') {
+      const left = this.getRandomInt(0, 100);
+      this.answers[question.id] = { type: 'value_allocation', allocationPercents: [left, 100 - left] };
+      return;
+    }
     const value = this.getRandomInt(0, 10);
     this.answers[question.id] = value;
   }
@@ -540,13 +574,9 @@ export class TemperamentEngine {
       this.questionSequence = [];
       this.phase1Results = null;
       this.analysisData = this.getEmptyAnalysisData();
-      this.analysisData.intimateConsentGiven = true;
 
-      await this.buildPhase1Sequence();
-      this.questionSequence.forEach(q => this.answerQuestionForSample(q));
-      await this.analyzePhase1Results();
-
-      this.questionSequence.forEach(q => this.answerQuestionForSample(q));
+      await this.buildAssessmentSequence();
+      this.questionSequence.forEach((q) => this.answerQuestionForSample(q));
       this.calculateResults();
       this.ui.transition('results');
       await this.renderResults();
@@ -598,24 +628,17 @@ export class TemperamentEngine {
 
     try {
       if (this.currentQuestionIndex >= this.questionSequence.length) {
-        if (this.currentPhase === 1) {
-          this.analyzePhase1Results();
-          this.showPhase1Feedback();
-          return;
-        } else {
-          this.calculateResults();
-          void this.renderResults().catch(err => {
-            this.debugReporter.logError(err, 'renderCurrentQuestion → renderResults');
-            ErrorHandler.showUserError('Failed to display results. Try refreshing the page.');
-          });
-          return;
-        }
+        this.calculateResults();
+        void this.renderResults().catch(err => {
+          this.debugReporter.logError(err, 'renderCurrentQuestion → renderResults');
+          ErrorHandler.showUserError('Failed to display results. Try refreshing the page.');
+        });
+        return;
       }
 
     const currentQ = this.questionSequence[this.currentQuestionIndex];
     
-    // Phase 1: Render gender prompt first
-    if (this.currentPhase === 1 && currentQ.type === 'gender') {
+    if (currentQ.type === 'gender') {
       this.renderGenderQuestion(currentQ);
       // Scroll to question after rendering
       setTimeout(() => {
@@ -624,8 +647,7 @@ export class TemperamentEngine {
       return;
     }
 
-    // Phase 1: Render 3-point orientation questions
-    if (this.currentPhase === 1 && currentQ.type === 'three_point') {
+    if (currentQ.type === 'three_point') {
       this.renderThreePointQuestion(currentQ);
       // Scroll to question after rendering
       setTimeout(() => {
@@ -633,19 +655,16 @@ export class TemperamentEngine {
       }, 100);
       return;
     }
-    
-    // Phase 2: Check if entering intimate dynamics section and show consent gate
-    if (this.currentPhase === 2 && currentQ.type === 'intimate' && !this.analysisData.intimateConsentGiven) {
-      this.showIntimateConsentGate();
-      // Scroll to question after rendering
+
+    if (currentQ.type === 'value_allocation') {
+      this.renderPhase1DualAllocationQuestion(currentQ);
       setTimeout(() => {
         questionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
       return;
     }
-    
-    // Phase 2: Render slider-based questions (existing logic)
-    this.renderSliderQuestion(currentQ);
+
+    this.renderDeepMappingDualAllocationQuestion(currentQ);
     // Scroll to question after rendering
     setTimeout(() => {
       questionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -665,8 +684,8 @@ export class TemperamentEngine {
     SecurityUtils.safeInnerHTML(questionContainer, `
       <div class="question-block">
         <div class="question-header">
-          <span class="question-number">Phase ${this.currentPhase} - Question ${this.currentQuestionIndex + 1} of ${this.questionSequence.length}</span>
-          <span class="question-stage">Orientation</span>
+          <span class="question-number">Question ${this.currentQuestionIndex + 1} of ${this.questionSequence.length}</span>
+          <span class="question-stage">Profile</span>
         </div>
         <h3 class="question-text">${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
         ${
@@ -728,7 +747,7 @@ export class TemperamentEngine {
     SecurityUtils.safeInnerHTML(questionContainer, `
       <div class="question-block">
         <div class="question-header">
-          <span class="question-number">Phase ${this.currentPhase} - Question ${this.currentQuestionIndex + 1} of ${this.questionSequence.length}</span>
+          <span class="question-number">Question ${this.currentQuestionIndex + 1} of ${this.questionSequence.length}</span>
           <span class="question-stage">Orientation</span>
         </div>
         <h3 class="question-text">${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
@@ -773,174 +792,138 @@ export class TemperamentEngine {
     this.updateNavigationButtons();
   }
 
-  renderSliderQuestion(currentQ) {
-    const questionContainer = document.getElementById('questionContainer');
-    const savedAnswer = this.answers[currentQ.id] !== undefined ? this.answers[currentQ.id] : 5;
-
-    let categoryInfo = '';
-    const sectionLabel = currentQ.dimensionSpectrumLabel || currentQ.dimensionName || currentQ.categoryName;
-    if (sectionLabel) {
-      categoryInfo = `<p class="description">${SecurityUtils.sanitizeHTML(sectionLabel)}</p>`;
-    }
-
-    SecurityUtils.safeInnerHTML(questionContainer, `
-      <div class="question-block">
-        <div class="question-header">
-          <span class="question-number">Phase ${this.currentPhase} - Question ${this.currentQuestionIndex + 1} of ${this.questionSequence.length}</span>
-          <span class="question-stage">Deep Mapping</span>
-        </div>
-        ${categoryInfo}
-        <h3>${SecurityUtils.sanitizeHTML(currentQ.question || '')}</h3>
-        ${currentQ.description ? `<p class="description">${SecurityUtils.sanitizeHTML(currentQ.description)}</p>` : ''}
-        <div class="scale-container">
-          <div class="scale-input">
-            <input type="range" min="0" max="10" value="${savedAnswer}" class="slider" id="questionSlider" step="1">
-            <div class="scale-labels">
-              <span>${currentQ.poleLabels ? SecurityUtils.sanitizeHTML(currentQ.poleLabels.low) + ' (0)' : 'Very Low / Minimal / Weak / Rare / Never (0-2)'}</span>
-              <span>${currentQ.poleLabels ? 'Balanced / Both / Mixed (5)' : 'Moderate / Somewhat / Average / Sometimes (5-6)'}</span>
-              <span>${currentQ.poleLabels ? SecurityUtils.sanitizeHTML(currentQ.poleLabels.high) + ' (10)' : 'Very High / Strong / Potent / Frequent / Always (9-10)'}</span>
-            </div>
-          </div>
-          <span class="scale-value" id="sliderValue">${savedAnswer}</span>
-        </div>
-        <div class="temperament-tip">
-          <strong>Tip:</strong> ${currentQ.poleLabels ? 'Position the slider toward the pole that feels more natural or authentic to you. 0 and 10 represent the two options in the question.' : 'Answer based on your authentic experience and preferences, not what you think you "should" be.'}
-        </div>
-      </div>
-    `);
-
-    const slider = document.getElementById('questionSlider');
-    const sliderValueSpan = document.getElementById('sliderValue');
-    if (slider && sliderValueSpan) {
-      slider.oninput = (event) => {
-        sliderValueSpan.textContent = event.target.value;
-        this.answers[currentQ.id] = parseInt(event.target.value);
-        this.saveProgress();
-      };
-    }
-
-    this.updateProgress();
-    this.updateNavigationButtons();
+  renderPhase1DualAllocationQuestion(question) {
+    this.renderLinkedDualPoleQuestion(question, {
+      stageLabel: 'Orientation',
+      leftLabel: question.options?.[0]?.text || 'Left pole',
+      rightLabel: question.options?.[2]?.text || 'Right pole'
+    });
   }
 
-  showPhase1Feedback() {
+  renderDeepMappingDualAllocationQuestion(question) {
+    const low = question.poleLabels?.low || 'One side';
+    const high = question.poleLabels?.high || 'Other side';
+    this.renderLinkedDualPoleQuestion(question, {
+      stageLabel: 'Mapping',
+      leftLabel: low,
+      rightLabel: high,
+      categoryLine: question.dimensionSpectrumLabel || question.dimensionName || question.categoryName || '',
+      description: question.description || ''
+    });
+  }
+
+  renderLinkedDualPoleQuestion(question, opts) {
     const questionContainer = document.getElementById('questionContainer');
-    if (!questionContainer || !this.phase1Results) return;
-    
-    const score = this.phase1Results.normalizedScore;
-    let rangeLabel = '';
-    let rangeDescription = '';
-    
-    if (score >= 0.7) {
-      rangeLabel = 'Masculine-Leaning Range';
-      rangeDescription = 'Your initial responses suggest a tendency toward masculine-leaning expression patterns. The detailed assessment will help clarify the specific dimensions and contexts where this shows up.';
-    } else if (score >= 0.55) {
-      rangeLabel = 'Balanced-Masculine Range';
-      rangeDescription = 'Your initial responses suggest a balanced orientation with slight masculine-leaning tendencies. The detailed assessment will explore the nuances across different dimensions.';
-    } else if (score >= 0.45) {
-      rangeLabel = 'Balanced Range';
-      rangeDescription = 'Your initial responses suggest a balanced temperament with flexibility across the spectrum. The detailed assessment will map how this expresses across different dimensions and contexts.';
-    } else if (score >= 0.3) {
-      rangeLabel = 'Balanced-Feminine Range';
-      rangeDescription = 'Your initial responses suggest a balanced orientation with slight feminine-leaning tendencies. The detailed assessment will explore the nuances across different dimensions.';
-    } else {
-      rangeLabel = 'Feminine-Leaning Range';
-      rangeDescription = 'Your initial responses suggest a tendency toward feminine-leaning expression patterns. The detailed assessment will help clarify the specific dimensions and contexts where this shows up.';
-    }
-    
+    const idSuffix = String(question.id || 'q').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const saved = this.answers[question.id];
+    const savedLeft = Array.isArray(saved?.allocationPercents) ? Number(saved.allocationPercents[0]) : null;
+    const leftPct = Number.isFinite(savedLeft) ? Math.max(0, Math.min(100, Math.round(savedLeft))) : 50;
+    const rightPct = 100 - leftPct;
+    const categoryLine = opts.categoryLine
+      ? `<p class="description">${SecurityUtils.sanitizeHTML(opts.categoryLine)}</p>`
+      : '';
+    const descLine = opts.description
+      ? `<p class="description temperament-description">${SecurityUtils.sanitizeHTML(opts.description)}</p>`
+      : '';
+
     SecurityUtils.safeInnerHTML(questionContainer, `
-      <div class="transition-card panel text-center temperament-orientation-card">
-        <h3 class="panel-title">Orientation Complete</h3>
-        <div class="temperament-info-box panel-brand-left">
-          <h4>${SecurityUtils.sanitizeHTML(rangeLabel)}</h4>
-          <p>${SecurityUtils.sanitizeHTML(rangeDescription)}</p>
-          <div class="temperament-spectrum">
-            <div class="temperament-marker" style="left: ${score * 100}%;"></div>
-          </div>
-          <p class="temperament-spectrum-position">
-            Preliminary Position: ${(score * 100).toFixed(0)}% on the spectrum
-          </p>
+      <div class="question-block temperament-linked-sliders">
+        <div class="question-header">
+          <span class="question-number">Question ${this.currentQuestionIndex + 1} of ${this.questionSequence.length}</span>
+          <span class="question-stage">${SecurityUtils.sanitizeHTML(opts.stageLabel || 'Mapping')}</span>
         </div>
-        <p class="panel-text">
-          Now we'll explore the detailed dimensions to map your temperament expression across different contexts and relationships.
-        </p>
-        <button class="btn btn-primary" id="continueToPhase2">Continue to Detailed Assessment</button>
+        ${categoryLine}
+        ${descLine}
+        <h3 class="question-text">${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
+        <div class="scale-container scale-container--stacked">
+          <div class="scale-input">
+            <div class="temperament-slider-row-head">
+              <span>${SecurityUtils.sanitizeHTML(opts.leftLabel || '')}</span>
+              <strong id="dm_pct_left_${idSuffix}">${leftPct}%</strong>
+            </div>
+            <input type="range" min="0" max="100" value="${leftPct}" class="slider" id="dm_slider_left_${idSuffix}" step="1">
+            <div class="scale-labels">
+              <span>Not important</span>
+              <span>Very important</span>
+            </div>
+          </div>
+          <div class="scale-input">
+            <div class="temperament-slider-row-head">
+              <span>${SecurityUtils.sanitizeHTML(opts.rightLabel || '')}</span>
+              <strong id="dm_pct_right_${idSuffix}">${rightPct}%</strong>
+            </div>
+            <input type="range" min="0" max="100" value="${rightPct}" class="slider" id="dm_slider_right_${idSuffix}" step="1">
+            <div class="scale-labels">
+              <span>Not important</span>
+              <span>Very important</span>
+            </div>
+          </div>
+        </div>
       </div>
     `);
-    
-    const continueBtn = document.getElementById('continueToPhase2');
-    if (continueBtn) {
-      continueBtn.addEventListener('click', () => {
-        this.renderCurrentQuestion(); // Start Phase 2
-      });
-    }
-    
+
+    const leftSlider = document.getElementById(`dm_slider_left_${idSuffix}`);
+    const rightSlider = document.getElementById(`dm_slider_right_${idSuffix}`);
+    const leftPctEl = document.getElementById(`dm_pct_left_${idSuffix}`);
+    const rightPctEl = document.getElementById(`dm_pct_right_${idSuffix}`);
+    const syncAnswer = (leftValue, origin) => {
+      const left = Math.max(0, Math.min(100, Math.round(Number(leftValue) || 0)));
+      const right = 100 - left;
+      if (leftPctEl) leftPctEl.textContent = `${left}%`;
+      if (rightPctEl) rightPctEl.textContent = `${right}%`;
+      if (leftSlider && origin !== 'left') leftSlider.value = String(left);
+      if (rightSlider && origin !== 'right') rightSlider.value = String(right);
+      this.answers[question.id] = {
+        type: 'value_allocation',
+        allocationPercents: [left, right]
+      };
+      this.saveProgress();
+    };
+
+    if (leftSlider) leftSlider.oninput = (event) => syncAnswer(event.target.value, 'left');
+    if (rightSlider) rightSlider.oninput = (event) => {
+      const rightValue = Math.max(0, Math.min(100, Math.round(Number(event.target.value) || 0)));
+      syncAnswer(100 - rightValue, 'right');
+    };
+    syncAnswer(leftPct, 'init');
+
+    this.updateProgress();
     this.updateNavigationButtons();
   }
 
   updateProgress() {
     const progressFill = document.getElementById('progressFill');
     if (progressFill) {
-      // Calculate total progress across both phases
-      const phase1Total = PHASE_1_ORIENTATION_QUESTIONS.length + 1;
-      const phase2Total = this.currentPhase === 2 ? this.questionSequence.length : 
-                         (Object.keys(TEMPERAMENT_DIMENSIONS || {}).reduce((sum, k) => sum + (TEMPERAMENT_DIMENSIONS[k]?.questions?.length || 0), 0) +
-                          Object.keys(INTIMATE_DYNAMICS || {}).reduce((sum, k) => sum + (INTIMATE_DYNAMICS[k]?.questions?.length || 0), 0) +
-                          Object.keys(ATTRACTION_RESPONSIVENESS || {}).reduce((sum, k) => sum + (ATTRACTION_RESPONSIVENESS[k]?.questions?.length || 0), 0));
-      const totalQuestions = phase1Total + phase2Total;
-      
-      let currentProgress = 0;
-      if (this.currentPhase === 1) {
-        currentProgress = this.currentQuestionIndex + 1;
-      } else {
-        currentProgress = phase1Total + this.currentQuestionIndex + 1;
-      }
-      
-      const progress = totalQuestions > 0 ? (currentProgress / totalQuestions) * 100 : 0;
-      progressFill.style.width = `${progress}%`; // Progress bar width is dynamic, keep inline
+      const totalQuestions = this.questionSequence.length || 1;
+      const currentProgress = this.currentQuestionIndex + 1;
+      const progress = (currentProgress / totalQuestions) * 100;
+      progressFill.style.width = `${progress}%`;
     }
-    
+
     const questionCount = document.getElementById('questionCount');
     if (questionCount) {
       const remaining = this.questionSequence.length - this.currentQuestionIndex;
-      const phaseLabel = this.currentPhase === 1 ? ' (Orientation)' : ' (Deep Mapping)';
-      questionCount.textContent = `${remaining} question${remaining !== 1 ? 's' : ''} remaining${phaseLabel}`;
-    }
-  }
-
-  updateNavigationButtons() {
-    const prevBtn = document.getElementById('prevQuestion');
-    const nextBtn = document.getElementById('nextQuestion');
-    
-    if (prevBtn) {
-      prevBtn.disabled = this.currentQuestionIndex === 0;
-    }
-    
-    if (nextBtn) {
-      nextBtn.textContent = this.currentQuestionIndex === this.questionSequence.length - 1 
-        ? 'Complete Assessment' 
-        : 'Next';
+      questionCount.textContent = `${remaining} question${remaining !== 1 ? 's' : ''} remaining`;
     }
   }
 
   nextQuestion() {
     const currentQ = this.questionSequence[this.currentQuestionIndex];
-    
-    // For Phase 1, ensure answer is saved
-    if (this.currentPhase === 1) {
-      if (this.answers[currentQ.id] === undefined) {
-        if (currentQ.type === 'gender') {
-          ErrorHandler.showUserError('Please select your gender to continue.');
-          return;
-        } else if (currentQ.options && currentQ.options.length > 0) {
-          // Default to middle option if none selected
-          this.answers[currentQ.id] = currentQ.options[Math.floor(currentQ.options.length / 2)];
-        }
+
+    if (this.answers[currentQ.id] === undefined) {
+      if (currentQ.type === 'gender') {
+        ErrorHandler.showUserError('Please select your gender to continue.');
+        return;
       }
-    } else {
-      // For Phase 2, default to 5 if slider not moved
-      if (this.answers[currentQ.id] === undefined) {
-        this.answers[currentQ.id] = 5;
+      if (
+        currentQ.type === 'value_allocation' ||
+        currentQ.type === 'dimension' ||
+        currentQ.type === 'intimate' ||
+        currentQ.type === 'attraction'
+      ) {
+        this.answers[currentQ.id] = { type: 'value_allocation', allocationPercents: [50, 50] };
+      } else if (currentQ.options && currentQ.options.length > 0) {
+        this.answers[currentQ.id] = currentQ.options[Math.floor(currentQ.options.length / 2)];
       }
     }
 
@@ -949,31 +932,36 @@ export class TemperamentEngine {
       this.renderCurrentQuestion();
       this.saveProgress();
     } else {
-      // End of current phase
-      if (this.currentPhase === 1) {
-        this.analyzePhase1Results().then(() => {
-          this.showPhase1Feedback();
-        }).catch(error => {
-          this.debugReporter.logError(error, 'nextQuestion - Phase 1 completion');
-        });
-      } else {
-        this.calculateResults();
-        void this.renderResults().catch(err => {
-          this.debugReporter.logError(err, 'nextQuestion → renderResults');
-          ErrorHandler.showUserError('Failed to display results. Try refreshing the page.');
-        });
-      }
+      this.calculateResults();
+      void this.renderResults().catch(err => {
+        this.debugReporter.logError(err, 'nextQuestion → renderResults');
+        ErrorHandler.showUserError('Failed to display results. Try refreshing the page.');
+      });
+    }
+  }
+
+  captureLinkedDualAnswerForQuestion(question) {
+    if (!question?.id) return;
+    const idSuffix = String(question.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const leftSlider = document.getElementById(`dm_slider_left_${idSuffix}`);
+    if (leftSlider) {
+      const left = Math.max(0, Math.min(100, Math.round(Number(leftSlider.value) || 0)));
+      this.answers[question.id] = { type: 'value_allocation', allocationPercents: [left, 100 - left] };
     }
   }
 
   prevQuestion() {
     if (this.currentQuestionIndex > 0) {
       const currentQ = this.questionSequence[this.currentQuestionIndex];
-      const slider = document.getElementById('questionSlider');
-      if (slider && currentQ) {
-        this.answers[currentQ.id] = parseInt(slider.value);
+      if (
+        currentQ &&
+        (currentQ.type === 'value_allocation' ||
+          currentQ.type === 'dimension' ||
+          currentQ.type === 'intimate' ||
+          currentQ.type === 'attraction')
+      ) {
+        this.captureLinkedDualAnswerForQuestion(currentQ);
       }
-      
       this.currentQuestionIndex--;
       this.renderCurrentQuestion();
       this.saveProgress();
@@ -990,29 +978,27 @@ export class TemperamentEngine {
       return;
     }
 
-    // Calculate dimension scores (only from Phase 2 questions)
     this.analysisData.dimensionScores = {};
-    
-    // Group answers by dimension/category (exclude Phase 1 orientation questions)
+
     const dimensionGroups = {};
-    
-    this.questionSequence.forEach(q => {
-      // Skip Phase 1 orientation questions
-      if (q.id && q.id.startsWith('p1_orientation')) {
-        return;
-      }
-      
+    const defaultAllocation = { type: 'value_allocation', allocationPercents: [50, 50] };
+
+    this.questionSequence.forEach((q) => {
+      if (q.type === 'gender') return;
       const groupKey = q.dimension || q.category || 'other';
       if (!dimensionGroups[groupKey]) {
         dimensionGroups[groupKey] = [];
       }
-      dimensionGroups[groupKey].push({
-        question: q,
-        answer: this.answers[q.id] || 5
-      });
+      let ans = this.answers[q.id];
+      if (ans === undefined) {
+        ans =
+          q.type === 'value_allocation' || q.type === 'dimension' || q.type === 'intimate' || q.type === 'attraction'
+            ? defaultAllocation
+            : 5;
+      }
+      dimensionGroups[groupKey].push({ question: q, answer: ans });
     });
 
-    // Calculate weighted scores for each dimension
     let totalMasculineScore = 0;
     let totalFeminineScore = 0;
     let totalWeight = 0;
@@ -1024,7 +1010,7 @@ export class TemperamentEngine {
     const reportedGender = this.analysisData.gender;
 
     const dimensionWeights = TEMPERAMENT_SCORING.dimensionWeights;
-    Object.keys(dimensionGroups).forEach(groupKey => {
+    Object.keys(dimensionGroups).forEach((groupKey) => {
       const group = dimensionGroups[groupKey];
       const dimWeight = dimensionWeights[groupKey] || 1.0;
       let groupMasculine = 0;
@@ -1032,15 +1018,14 @@ export class TemperamentEngine {
       let groupWeight = 0;
 
       group.forEach(({ question, answer }) => {
-        // Normalize answer to -1 to 1 scale (0-10 becomes -1 to 1)
-        const normalizedAnswer = (answer - 5) / 5;
+        const normalizedAnswer = getTemperamentPolarityNormalizedAnswer(answer);
 
-        // Apply gender-aware selection criteria weighting
-        let masculineWeight = question.masculineWeight;
-        let feminineWeight = question.feminineWeight;
+        let masculineWeight = Number(question.masculineWeight);
+        let feminineWeight = Number(question.feminineWeight);
         if (groupKey === 'selection_criteria' && question.selectionStandard && (reportedGender === 'man' || reportedGender === 'woman')) {
-          const aligns = (reportedGender === 'woman' && question.selectionStandard === 'female')
-            || (reportedGender === 'man' && question.selectionStandard === 'male');
+          const aligns =
+            (reportedGender === 'woman' && question.selectionStandard === 'female') ||
+            (reportedGender === 'man' && question.selectionStandard === 'male');
           if (!aligns) {
             const originalMasculine = masculineWeight;
             masculineWeight = feminineWeight;
@@ -1050,7 +1035,7 @@ export class TemperamentEngine {
 
         const masculineContribution = normalizedAnswer * masculineWeight;
         const feminineContribution = normalizedAnswer * feminineWeight;
-        
+
         groupMasculine += masculineContribution * dimWeight;
         groupFeminine += feminineContribution * dimWeight;
         groupWeight += dimWeight;
@@ -1059,10 +1044,14 @@ export class TemperamentEngine {
       const avgMasculine = groupWeight > 0 ? groupMasculine / groupWeight : 0;
       const avgFeminine = groupWeight > 0 ? groupFeminine / groupWeight : 0;
 
+      const netDim = avgMasculine - avgFeminine;
       this.analysisData.dimensionScores[groupKey] = {
         masculine: avgMasculine,
         feminine: avgFeminine,
-        net: avgMasculine - avgFeminine
+        net: netDim,
+        masculineDecimal: Number(avgMasculine.toFixed(4)),
+        feminineDecimal: Number(avgFeminine.toFixed(4)),
+        netDecimal: Number(netDim.toFixed(4))
       };
 
       // Apply dimension weight once per dimension (not per question), so importance
@@ -1113,10 +1102,14 @@ export class TemperamentEngine {
 
     this.analysisData.overallTemperament = {
       category: temperamentCategory,
-      normalizedScore: normalizedScore,
+      normalizedScore,
       masculineScore: overallMasculine,
       feminineScore: overallFeminine,
-      netScore: overallNet
+      netScore: overallNet,
+      normalizedScoreDecimal: Number(normalizedScore.toFixed(4)),
+      masculineScoreDecimal: Number(overallMasculine.toFixed(4)),
+      feminineScoreDecimal: Number(overallFeminine.toFixed(4)),
+      netScoreDecimal: Number(overallNet.toFixed(4))
     };
 
     const interpSnap = TEMPERAMENT_SCORING?.interpretation?.[temperamentCategory];
@@ -1202,99 +1195,6 @@ export class TemperamentEngine {
     }
   }
   
-  showIntimateConsentGate() {
-    const questionContainer = document.getElementById('questionContainer');
-    if (!questionContainer) return;
-    
-    SecurityUtils.safeInnerHTML(questionContainer, `
-      <div class="transition-card panel text-center temperament-consent-card">
-        <h3 class="panel-title">Intimate Dynamics Section</h3>
-        <p class="panel-text">
-          The next section explores intimate and attraction patterns. These questions help map how energy organizes in relational and intimate contexts. <strong>Skip any question that feels misaligned.</strong> Your responses are for pattern recognition, not judgment.
-        </p>
-        <div class="temperament-consent-actions">
-          <button class="btn btn-primary" id="continueToIntimate">Continue</button>
-          <button class="btn btn-secondary" id="skipIntimate">Skip This Section</button>
-        </div>
-      </div>
-    `);
-    
-    const continueBtn = document.getElementById('continueToIntimate');
-    const skipBtn = document.getElementById('skipIntimate');
-    
-    if (continueBtn) {
-      continueBtn.addEventListener('click', () => {
-        this.analysisData.intimateConsentGiven = true;
-        this.renderQuestionContent(this.questionSequence[this.currentQuestionIndex]);
-        this.updateProgress();
-        this.updateNavigationButtons();
-      });
-    }
-    
-    if (skipBtn) {
-      skipBtn.addEventListener('click', () => {
-        // Skip all intimate questions
-        while (this.currentQuestionIndex < this.questionSequence.length && 
-               this.questionSequence[this.currentQuestionIndex].type === 'intimate') {
-          this.currentQuestionIndex++;
-        }
-        this.analysisData.intimateConsentGiven = true;
-        this.renderCurrentQuestion();
-        this.updateProgress();
-      });
-    }
-  }
-  
-  renderQuestionContent(question) {
-    const questionContainer = document.getElementById('questionContainer');
-    if (!questionContainer) return;
-    
-    const savedAnswer = this.answers[question.id] !== undefined ? this.answers[question.id] : 5;
-    
-    let categoryLabel = '';
-    if (question.type === 'intimate') {
-      categoryLabel = 'Intimate Dynamics';
-    } else if (question.type === 'attraction') {
-      categoryLabel = 'Attraction Responsiveness';
-    } else {
-      categoryLabel = question.dimensionSpectrumLabel || question.dimensionName || 'Behavioral Patterns';
-    }
-    
-    SecurityUtils.safeInnerHTML(questionContainer, `
-      <div class="question-block">
-        ${categoryLabel ? `<p class="stage-label">${SecurityUtils.sanitizeHTML(categoryLabel)}</p>` : ''}
-        ${question.description ? `<p class="description temperament-description">${SecurityUtils.sanitizeHTML(question.description)}</p>` : ''}
-        <h3 class="question-text">${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
-        <div class="scale-container">
-          <div class="scale-input">
-            <input type="range" min="0" max="10" value="${savedAnswer}" class="slider" id="questionSlider">
-            <div class="scale-labels">
-              <span>${question.poleLabels ? SecurityUtils.sanitizeHTML(question.poleLabels.low) + ' (0)' : 'Very Low / Minimal / Weak / Poor / Rare / Never (0-2)'}</span>
-              <span>${question.poleLabels ? 'Balanced / Both / Mixed (5)' : 'Moderate / Somewhat / Average / Moderate / Sometimes (5-6)'}</span>
-              <span>${question.poleLabels ? SecurityUtils.sanitizeHTML(question.poleLabels.high) + ' (10)' : 'Very High / Strong / Potent / Excellent / Frequent / Always (9-10)'}</span>
-            </div>
-          </div>
-          <span class="scale-value" id="sliderValue">${savedAnswer}</span>
-        </div>
-        <p class="question-help">
-          ${question.poleLabels ? 'Tip: Position the slider toward the pole that feels more natural or authentic to you.' : 'Tip: Rate the degree to which this pattern is present in your experience.'}
-        </p>
-      </div>
-    `);
-    
-    const slider = document.getElementById('questionSlider');
-    const sliderValueSpan = document.getElementById('sliderValue');
-    if (slider && sliderValueSpan) {
-      slider.oninput = (event) => {
-        sliderValueSpan.textContent = event.target.value;
-        this.answers[question.id] = parseInt(event.target.value);
-        this.saveProgress();
-      };
-    }
-    
-    this.updateNavigationButtons();
-  }
-  
   updateNavigationButtons() {
     const prevBtn = document.getElementById('prevQuestion');
     const nextBtn = document.getElementById('nextQuestion');
@@ -1316,12 +1216,8 @@ export class TemperamentEngine {
     const dim = (TEMPERAMENT_DIMENSIONS && TEMPERAMENT_DIMENSIONS[dimKey])
       || (INTIMATE_DYNAMICS && INTIMATE_DYNAMICS[dimKey])
       || (ATTRACTION_RESPONSIVENESS && ATTRACTION_RESPONSIVENESS[dimKey]);
-    // Plan 5A Option B: distinct headings on-screen and in export for same-axis intimate vs connection dims
-    if (
-      (dimKey === 'arousal_and_responsiveness' || dimKey === 'responsiveness_patterns') &&
-      dim?.name &&
-      dim?.spectrumLabel
-    ) {
+    // Distinct heading for intimate arousal vs connection-context pursuit (both "Being pursued vs Pursuing" on the axis line)
+    if (dimKey === 'arousal_and_responsiveness' && dim?.name && dim?.spectrumLabel) {
       return `${dim.name}: ${dim.spectrumLabel}`;
     }
     if (dim?.spectrumLabel) return dim.spectrumLabel;
@@ -1910,8 +1806,10 @@ export class TemperamentEngine {
   saveProgress() {
     try {
       const progressData = {
+        progressSchemaVersion: TEMPERAMENT_PROGRESS_SCHEMA_VERSION,
         currentPhase: this.currentPhase,
         currentQuestionIndex: this.currentQuestionIndex,
+        questionSequenceIds: (this.questionSequence || []).map((q) => q.id),
         answers: this.answers,
         phase1Results: this.phase1Results,
         analysisData: this.analysisData,
@@ -1949,14 +1847,23 @@ export class TemperamentEngine {
         return;
       }
       
-      // Restore appropriate phase (in-progress only)
-      if (this.currentPhase === 1) {
-        await this.buildPhase1Sequence();
-      } else if (this.currentPhase === 2) {
-        this.phase1Results = data.phase1Results || null;
-        await this.buildPhase2Sequence();
+      if (data.questionSequenceIds?.length) {
+        purgeLegacyTemperamentOpeningAnswers(this.answers);
+        purgeLegacyTemperamentOrientationDimension(this.analysisData);
+        const stripped = stripRemovedTemperamentOpeningsFromProgress(
+          data.questionSequenceIds,
+          data.currentQuestionIndex
+        );
+        this.currentQuestionIndex = stripped.currentQuestionIndex;
+        this.questionSequence = await this.materializeQuestionSequence(stripped.ids);
+        this.currentPhase = 1;
+      } else {
+        await this.buildAssessmentSequence();
       }
-      
+      if (this.questionSequence.length && this.currentQuestionIndex >= this.questionSequence.length) {
+        this.currentQuestionIndex = Math.max(0, this.questionSequence.length - 1);
+      }
+
       if (this.currentQuestionIndex > 0 && this.currentQuestionIndex < this.questionSequence.length) {
         const introSection = document.getElementById('introSection');
         const actionButtonsSection = document.getElementById('actionButtonsSection');
@@ -2010,7 +1917,7 @@ export class TemperamentEngine {
     this.setReportHeaderState(false);
     this.ui.transition('idle');
     
-    this.buildPhase1Sequence();
+    void this.buildAssessmentSequence();
   }
 
   setReportHeaderState(isReport) {

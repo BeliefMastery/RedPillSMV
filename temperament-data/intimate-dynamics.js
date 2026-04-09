@@ -214,7 +214,7 @@ export const INTIMATE_DYNAMICS = {
   // spectrumLabel pairs with name in reports as "Name: spectrumLabel"; avoid repeating the category word in the spectrum line (see responsiveness_patterns in attraction-responsiveness.js).
   arousal_and_responsiveness: {
     name: 'Arousal and Responsiveness',
-    spectrumLabel: 'Being pursued vs pursuing',
+    spectrumLabel: 'Being pursued vs Pursuing',
     description: 'What arouses you and how you respond to attraction',
     masculinePoleLabel: 'oriented to pursuing and taking action',
     femininePoleLabel: 'oriented to being pursued and responding',

@@ -17,6 +17,10 @@ import { getQualificationExplanation, getMaleYoungerPartnerAccessCopy } from './
 import { computeTargetMarketSummary, partnerRangeSublineFromOverall } from './attraction-target-market-summary.js';
 import { maleAgeGapContext } from './male-age-gap.js';
 import { formatProfileDecisivenessExportLine } from './archetype-profile-decisiveness.mjs';
+import {
+  formatArchetypeLayeringExportLine,
+  formatArchetypeLayeringExportParagraph
+} from './archetype-layering-profile.mjs';
 
 const EXPORT_VERSION = '1.1.0';
 
@@ -679,13 +683,14 @@ function generateTemperamentExport(data) {
   // Include ALL questions with their answers (ensure comprehensive coverage)
   if (data.questionSequence && data.questionSequence.length > 0) {
     csv += '\n=== ALL QUESTIONS AND ANSWERS ===\n';
-    csv += 'Question ID,Question Text,Answer (0-10),Type,Dimension/Category,Dimension Name/Category Name\n';
+    csv += 'Question ID,Question Text,Answer (polarity / allocation),Type,Dimension/Category,Dimension Name/Category Name\n';
     data.questionSequence.forEach(q => {
-      const answer = data.allAnswers && data.allAnswers[q.id] !== undefined ? data.allAnswers[q.id] : 'Not answered';
+      const rawAnswer = data.allAnswers && data.allAnswers[q.id] !== undefined ? data.allAnswers[q.id] : 'Not answered';
+      const answer = formatAnswerForExport(rawAnswer);
       const questionText = q.question || q.questionText || '';
       const dimensionOrCategory = q.dimension || q.category || '';
       const name = q.dimensionName || q.categoryName || q.name || '';
-      csv += `"${q.id}","${questionText.replace(/"/g, '""')}",${answer},"${q.type || ''}","${dimensionOrCategory}","${name.replace(/"/g, '""')}"\n`;
+      csv += `"${q.id}","${questionText.replace(/"/g, '""')}","${String(answer).replace(/"/g, '""')}","${q.type || ''}","${dimensionOrCategory}","${name.replace(/"/g, '""')}"\n`;
     });
   }
   
@@ -698,9 +703,10 @@ function generateTemperamentExport(data) {
     const missingAnswers = Object.entries(data.allAnswers).filter(([id]) => !questionIds.has(id));
     if (missingAnswers.length > 0) {
       csv += '\n=== ADDITIONAL ANSWERS (Not in Question Sequence) ===\n';
-      csv += 'Question ID,Answer (0-10)\n';
+      csv += 'Question ID,Answer\n';
       missingAnswers.forEach(([id, answer]) => {
-        csv += `"${id}",${answer}\n`;
+        const formatted = formatAnswerForExport(answer);
+        csv += `"${id}","${String(formatted).replace(/"/g, '""')}"\n`;
       });
     }
   }
@@ -712,6 +718,9 @@ function generateTemperamentExport(data) {
     csv += `Masculine Score: ${(data.overallTemperament.masculineScore * 100).toFixed(1)}%\n`;
     csv += `Feminine Score: ${(data.overallTemperament.feminineScore * 100).toFixed(1)}%\n`;
     csv += `Net Score: ${(data.overallTemperament.netScore * 100).toFixed(1)}%\n`;
+    if (data.overallTemperament.normalizedScoreDecimal != null) {
+      csv += `Composite (0–1, 4 dp): normalized=${data.overallTemperament.normalizedScoreDecimal}, masc=${data.overallTemperament.masculineScoreDecimal}, fem=${data.overallTemperament.feminineScoreDecimal}, net=${data.overallTemperament.netScoreDecimal}\n`;
+    }
   }
   if (data.crossPolarityDetected && data.crossPolarityNote) {
     csv += '\n=== CROSS-POLARITY FINDING ===\n';
@@ -731,6 +740,14 @@ function generateTemperamentExport(data) {
 function formatAnswerForExport(answer) {
   if (answer == null || answer === '') return 'Not answered';
   if (typeof answer === 'object') {
+    if (answer.type === 'value_allocation' && Array.isArray(answer.allocationPercents) && answer.allocationPercents.length >= 2) {
+      const a = Math.max(0, Math.min(100, Number(answer.allocationPercents[0]) || 0));
+      const b = Math.max(0, Math.min(100, Number(answer.allocationPercents[1]) || 0));
+      const sum = a + b;
+      const low = sum > 0 ? ((a / sum)).toFixed(2) : '0.50';
+      const high = sum > 0 ? ((b / sum)).toFixed(2) : '0.50';
+      return `low_pole=${low}; high_pole=${high}`;
+    }
     if (answer.mapsTo && answer.mapsTo.need) return answer.mapsTo.need;
     if (answer.text) return answer.text;
     if (Array.isArray(answer)) return answer.map(a => formatAnswerForExport(a)).join('; ');
@@ -854,6 +871,12 @@ function generateArchetypeExport(data) {
     if (data.profileDecisiveness) {
       const decLine = formatProfileDecisivenessExportLine(data.profileDecisiveness);
       if (decLine) csv += `${decLine}\n`;
+    }
+    if (data.archetypeLayering) {
+      const layLine = formatArchetypeLayeringExportLine(data.archetypeLayering);
+      if (layLine) csv += `${layLine}\n`;
+      const layPara = formatArchetypeLayeringExportParagraph(data.archetypeLayering);
+      if (layPara) csv += `${layPara}\n`;
     }
     if (data.primaryArchetype.description) {
       csv += `Description: ${data.primaryArchetype.description}\n`;
@@ -1287,14 +1310,10 @@ function getDimensionMetaForExport(dimKey) {
     || (ATTRACTION_RESPONSIVENESS && ATTRACTION_RESPONSIVENESS[dimKey]);
 }
 
-/** Aligns with temperament-engine getDimensionDisplayName (5A Option B: clear labels for pursuit dims). */
+/** Aligns with temperament-engine getDimensionDisplayName (pursuit axis: intimate vs connection rows). */
 function getTemperamentDimensionExportLabel(dimKey) {
   const dim = getDimensionMetaForExport(dimKey);
-  if (
-    (dimKey === 'arousal_and_responsiveness' || dimKey === 'responsiveness_patterns') &&
-    dim?.name &&
-    dim?.spectrumLabel
-  ) {
+  if (dimKey === 'arousal_and_responsiveness' && dim?.name && dim?.spectrumLabel) {
     return `${dim.name}: ${dim.spectrumLabel}`;
   }
   if (dim?.spectrumLabel) return dim.spectrumLabel;
@@ -1733,6 +1752,13 @@ function buildArchetypeReportBody(data) {
         html += `<p class="muted">${escapeHtml(decLine)}</p>`;
         html +=
           '<p class="muted" style="font-size:0.9em;font-style:italic;">Reflects score separation in this model run, not certainty about real-world stability.</p>';
+      }
+    }
+    if (data.archetypeLayering) {
+      const layPara = formatArchetypeLayeringExportParagraph(data.archetypeLayering);
+      if (layPara) {
+        html += `<h3 style="font-size:1rem;margin:1rem 0 0.35rem;">Profile layering (context)</h3>`;
+        html += `<p class="muted" style="font-size:0.9em;line-height:1.55;">${escapeHtml(layPara)}</p>`;
       }
     }
     html += '<h2>Primary archetype</h2>';

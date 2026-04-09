@@ -15,6 +15,10 @@ import {
   computeProfileDecisiveness,
   getProfileDecisivenessCalloutCopy
 } from './shared/archetype-profile-decisiveness.mjs';
+import {
+  computeArchetypeLayering,
+  getArchetypeLayeringCalloutCopy
+} from './shared/archetype-layering-profile.mjs';
 import { evaluateMustHaveGates } from './shared/archetype-must-have-gates.mjs';
 import {
   PHASE6_WEIGHT,
@@ -187,6 +191,7 @@ export class ArchetypeEngine {
       tertiaryArchetype: null,
       confidenceLevels: {},
       profileDecisiveness: null,
+      archetypeLayering: null,
       mustHaveGates: null,
       subclassDiagnostics: null,
       allAnswers: {},
@@ -399,6 +404,7 @@ init() {
       tertiaryArchetype: null,
       confidenceLevels: {},
       profileDecisiveness: null,
+      archetypeLayering: null,
       mustHaveGates: null,
       subclassDiagnostics: null,
       allAnswers: {},
@@ -541,7 +547,12 @@ init() {
       await this.loadArchetypeData();
       this.currentPhase = 1;
       this.currentQuestionIndex = 0;
-      this.gender = this.gender || 'male';
+      // Sample mode should not get stuck on historical persisted sex.
+      // If user has an explicit current selection, respect it; otherwise randomize.
+      const hasExplicitCurrentGender = (this.gender === 'female' || this.gender === 'male');
+      this.gender = hasExplicitCurrentGender
+        ? this.gender
+        : (Math.random() < 0.5 ? 'female' : 'male');
       this.iqBracket = 'unknown';
       this.answers = {};
       this.aspirationAnswers = {};
@@ -1629,9 +1640,6 @@ showGenderSelection() {
 
   scorePhase2Answer(question, value, prevAllocationPercents = null) {
     // Phase 2: 30% weight
-    // Likert scale: 1-5, convert to -2 to +2 for scoring
-    const normalizedValue = value - 3; // -2 to +2
-
     const mapArchetypeId = (archId) => {
       if (this.gender !== 'female') return archId;
       const femaleMapping = {
@@ -1666,6 +1674,9 @@ showGenderSelection() {
       this.scorePhase2ValueAllocation(question, value, prevAllocationPercents);
       return;
     }
+
+    // Likert scale: 1-5, convert to -2 to +2 for scoring
+    const normalizedValue = (typeof value === 'number') ? (value - 3) : 0; // -2 to +2
 
     // Handle forced-choice refinement questions that use options instead of archetypes
     if (question.options && Array.isArray(question.options)) {
@@ -2558,6 +2569,16 @@ showGenderSelection() {
     };
 
     this.analysisData.profileDecisiveness = computeProfileDecisiveness(this.archetypeScores, ARCHETYPES);
+    const primaryForLayer = this.analysisData.primaryArchetype;
+    const primaryFam = primaryForLayer?.id ? this.getFamilyNodeIdForArchetype(primaryForLayer.id) : null;
+    this.analysisData.archetypeLayering = computeArchetypeLayering({
+      archetypeScores: this.archetypeScores,
+      profileDecisiveness: this.analysisData.profileDecisiveness,
+      primaryArchetype: primaryForLayer,
+      primaryFamilyId: primaryFam,
+      gender: this.gender,
+      subclassDiagnostics: this.analysisData.subclassDiagnostics
+    });
   }
 
   async nextQuestion() {
@@ -3408,6 +3429,34 @@ showGenderSelection() {
         ${footnoteHtml}
       </div>`;
     })();
+
+    const layeringHtml = (() => {
+      const layer = this.analysisData?.archetypeLayering;
+      const copy = getArchetypeLayeringCalloutCopy(layer, primary?.name || 'your primary archetype');
+      if (!copy) return '';
+      const renderLayeringLine = (line) => {
+        const escaped = SecurityUtils.sanitizeHTML(String(line));
+        return escaped
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      };
+      const body = copy.lines
+        .map(
+          (line) =>
+            `<p class="archetype-layering-callout__text">${renderLayeringLine(line)}</p>`
+        )
+        .join('');
+      const footnoteHtml =
+        copy.footnote != null && String(copy.footnote).trim() !== ''
+          ? `<p class="archetype-layering-callout__footnote">${SecurityUtils.sanitizeHTML(String(copy.footnote))}</p>`
+          : '';
+      return `<div class="archetype-layering-callout" role="note">
+        <h3 class="archetype-layering-callout__title">${SecurityUtils.sanitizeHTML(copy.title)}</h3>
+        ${body}
+        ${footnoteHtml}
+      </div>`;
+    })();
+
     const phase6NoteHtml = this.analysisData?.phase6Results?.completed
       ? `<p style="margin: 0.35rem 0 1.2rem; color: var(--muted); font-size: 0.9rem;">Subclass clarity refinement applied due to low signal density and/or tie pressure in the top-ranked family set.</p>`
       : '';
@@ -3426,6 +3475,7 @@ showGenderSelection() {
           ${archetypeQualitiesHtml}
         </div>
         ${decisivenessHtml}
+        ${layeringHtml}
         ${phase6NoteHtml}
 
         <!-- Primary Archetype -->
@@ -3705,6 +3755,25 @@ showGenderSelection() {
           // Persist migrated field so subsequent revisits render directly.
           this.saveProgress();
         }
+        if (
+          !this.analysisData.archetypeLayering &&
+          this.analysisData.profileDecisiveness &&
+          this.archetypeScores &&
+          Object.keys(this.archetypeScores).length > 0 &&
+          this.analysisData.primaryArchetype
+        ) {
+          const p = this.analysisData.primaryArchetype;
+          const primaryFam = p?.id ? this.getFamilyNodeIdForArchetype(p.id) : null;
+          this.analysisData.archetypeLayering = computeArchetypeLayering({
+            archetypeScores: this.archetypeScores,
+            profileDecisiveness: this.analysisData.profileDecisiveness,
+            primaryArchetype: p,
+            primaryFamilyId: primaryFam,
+            gender: this.gender,
+            subclassDiagnostics: this.analysisData.subclassDiagnostics
+          });
+          this.saveProgress();
+        }
         this.renderResults();
         this.showResultsContainer();
         return;
@@ -3788,6 +3857,7 @@ showGenderSelection() {
       tertiaryArchetype: null,
       confidenceLevels: {},
       profileDecisiveness: null,
+      archetypeLayering: null,
       mustHaveGates: null,
       subclassDiagnostics: null,
       allAnswers: {},

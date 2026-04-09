@@ -97,6 +97,37 @@ function pickMultiplier(passRate) {
   return 1;
 }
 
+function optionFamilyContribution(option, family, archetypes) {
+  if (!Array.isArray(option?.archetypes) || option.archetypes.length === 0) return 0;
+  const matches = option.archetypes.filter((id) => canonicalFamilyId(id, archetypes) === family).length;
+  return matches / option.archetypes.length;
+}
+
+function forcedFamilyContribution(answer, question, family, archetypes) {
+  if (!question?.options || !Array.isArray(question.options) || !answer) return null;
+
+  if (question.type === 'value_allocation' && Array.isArray(answer.allocationPercents)) {
+    const percents = answer.allocationPercents;
+    if (percents.length !== question.options.length) return null;
+    const sum = percents.reduce((a, b) => a + (Number(b) || 0), 0);
+    const shares = sum > 0
+      ? percents.map((p) => (Number(p) || 0) / sum)
+      : percents.map(() => 1 / question.options.length);
+    return shares.reduce((acc, share, i) => {
+      const option = question.options[i];
+      return acc + (share * optionFamilyContribution(option, family, archetypes));
+    }, 0);
+  }
+
+  if (typeof answer.selectedIndex === 'number') {
+    const option = question.options[answer.selectedIndex];
+    if (!option) return null;
+    return optionFamilyContribution(option, family, archetypes);
+  }
+
+  return null;
+}
+
 function buildGatesForGender(gender) {
   const map = {};
   Object.keys(BASE_FAMILY_GATES).forEach((family) => {
@@ -149,19 +180,23 @@ export function evaluateMustHaveGates({
       } else if (gate.type === 'forced_family') {
         const answer = answers?.[gate.id];
         const q = questionIndex?.[gate.id];
-        if (q?.options && typeof answer?.selectedIndex === 'number') {
-          const opt = q.options[answer.selectedIndex];
-          if (Array.isArray(opt?.archetypes)) {
-            considered = true;
-            passed = opt.archetypes.some((id) => canonicalFamilyId(id, archetypes) === gate.family);
-          }
+        const contribution = forcedFamilyContribution(answer, q, gate.family, archetypes);
+        if (typeof contribution === 'number') {
+          considered = true;
+          // Carry slider/option family signal as fractional evidence (0..1).
+          passedWeight += w * contribution;
+          passed = contribution > 0;
         }
       }
 
       if (considered) {
         consideredWeight += w;
-        if (passed) passedWeight += w;
-        else failedSignals.push(gate.id);
+        if (gate.type !== 'forced_family') {
+          if (passed) passedWeight += w;
+          else failedSignals.push(gate.id);
+        } else if (!passed) {
+          failedSignals.push(gate.id);
+        }
       }
     });
 
