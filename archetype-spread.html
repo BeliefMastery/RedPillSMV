@@ -25,6 +25,7 @@
 
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="./fonts/fonts.css">
+  <link rel="stylesheet" href="./shared/archetype-memetic-rotator.css">
   <link id="style-overlay" rel="stylesheet" href="" title="Theme overlay">
   <style>
     .archetype-row { cursor: pointer; transition: background 0.2s ease; }
@@ -356,6 +357,8 @@
     import { ARCHETYPE_SPREAD } from './archetype-data/archetype-spread.js';
     import { ARCHETYPES, GENDER_NEUTRAL_MAPPING } from './archetype-data/archetypes.js';
     import { quotedMemeticSummary } from './shared/archetype-memetic-format.js';
+    import { getMemeticDisplayLinesForEngine } from './shared/archetype-memetic-lines.js';
+    import { initMemeticRotators, destroyMemeticRotatorsIn } from './shared/archetype-memetic-rotator.js';
 
     const tbodyMale = document.getElementById('archetypeTableBodyMale');
     const tbodyFemale = document.getElementById('archetypeTableBodyFemale');
@@ -370,6 +373,7 @@
 
     const closeArchetypePopout = () => {
       if (!popoutEl) return;
+      if (popoutDetails) destroyMemeticRotatorsIn(popoutDetails);
       popoutEl.hidden = true;
       document.body.style.overflow = '';
       if (openRow) {
@@ -399,9 +403,10 @@
       row.setAttribute('aria-expanded', 'true');
 
       popoutTitle.textContent = payload.name;
+      destroyMemeticRotatorsIn(popoutDetails);
       popoutDetails.replaceChildren();
       const detailRows = [
-        ['Memetic Summary', payload.memeticDisplay],
+        ['Memetic Summary', payload.memeticLines],
         ['Attraction / market read', payload.attraction],
         ['Social Role', payload.socialRole],
         ['Jungian/Q-KWML', payload.jungian],
@@ -419,8 +424,32 @@
         dd.className =
           'archetype-spread-popout__dd' +
           (label === 'Memetic Summary' ? ' archetype-spread-popout__dd--memetic' : '');
-        const s = val != null && String(val).trim() !== '' ? String(val) : '—';
-        dd.textContent = s;
+        if (label === 'Memetic Summary' && Array.isArray(val)) {
+          const lines = val.filter((x) => x != null && String(x).trim() !== '');
+          const qs = lines.map((raw) => quotedMemeticSummary(raw)).filter(Boolean);
+          if (qs.length > 1) {
+            const rot = document.createElement('div');
+            rot.className = 'archetype-spread-popout__memetic-rotator';
+            qs.forEach((q, i) => {
+              const span = document.createElement('span');
+              span.className =
+                'archetype-memetic-rotator__line' +
+                (i === 0 ? ' archetype-memetic-rotator__line--active' : '');
+              span.textContent = q;
+              span.setAttribute('aria-hidden', i === 0 ? 'false' : 'true');
+              rot.appendChild(span);
+            });
+            dd.appendChild(rot);
+            initMemeticRotators(rot);
+          } else if (qs.length === 1) {
+            dd.textContent = qs[0];
+          } else {
+            dd.textContent = '—';
+          }
+        } else {
+          const s = val != null && String(val).trim() !== '' ? String(val) : '—';
+          dd.textContent = s;
+        }
         wrap.appendChild(dt);
         wrap.appendChild(dd);
         popoutDetails.appendChild(wrap);
@@ -473,57 +502,34 @@
       return text.trim();
     };
 
-    const getMemeticSummary = (archetype) => {
-      const id = archetype?.id || '';
-      const byId = {
-        alpha: 'wins the room, sets the frame',
-        alpha_xi: 'dies for the mission, not the spotlight',
-        alpha_rho: 'enforces the rules everyone else plays by',
-        dark_alpha: 'power without restraint = eventual collapse',
-        beta: 'useful, reliable... replaceable',
-        beta_iota: 'good-hearted, not taken seriously',
-        beta_kappa: 'agrees to belong',
-        beta_nu: "Signed for life... passion wasn't in the contract",
-        beta_rho: 'Indispensable on purpose... intimacy on a leash',
-        gamma: 'smart, outside the system, resents it',
-        gamma_nu: 'loves the idea of love',
-        gamma_theta: 'talks to God, struggles with people',
-        gamma_pi: 'rides luck instead of building power',
-        dark_gamma: 'sees through everything, believes in nothing',
-        delta: 'keeps the world running, never leads it',
-        delta_mu: 'dad energy without dominance',
-        dark_delta: 'Gives everything... but keeps the receipts.',
-        sigma: 'opts out, plays solo, keeps leverage',
-        sigma_kappa: 'quiet strategist, moves pieces unseen',
-        sigma_lambda: 'creates in isolation',
-        dark_sigma_zeta: 'burns the system instead of mastering it',
-        omega: 'invisible, disengaged, low agency',
-        dark_omega: 'drags others down with him',
-        phi: "Above the hierarchy... under the roof's mess",
-        alpha_female: 'desired, selects-not chased',
-        alpha_xi_female: 'cuts through men with standards',
-        alpha_unicorn_female: 'idealized loyalty fantasy',
-        alpha_iota_female: 'Peace in every room... war inside her chest',
-        dark_alpha_female: 'control disguised as empowerment',
-        beta_female: 'trades access for security',
-        beta_nu_female: 'settles into tradition',
-        beta_kappa_female: 'leverages attention, plays angles',
-        beta_rho_female: 'mothering with control baked in',
-        gamma_female: 'smart, disagreeable, hard to pair',
-        gamma_theta_female: 'intense, visionary, confrontational',
-        gamma_feminist_female: 'career-first, relationship-fractured',
-        dark_gamma_female: 'withdrawn, disillusioned',
-        delta_female: 'home, stability, support',
-        delta_mu_female: 'Sunshine for the table... thunder in the kitchen',
-        dark_delta_female: 'self-sacrifice turned resentment',
-        sigma_female: 'independent, hard to lock down',
-        sigma_feminist_female: 'self-sufficient, low compromise',
-        dark_sigma_zeta_female: 'rejects system entirely',
-        omega_female: 'excluded from the game',
-        dark_omega_female: 'weaponizes destruction',
-        phi_female: 'Still water... nobody wades in'
-      };
-      return byId[id] || '—';
+    const fillMemeticTableCell = (cell, lines) => {
+      cell.replaceChildren();
+      if (!lines?.length) {
+        cell.textContent = '—';
+        return;
+      }
+      const qs = lines.map((raw) => quotedMemeticSummary(raw)).filter(Boolean);
+      if (!qs.length) {
+        cell.textContent = '—';
+        return;
+      }
+      if (qs.length === 1) {
+        cell.className = 'archetype-spread-memetic';
+        cell.textContent = qs[0];
+        return;
+      }
+      cell.className =
+        'archetype-spread-memetic archetype-spread-memetic-cell archetype-spread-memetic-cell--dual';
+      qs.forEach((q, i) => {
+        const span = document.createElement('span');
+        span.className =
+          'archetype-memetic-rotator__line' +
+          (i === 0 ? ' archetype-memetic-rotator__line--active' : '');
+        span.textContent = q;
+        span.setAttribute('aria-hidden', i === 0 ? 'false' : 'true');
+        cell.appendChild(span);
+      });
+      initMemeticRotators(cell);
     };
 
     /** Derive parent cluster from archetype name (e.g. "Delta-Mu Male" → "Delta", "Dark Alpha Male" → "Alpha") */
@@ -568,13 +574,13 @@
 
         const archetype = resolveArchetype(entry.name);
         const brutalTruth = buildNarrative(archetype?.archetypalNarrative);
-        const memeticSummary = getMemeticSummary(archetype);
+        const memeticLines = archetype ? getMemeticDisplayLinesForEngine(archetype) : [];
         const populationLabel = typeof entry.socialProportion === 'number'
           ? `${entry.socialProportion.toFixed(1)}%`
           : '—';
         const cells = [
           entry.name,
-          memeticSummary,
+          null,
           entry.attractionMarketRead || '—',
           entry.socialRole,
           entry.jungianEquivalent,
@@ -586,12 +592,7 @@
         cells.forEach((text, idx) => {
           const cell = document.createElement('td');
           if (idx === 1) {
-            if (!memeticSummary || memeticSummary === '—') {
-              cell.textContent = '—';
-            } else {
-              cell.className = 'archetype-spread-memetic';
-              cell.textContent = quotedMemeticSummary(memeticSummary);
-            }
+            fillMemeticTableCell(cell, memeticLines);
           } else {
             cell.textContent = text || '—';
           }
@@ -599,13 +600,10 @@
         });
         targetBody.appendChild(row);
 
-        const memeticDisplay =
-          memeticSummary && memeticSummary !== '—' ? quotedMemeticSummary(memeticSummary) : '—';
-
         const showPopout = () => {
           openArchetypePopout(row, {
             name: entry.name,
-            memeticDisplay,
+            memeticLines,
             attraction: entry.attractionMarketRead,
             socialRole: entry.socialRole,
             jungian: entry.jungianEquivalent,

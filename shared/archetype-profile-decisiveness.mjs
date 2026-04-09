@@ -1,5 +1,5 @@
 /**
- * Profile decisiveness: how separated the top archetype *family* is from the runner-up,
+ * Reading stability: how separated the top archetype cluster is from the runner-up,
  * using summed weighted scores per cluster (parent + subtypes). Versioned thresholds for tuning.
  *
  * v3 calibration: sharper "clear lead" bar + family transition-likelihood matrix so
@@ -38,6 +38,13 @@ function canonicalFamilyId(clusterId) {
   const lower = String(clusterId).toLowerCase();
   if (lower.endsWith('_female')) return lower.replace('_female', '');
   return lower;
+}
+
+/** Short label for respondent copy, e.g. `gamma_female` → "Gamma". */
+function familyShortLabel(clusterArchId) {
+  const base = canonicalFamilyId(clusterArchId);
+  if (!base) return '';
+  return base.charAt(0).toUpperCase() + base.slice(1);
 }
 
 function transitionLikelihoodLabel(value) {
@@ -163,18 +170,83 @@ function nearestOtherGroupName(d, archetypes) {
 }
 
 /**
+ * Stability copy should name the same “competing” patterns readers see as secondary/tertiary when those
+ * sit in a different cluster than the primary. Rollup-only second place sums every subtype in a cluster,
+ * so e.g. Beta can rank second on combined mass while no Beta subtype appears in the top-three slots.
+ *
+ * @returns {{ otherName: string, competitorClusterId: string|null }}
+ */
+function resolveReportAlignedRunnerUp(d, archetypes, primaryArch, secondaryArch, tertiaryArch) {
+  const primaryCanon = primaryArch?.id
+    ? canonicalFamilyId(resolveClusterId(primaryArch.id, archetypes))
+    : canonicalFamilyId(d.clusterWinnerId);
+
+  for (const arch of [secondaryArch, tertiaryArch]) {
+    if (!arch?.id || !archetypes?.[arch.id]) continue;
+    const cCluster = resolveClusterId(arch.id, archetypes);
+    if (!cCluster) continue;
+    if (canonicalFamilyId(cCluster) === primaryCanon) continue;
+    const name = String(archetypes[arch.id].name || '').trim();
+    if (name) return { otherName: name, competitorClusterId: cCluster };
+  }
+
+  return {
+    otherName: nearestOtherGroupName(d, archetypes),
+    competitorClusterId: d.clusterSecondId
+  };
+}
+
+/**
+ * Text after "transition pressure toward *other* is **{label}**," — keyed by matrix band (low / moderate / high).
+ * @param {{ label?: string }} transition
+ */
+function transitionPressureOutcomeTail(transition, primaryPatternName, other, runnerShort) {
+  const lab = transition?.label;
+  if (lab === 'very_low' || lab === 'low') {
+    return `so you are most likely deepening into **${primaryPatternName}**.`;
+  }
+  if (lab === 'high' || lab === 'very_high') {
+    return `which suggests a transition toward *${other}* and growth into **${runnerShort}** or subtypes of **${runnerShort}**.`;
+  }
+  if (lab === 'moderate') {
+    return `which suggests variability under conditions—your archetype may lean either way depending on context, circumstance, and triggers.`;
+  }
+  return `so you are most likely deepening into **${primaryPatternName}**.`;
+}
+
+/**
  * Plain-text strings for the report callout (sanitize in the engine when building HTML).
- * `archetypes` is optional; names nearest other *family* (clusterSecondId) for competitive and very-competitive copy.
+ * `archetypes` is optional; names nearest runner-up cluster (clusterSecondId) for competitive and very-competitive copy.
  * @param {ReturnType<typeof computeProfileDecisiveness>} d
  * @param {Record<string, object>} [archetypes]
  * @param {string} [primaryPatternName]
+ * @param {{ primary?: { id?: string }, secondary?: { id?: string }, tertiary?: { id?: string } } | null} [reportSlots] When set, prefer secondary/tertiary (first different cluster from primary) for named competitor vs rollup-only second cluster.
  */
-export function getProfileDecisivenessCalloutCopy(d, archetypes, primaryPatternName = 'your primary pattern') {
+export function getProfileDecisivenessCalloutCopy(
+  d,
+  archetypes,
+  primaryPatternName = 'your primary pattern',
+  reportSlots = null
+) {
   if (!d) return null;
 
-  const other = nearestOtherGroupName(d, archetypes);
-  const transition = transitionLikelihoodBetween(d.clusterWinnerId, d.clusterSecondId);
+  const { otherName: other, competitorClusterId } = reportSlots
+    ? resolveReportAlignedRunnerUp(
+        d,
+        archetypes,
+        reportSlots.primary,
+        reportSlots.secondary,
+        reportSlots.tertiary
+      )
+    : { otherName: nearestOtherGroupName(d, archetypes), competitorClusterId: d.clusterSecondId };
+
+  const transition =
+    d.clusterWinnerId && competitorClusterId
+      ? transitionLikelihoodBetween(d.clusterWinnerId, competitorClusterId)
+      : d.transitionLikelihoodToRunnerUp ??
+        transitionLikelihoodBetween(d.clusterWinnerId, d.clusterSecondId);
   const transitionLabel = transition.label.replace('_', ' ');
+  const runnerShort = competitorClusterId ? familyShortLabel(competitorClusterId) : '';
 
   const subtypeBoundaryText = (() => {
     if (!d.subtypeBlurry) return '';
@@ -185,30 +257,28 @@ export function getProfileDecisivenessCalloutCopy(d, archetypes, primaryPatternN
       ? String(archetypes[d.subtypeSecondId].name).trim()
       : '';
     if (topSubtypeName && secondSubtypeName) {
-      return `Within your primary family, the boundary between *${topSubtypeName}* and *${secondSubtypeName}* remains narrow; targeted follow-up responses can shift which subtype leads.`;
+      return `Within **${primaryPatternName}**, scores for *${topSubtypeName}* and *${secondSubtypeName}* are still close; a small shift in answers could change which subtype ranks first.`;
     }
-    return 'Within your primary family, subtype boundaries are still narrow; targeted follow-up responses can shift which subtype leads.';
+    return `Within **${primaryPatternName}**, subtype scores are still close; a small shift in answers could change which subtype ranks first.`;
   })();
 
   let lines = [];
 
   if (d.familyBand === 'sharp') {
     lines = [
-      `Your profile is strongly anchored in **${primaryPatternName}**. The distance to adjacent archetype families is large, so family-level reclassification is unlikely without major and sustained behavioral change.`
+      `Your profile is strongly anchored in **${primaryPatternName}**. The gap to the next-most-likely archetype pattern is large; you are likely permanently entrenched in **${primaryPatternName}**.`
     ];
   } else if (d.familyBand === 'very_competitive') {
     lines = [
       other
-        ? `Your top-family boundary is highly competitive between **${primaryPatternName}** and *${other}*. Small answer shifts can change which family leads; transition pressure toward *${other}* is **${transitionLabel}**.`
-        : `Your top-family boundary is highly competitive. Small answer shifts can change which family leads.`
+        ? `Your primary archetype is highly competitive between **${primaryPatternName}** and *${other}*. A small answer shift can change your primary; the transition pressure toward *${other}* is **${transitionLabel}**, ${transitionPressureOutcomeTail(transition, primaryPatternName, other, runnerShort)}`
+        : `Your primary archetype is still wide open. A small answer shift can change your primary—treat this reading as a snapshot, not a fixed label.`
     ];
   } else {
     lines = [
       other
-        ? transition.value < 0.25
-          ? `You are currently consolidating into **${primaryPatternName}**. The nearest competing family is *${other}*, but transition pressure toward it is **${transitionLabel}**.`
-          : `You are currently in a competitive consolidation zone between **${primaryPatternName}** and *${other}*. Both stabilization and family transition are plausible; transition pressure is **${transitionLabel}**.`
-        : `You are currently in moderate consolidation around **${primaryPatternName}** with no single competing family exerting dominant pressure.`
+        ? `Your result centers on **${primaryPatternName}** with *${other}* still competing. Transition pressure toward *${other}* is **${transitionLabel}**, ${transitionPressureOutcomeTail(transition, primaryPatternName, other, runnerShort)}`
+        : `You are consolidating around **${primaryPatternName}** with no single runner-up pattern standing out clearly.`
     ];
   }
 
@@ -229,5 +299,5 @@ export function formatProfileDecisivenessExportLine(d) {
       : d.familyBand === 'very_competitive'
         ? 'Very competitive'
         : 'Competitive';
-  return `Profile decisiveness: ${bandLabel} (family margin ${d.clusterMargin.toFixed(4)}, ratio ${d.clusterRatio.toFixed(3)})`;
+  return `Reading stability: ${bandLabel} (separation margin ${d.clusterMargin.toFixed(4)}, top-two score ratio ${d.clusterRatio.toFixed(3)})`;
 }

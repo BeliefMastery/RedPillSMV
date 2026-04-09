@@ -14,6 +14,7 @@ import {
 } from './attraction-report-copy.js';
 import { ensurePeriod } from './archetype-narrative-utils.js';
 import { quotedMemeticSummary } from './archetype-memetic-format.js';
+import { getMemeticLinesForId } from './archetype-memetic-lines.js';
 
 function takeSentences(text, maxCount) {
   if (!text) return '';
@@ -398,58 +399,8 @@ export function temperamentTitleExplicit(category, reportedGender, labelFallback
 }
 
 function archetypeSloganForId(id, parentType) {
-  const byId = {
-    // Male
-    alpha: 'I decide.',
-    alpha_xi: 'dies for the mission, not the spotlight',
-    alpha_rho: 'enforces the rules everyone else plays by',
-    dark_alpha: 'power without restraint',
-    beta: 'second choice',
-    beta_iota: 'good-hearted, not taken seriously',
-    beta_kappa: 'agrees to belong',
-    beta_nu: "Signed for life... passion wasn't in the contract",
-    beta_rho: 'Indispensable on purpose... intimacy on a leash',
-    gamma: "sees the game, can't convert it",
-    gamma_nu: 'loves the idea of love',
-    gamma_theta: 'talks to God, struggles with people',
-    gamma_pi: 'rides luck instead of building power',
-    dark_gamma: 'sees through everything, believes in nothing',
-    delta: 'keeps the world running, never leads it',
-    delta_mu: 'dad energy without dominance',
-    dark_delta: 'Gives everything... but keeps the receipts.',
-    sigma: 'lone wolf',
-    sigma_kappa: 'quiet strategist, moves pieces unseen',
-    sigma_lambda: 'creates in isolation',
-    dark_sigma_zeta: 'burns the system instead of mastering it',
-    omega: 'always missing out',
-    dark_omega: 'drags others down with him',
-    phi: "Above the hierarchy... under the roof's mess",
-
-    // Female
-    alpha_female: 'I choose.',
-    alpha_xi_female: 'cuts through men with standards',
-    alpha_unicorn_female: 'idealized loyalty fantasy',
-    alpha_iota_female: 'Peace in every room... war inside her chest',
-    dark_alpha_female: 'control disguised as empowerment',
-    beta_female: 'trades access for security',
-    beta_nu_female: 'settles into tradition',
-    beta_kappa_female: 'leverages attention, plays angles',
-    beta_rho_female: 'mothering with control baked in',
-    gamma_female: 'smart, disagreeable, hard to pair',
-    gamma_theta_female: 'intense, visionary, confrontational',
-    gamma_feminist_female: 'career-first, relationship-fractured',
-    dark_gamma_female: 'withdrawn, disillusioned',
-    delta_female: 'home, stability, support',
-    delta_mu_female: 'Sunshine for the table... thunder in the kitchen',
-    dark_delta_female: 'self-sacrifice turned resentment',
-    sigma_female: 'independent, hard to lock down',
-    sigma_feminist_female: 'self-sufficient, low compromise',
-    dark_sigma_zeta_female: 'rejects the system entirely',
-    omega_female: 'excluded from the game',
-    dark_omega_female: 'weaponizes destruction',
-    phi_female: 'Still water... nobody wades in'
-  };
-  if (byId[id]) return byId[id];
+  const fromCanon = getMemeticLinesForId(id);
+  if (fromCanon.length) return fromCanon[0];
 
   const byParent = {
     alpha: 'dominates the game',

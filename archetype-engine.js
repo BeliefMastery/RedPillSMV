@@ -10,15 +10,14 @@ import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import { ensurePeriod, softenNarrativeTone, summarizeBehavioralAccent } from './shared/archetype-narrative-utils.js';
-import { quotedMemeticSummary } from './shared/archetype-memetic-format.js';
+import { memeticSummaryBlockHtml } from './shared/archetype-memetic-format.js';
+import { getMemeticDisplayLinesForEngine } from './shared/archetype-memetic-lines.js';
+import { initMemeticRotators } from './shared/archetype-memetic-rotator.js';
 import {
   computeProfileDecisiveness,
   getProfileDecisivenessCalloutCopy
 } from './shared/archetype-profile-decisiveness.mjs';
-import {
-  computeArchetypeLayering,
-  getArchetypeLayeringCalloutCopy
-} from './shared/archetype-layering-profile.mjs';
+import { computeArchetypeLayering } from './shared/archetype-layering-profile.mjs';
 import { evaluateMustHaveGates } from './shared/archetype-must-have-gates.mjs';
 import {
   PHASE6_WEIGHT,
@@ -41,76 +40,9 @@ let ARCHETYPE_SPREAD_MAP;
 let BRUTAL_TRUTHS;
 let ARCHETYPE_ROLE_ACCENTS;
 
-function archetypeSlogan(archetype) {
-  const id = archetype?.id || '';
-  const byId = {
-    alpha: 'wins the room, sets the frame',
-    alpha_xi: 'dies for the mission, not the spotlight',
-    alpha_rho: 'enforces the rules everyone else plays by',
-    dark_alpha: 'power without restraint = eventual collapse',
-    beta: 'useful, reliable... replaceable',
-    beta_iota: 'good-hearted, not taken seriously',
-    beta_kappa: 'agrees to belong',
-    beta_nu: "Signed for life... passion wasn't in the contract",
-    beta_rho: 'Indispensable on purpose... intimacy on a leash',
-    gamma: 'smart, outside the system, resents it',
-    gamma_nu: 'loves the idea of love',
-    gamma_theta: 'talks to God, struggles with people',
-    gamma_pi: 'rides luck instead of building power',
-    dark_gamma: 'sees through everything, believes in nothing',
-    delta: 'keeps the world running, never leads it',
-    delta_mu: 'dad energy without dominance',
-    dark_delta: 'Gives everything... but keeps the receipts.',
-    sigma: 'opts out, plays solo, keeps leverage',
-    sigma_kappa: 'quiet strategist, moves pieces unseen',
-    sigma_lambda: 'creates in isolation',
-    dark_sigma_zeta: 'burns the system instead of mastering it',
-    omega: 'invisible, disengaged, low agency',
-    dark_omega: 'drags others down with him',
-    phi: "Above the hierarchy... under the roof's mess",
-
-    alpha_female: 'desired, selects-not chased',
-    alpha_xi_female: 'cuts through men with standards',
-    alpha_unicorn_female: 'idealized loyalty fantasy',
-    alpha_iota_female: 'Peace in every room... war inside her chest',
-    dark_alpha_female: 'control disguised as empowerment',
-    beta_female: 'trades access for security',
-    beta_nu_female: 'settles into tradition',
-    beta_kappa_female: 'leverages attention, plays angles',
-    beta_rho_female: 'mothering with control baked in',
-    gamma_female: 'smart, disagreeable, hard to pair',
-    gamma_theta_female: 'intense, visionary, confrontational',
-    gamma_feminist_female: 'career-first, relationship-fractured',
-    dark_gamma_female: 'withdrawn, disillusioned',
-    delta_female: 'home, stability, support',
-    delta_mu_female: 'Sunshine for the table... thunder in the kitchen',
-    dark_delta_female: 'self-sacrifice turned resentment',
-    sigma_female: 'independent, hard to lock down',
-    sigma_feminist_female: 'self-sufficient, low compromise',
-    dark_sigma_zeta_female: 'rejects system entirely',
-    omega_female: 'excluded from the game',
-    dark_omega_female: 'weaponizes destruction',
-    phi_female: 'Still water... nobody wades in'
-  };
-  if (byId[id]) return byId[id];
-
-  const parent = archetype?.parentType || id.split('_')[0] || '';
-  const coreByParent = {
-    alpha: 'I decide.',
-    beta: 'Pick me.',
-    gamma: "I see what others don't-but can't convert it.",
-    delta: 'Tell me what to do.',
-    sigma: "I don't need your game.",
-    omega: 'Why try?',
-    phi: "Above the hierarchy... under the roof's mess"
-  };
-  return coreByParent[parent] || '';
-}
-
 function memeticSummaryHtml(archetype, { margin = '0.15rem 0 0.9rem', fontSize = '1rem' } = {}) {
-  const q = quotedMemeticSummary(archetypeSlogan(archetype));
-  if (!q) return '';
-  return `<p class="archetype-memetic-summary" style="margin: ${margin}; color: var(--muted); font-size: ${fontSize}; font-style: italic;">${SecurityUtils.sanitizeHTML(q)}</p>`;
+  const lines = getMemeticDisplayLinesForEngine(archetype);
+  return memeticSummaryBlockHtml(lines, (s) => SecurityUtils.sanitizeHTML(s), { margin, fontSize });
 }
 
 /** When one slider moves, adjust the others so all values still sum to `total` (fixed impression budget). */
@@ -3405,7 +3337,11 @@ showGenderSelection() {
     const decisivenessHtml = (() => {
       const d = this.analysisData?.profileDecisiveness;
       if (!d || !ARCHETYPES) return '';
-      const copy = getProfileDecisivenessCalloutCopy(d, ARCHETYPES, primary?.name || 'your primary pattern');
+      const copy = getProfileDecisivenessCalloutCopy(d, ARCHETYPES, primary?.name || 'your primary pattern', {
+        primary,
+        secondary,
+        tertiary
+      });
       if (!copy) return '';
       const renderDecisivenessLine = (line) => {
         const escaped = SecurityUtils.sanitizeHTML(String(line));
@@ -3430,37 +3366,6 @@ showGenderSelection() {
       </div>`;
     })();
 
-    const layeringHtml = (() => {
-      const layer = this.analysisData?.archetypeLayering;
-      const copy = getArchetypeLayeringCalloutCopy(layer, primary?.name || 'your primary archetype');
-      if (!copy) return '';
-      const renderLayeringLine = (line) => {
-        const escaped = SecurityUtils.sanitizeHTML(String(line));
-        return escaped
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*(.*?)\*/g, '<em>$1</em>');
-      };
-      const body = copy.lines
-        .map(
-          (line) =>
-            `<p class="archetype-layering-callout__text">${renderLayeringLine(line)}</p>`
-        )
-        .join('');
-      const footnoteHtml =
-        copy.footnote != null && String(copy.footnote).trim() !== ''
-          ? `<p class="archetype-layering-callout__footnote">${SecurityUtils.sanitizeHTML(String(copy.footnote))}</p>`
-          : '';
-      return `<div class="archetype-layering-callout" role="note">
-        <h3 class="archetype-layering-callout__title">${SecurityUtils.sanitizeHTML(copy.title)}</h3>
-        ${body}
-        ${footnoteHtml}
-      </div>`;
-    })();
-
-    const phase6NoteHtml = this.analysisData?.phase6Results?.completed
-      ? `<p style="margin: 0.35rem 0 1.2rem; color: var(--muted); font-size: 0.9rem;">Subclass clarity refinement applied due to low signal density and/or tie pressure in the top-ranked family set.</p>`
-      : '';
-
     let resultsHTML = `
       <div class="results-container" style="max-width: 900px; margin: 0 auto;">
         <div class="archetype-profile-header">
@@ -3475,8 +3380,6 @@ showGenderSelection() {
           ${archetypeQualitiesHtml}
         </div>
         ${decisivenessHtml}
-        ${layeringHtml}
-        ${phase6NoteHtml}
 
         <!-- Primary Archetype -->
         <div class="archetype-card primary" style="background: rgba(255, 255, 255, 0.1); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; border: 2px solid var(--brand);">
@@ -3608,7 +3511,7 @@ showGenderSelection() {
         <div class="shadow-section" style="background: rgba(255, 0, 0, 0.1); padding: 2rem; border-radius: var(--radius); margin-bottom: 2rem; border-left: 4px solid #ff4444;">
           <h3 style="color: #ff4444; margin-top: 0;">Shadow Patterns</h3>
           <p style="color: var(--muted); line-height: 1.7; margin-bottom: 1rem;">
-            These are stress or integration patterns tied to the <strong>same archetype families</strong> as your primary, secondary, and tertiary results above—not unrelated shadow types. They may surface under pressure or signal areas for healing.
+            These are stress or integration patterns tied to the <strong>same major archetype cluster</strong> as your primary, secondary, and tertiary results above—not unrelated “shadow” types from elsewhere. They may surface under pressure or signal areas for healing.
           </p>
           <ul style="color: var(--muted); line-height: 1.8;">
             ${shadowPatterns.map(shadow => `<li><strong>${SecurityUtils.sanitizeHTML(shadow.name || '')}:</strong> ${SecurityUtils.sanitizeHTML(ARCHETYPES[shadow.id]?.description || '')}</li>`).join('')}
@@ -3627,6 +3530,7 @@ showGenderSelection() {
 
     // Sanitize results HTML before rendering
     SecurityUtils.safeInnerHTML(container, resultsHTML);
+    initMemeticRotators(container);
     this.showResultsContainer();
   }
 

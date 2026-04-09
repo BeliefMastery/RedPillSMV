@@ -1751,7 +1751,7 @@ function buildArchetypeReportBody(data) {
       if (decLine) {
         html += `<p class="muted">${escapeHtml(decLine)}</p>`;
         html +=
-          '<p class="muted" style="font-size:0.9em;font-style:italic;">Reflects score separation in this model run, not certainty about real-world stability.</p>';
+          '<p class="muted" style="font-size:0.9em;font-style:italic;">Reflects how close your top scores were in this run—not a guarantee about how stable the label would be in real life over time.</p>';
       }
     }
     if (data.archetypeLayering) {
