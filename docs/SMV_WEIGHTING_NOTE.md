@@ -55,7 +55,8 @@ Female axis carries **50%** of overall SMV vs **40%** for males.
 | Male subcategory   | Weight |
 |--------------------|--------|
 | radActivity        | 0.15   |
-| performanceStatus  | 0.35   |
+| performanceStatus  | 0.28   |
+| mateMarketProof    | 0.07   |
 | physicalGenetic    | 0.35   |
 | humour             | 0.15   |
 
@@ -73,11 +74,12 @@ Approximate **slot** for a pillar = `axisClusterWeight × subWeight`:
 | Path                   | Male (40% axis) | Female (50% axis) |
 |------------------------|-----------------|-------------------|
 | physicalGenetic        | **14%**         | —                 |
+| mateMarketProof        | **~2.8%**       | —                 |
 | fertility              | —               | **15%**           |
 
 Within `physicalGenetic` / `fertility`, each item’s influence on the subcategory raw composite is **`weight / sum(weights)`** (not equal slices). Higher `weight` = more pull on that subcategory’s percentile.
 
-### Male — `performanceStatus` weights (sum ≈ 7.85)
+### Male — `performanceStatus` weights (sum ≈ 8.35 before mate-market slice)
 
 | ID      | Weight | Role |
 |---------|--------|------|
@@ -85,10 +87,21 @@ Within `physicalGenetic` / `fertility`, each item’s influence on the subcatego
 | perf_2  | 1.0    | Income bracket |
 | perf_3  | 1.0    | Generosity / sharing resources |
 | perf_4  | 1.0    | Productivity / output |
-| perf_5  | 1.0    | Popularity / regard in circles |
+| perf_5  | 0.9    | Popularity / regard in circles (slightly down-weighted vs traction items) |
 | perf_6  | 1.0    | Standout talent |
 | perf_7  | 0.95   | Financial solidity beyond income (savings, debt, runway) |
 | perf_8  | 0.9    | Verifiable professional credibility |
+| perf_9  | 0.65   | Observable romantic/sexual interest (in person or active profiles) |
+| perf_10 | 0.65   | Follow-through when flirting / escalating in venues |
+| perf_11 | 0.65   | Involuntary long dry gaps when open to dating |
+
+### Male — `mateMarketProof` weights (sum ≈ 2.85)
+
+| ID    | Weight | Role |
+|-------|--------|------|
+| mmp_1 | 0.95   | Typical calibre of interested women vs realistic ceiling (self-report) |
+| mmp_2 | 0.95   | How observable that interest was to others |
+| mmp_3 | 0.95   | Independent sources vs one overlapping pipeline |
 
 ### Male — `physicalGenetic` weights (sum ≈ 11.45)
 
@@ -136,13 +149,28 @@ Within `physicalGenetic` / `fertility`, each item’s influence on the subcatego
 
 See table above. **phys_10** / **fert_7** are framed as *typical stranger/early dating filter*, not a moral score. In the UI they are **`optional`**: the respondent may press Next without selecting; the item is **omitted** from the weighted mean (weights renormalize over answered items only).
 
-### Male — `performanceStatus` and `humour`
+### Male — `performanceStatus`, `mateMarketProof`, and `humour`
 
-**perf_7** and **perf_8** close gaps between “income” and broader **wealth/finance** and **verifiable status/credentials**. **phys_12** adds explicit **aesthetic/style** alongside grooming. **humour_4** and **humour_5** split **intelligence/conversational substance** and **companionship** from humour delivery alone.
+**perf_7** and **perf_8** close gaps between “income” and broader **wealth/finance** and **verifiable status/credentials**. **perf_9–perf_11** track **visible traction** and dry-gap pattern without duplicating generic popularity (**perf_5**). **mmp_1–mmp_3** add a dedicated **mate-market proof** slice (calibre, observability, source variety) at a **small axis weight (7%)**. **phys_12** adds explicit **aesthetic/style** alongside grooming. **humour_4** and **humour_5** split **intelligence/conversational substance** and **companionship** from humour delivery alone.
 
 ### Female — `fertility`
 
 See table above. **fert_2** is silhouette / waist–hip **read**, not clinical ratio; **fert_6** is general shape/leanness to avoid double-counting the same construct.
+
+### Female — `paternityCertainty` (reproductive cluster; not axis blend)
+
+| ID    | Weight | Role |
+|-------|--------|------|
+| pat_1 | 1.0    | Loyalty / faithfulness |
+| pat_2 | 1.0    | Partner-count buckets (reverse-scored) |
+| pat_3 | 1.0    | Transparency about past and present |
+| pat_4 | 0.85   | Typical mate value of past partners vs self-estimated ceiling |
+
+`pat_4` feeds **Reproductive Confidence** only; **Keeper/Sleeper/Sweeper** discrete shifts remain **`pat_2` + age** via `PARTNER_COUNT_DOWNGRADE` (no extra downgrade rule on `pat_4`).
+
+### Female — `riskCost` (axis)
+
+Existing **risk_1–risk_3** plus **risk_4** (0.85): skew of recent relationships toward casual vs committed long-term intent (higher = more committed).
 
 ### Cross-cluster overlap (female)
 
@@ -172,12 +200,12 @@ Baseline: all axis/coalition/repro items at mid scale value **5**; male `rad_1 =
 | Male face high / body shape low | 42.46   | 43.53 | 44.02                       |
 | Male face low / body shape high | 42.28   | 43.08 | 42.74                       |
 | Male phys_10 early-filter min   | 41.52   | 41.17 | 37.29                       |
-| Female baseline                 | 46.42   | 48.90 | 41.74                       |
-| Female all fert max             | 54.44   | 64.96 | 95.26                       |
-| Female all fert min             | 40.87   | 37.80 | 4.74                        |
-| Female face high / shape low    | 47.04   | 50.15 | 45.90                       |
-| Female face low / shape high    | 46.48   | 49.03 | 42.15                       |
-| Female fert_7 early-filter min  | 45.46   | 46.99 | 35.36                       |
+| Female baseline                 | 45.76   | 47.82 | 41.74                       |
+| Female all fert max             | 53.79   | 63.87 | 95.26                       |
+| Female all fert min             | 40.21   | 36.72 | 4.74                        |
+| Female face high / shape low    | 46.39   | 49.06 | 45.90                       |
+| Female face low / shape high    | 45.82   | 47.94 | 42.15                       |
+| Female fert_7 early-filter min  | 44.80   | 45.90 | 35.36                       |
 
 **Swings (all phys / all fert items min→max):**
 
@@ -192,7 +220,7 @@ Re-run the script after changing questions, weights, or `scoreToPercentile`.
 
 **Current intent (as implemented):**
 
-- **Male axis** blends **rad (15%)**, **performance (35%)**, **physicalGenetic (35%)**, **humour (15%)**.
+- **Male axis** blends **rad (15%)**, **performance (28%)**, **mateMarketProof (7%)**, **physicalGenetic (35%)**, **humour (15%)**.
 - **Female axis** splits **fertility** and **riskCost** at **30% / 30%**.
 - **Overall** female SMV tilts **more** toward the axis than male overall does.
 

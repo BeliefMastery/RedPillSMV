@@ -44,6 +44,7 @@ export const FEMALE_CLUSTER_WEIGHTS = {
 /** Report bar labels (male Axis of Attraction sub-bars under “Attraction Opportunity”). */
 export const MALE_AXIS_BAR_LABELS = {
   performanceStatus: 'Wealth/Finance/Status/Performance/Productivity/Talent/Popularity/Social Proof',
+  mateMarketProof: 'Mate-market proof (quality / visibility / variety)',
   physicalGenetic: 'Looks/Physical/Genetic/Aesthetic',
   humour: 'Humour/Intelligence/Companionship'
 };
@@ -52,7 +53,8 @@ export const AXIS_SUBCATEGORY_WEIGHTS = {
   male: {
     // RAD is a meaningful persistence modifier, but not a core matrix pillar.
     radActivity: 0.15,
-    performanceStatus: 0.35,
+    performanceStatus: 0.28,
+    mateMarketProof: 0.07,
     physicalGenetic: 0.35,
     humour: 0.15
   },
@@ -175,14 +177,17 @@ const MALE_AXIS_QUESTIONS = [
   { id: 'perf_2', subcategory: 'performanceStatus', text: 'What is your current annual income bracket?', weight: 1.0, options: OPTS, optionLabels: ['Under $30k', '$30k-$60k', '$60k-$100k', '$100k-$200k', 'Over $200k'] },
   { id: 'perf_3', subcategory: 'performanceStatus', text: 'How generous are you with resources (time, money, connections) toward people you care about?', weight: 1.0, options: OPTS, optionLabels: ['Very guarded; rarely share', 'Selective; only close few', 'Moderate; fair when asked', 'Generous; share readily', 'Very generous; invest heavily'] },
   { id: 'perf_4', subcategory: 'performanceStatus', text: 'How productive and output-oriented are you in your work or projects?', weight: 1.0, options: OPTS, optionLabels: ['Low; struggle to produce', 'Below average', 'Average', 'Above average; reliable output', 'High; consistent high output'] },
-  { id: 'perf_5', subcategory: 'performanceStatus', text: 'How popular or well-regarded are you in your social and professional circles?', weight: 1.0, options: OPTS, optionLabels: ['Not popular; overlooked', 'Below average', 'Average', 'Well-liked; respected', 'Very popular; sought after'] },
+  { id: 'perf_5', subcategory: 'performanceStatus', text: 'How popular or well-regarded are you in your social and professional circles?', weight: 0.9, options: OPTS, optionLabels: ['Not popular; overlooked', 'Below average', 'Average', 'Well-liked; respected', 'Very popular; sought after'] },
   { id: 'perf_6', subcategory: 'performanceStatus', text: 'Do you have a unique or outstanding talent (music, sport, craft, invention, expertise) that signals potential windfall or novelty?', weight: 1.0, options: OPTS, optionLabels: ['None; no standout skill', 'One hobby; not notable', 'Moderate; some recognition', 'Strong; admired in niche', 'Outstanding; widely recognised'] },
   { id: 'perf_7', subcategory: 'performanceStatus', text: 'Beyond income alone, how solid is your financial position (savings, debt control, emergency runway)?', weight: 0.95, options: OPTS, optionLabels: ['Fragile; high debt or no buffer', 'Weak; little savings', 'Moderate; some cushion', 'Strong; healthy buffer', 'Very strong; low stress on money'] },
   { id: 'perf_8', subcategory: 'performanceStatus', text: 'How visible is your professional credibility (credentials, title, track record, or reputation others can verify)?', weight: 0.9, options: OPTS, optionLabels: ['Not visible; no clear signal', 'Weak; unclear to outsiders', 'Moderate; some recognition', 'Strong; clear credentials or wins', 'Very strong; widely known in your arena'] },
-  // Social proof (light weight by design: contributes signal without overpowering core status/finance components)
-  { id: 'perf_9', subcategory: 'performanceStatus', text: 'In the last 12 months, how consistently have you had at least one woman showing clear romantic or sexual interest (messages, dates, invitations)?', weight: 0.7, options: OPTS, optionLabels: ['Rarely or never', 'Infrequent and unstable', 'Periodic and mixed', 'Consistent in most periods', 'Consistently high and reliable'] },
-  { id: 'perf_10', subcategory: 'performanceStatus', text: 'In public social settings (events, bars, clubs, parties), how often can you convert an approach into a number, follow-up chat, or date when you choose to engage?', weight: 0.7, options: OPTS, optionLabels: ['Rarely convert', 'Occasional conversion', 'Moderate conversion', 'Often convert', 'High conversion consistency'] },
-  { id: 'perf_11', subcategory: 'performanceStatus', text: 'Over the past year, how steady has your dating traction been (not getting stuck involuntarily single for long stretches)?', weight: 0.7, options: OPTS, optionLabels: ['Long dry stretches are common', 'Often stuck single despite trying', 'Mixed stability', 'Mostly steady traction', 'Very steady traction year-round'] },
+  // Mate-market traction (light weight; distinct from generic popularity in perf_5)
+  { id: 'perf_9', subcategory: 'performanceStatus', text: 'Over roughly the past year, how often did clearly romantic or sexual interest from women show up in ways others could plausibly notice—in person, or on social/dating profiles you actively use (not only private DMs)?', weight: 0.65, options: OPTS, optionLabels: ['Rarely or never visible', 'Occasionally; easy to miss', 'Sometimes in mixed settings', 'Often visible in my circles', 'Consistently visible / hard to miss'] },
+  { id: 'perf_10', subcategory: 'performanceStatus', text: 'When you choose to flirt or escalate in social venues (events, nightlife, parties), how often does it move forward to a concrete next step (contact exchanged, date plan, or agreed meetup)—not just a chat that fades?', weight: 0.65, options: OPTS, optionLabels: ['Rarely lands a next step', 'Occasionally', 'About half the time when I try', 'Usually lands a next step', 'Consistently converts when I engage'] },
+  { id: 'perf_11', subcategory: 'performanceStatus', text: 'Outside of deliberate dating breaks you chose, how often have you gone many months with no viable interest or dates when you were open to meeting people?', weight: 0.65, options: OPTS, optionLabels: ['Very often long dry gaps', 'Often several-month gaps', 'Mixed', 'Short gaps only', 'Rarely stuck without options'] },
+  { id: 'mmp_1', subcategory: 'mateMarketProof', text: 'In the last ~12 months, among women who pursued you, initiated with you, or dated you: how did their typical overall attractiveness and mate value compare to what you believe you could realistically pull at your personal best (not fantasy celebrities)?', weight: 0.95, options: OPTS, optionLabels: ['Mostly well below that bar', 'Often below', 'Roughly in my realistic range', 'Often at or above it', 'Usually clearly above / unusually strong pulls'] },
+  { id: 'mmp_2', subcategory: 'mateMarketProof', text: 'How often did that interest occur where others in your life could realistically observe it (mutual friends, workplace or hobby scenes, public-facing social media—not only private messages)?', weight: 0.95, options: OPTS, optionLabels: ['Almost never observable', 'Rarely', 'Sometimes', 'Often', 'Very often / central to how people read me'] },
+  { id: 'mmp_3', subcategory: 'mateMarketProof', text: 'Over that same window, was interest mostly funnelled through one woman, a tight circle, or overlapping groups, versus clearly independent sources (different scenes, cities, or unrelated networks)?', weight: 0.95, options: OPTS, optionLabels: ['Almost entirely one pipeline / overlap', 'Mostly overlapping circles', 'Mixed', 'Several independent sources', 'Clearly many unrelated sources'] },
   // Looks/physical/genetic/aesthetic — ordered: face → body → strength → detail cues → optional market-read → frame → polish → style → vitality → net
   { id: 'phys_1', subcategory: 'physicalGenetic', text: 'How would you honestly rate your facial attractiveness (face, features—separate from body below)?', weight: 1.2, options: OPTS, optionLabels: ['Below average', 'Slightly below average', 'Average', 'Above average', 'Top tier'] },
   { id: 'phys_6', subcategory: 'physicalGenetic', text: 'How would you rate your body composition and shape as seen by others (muscle, leanness, proportions—not the same as strength alone)?', weight: 1.1, options: OPTS, optionLabels: ['Poor shape for my goals', 'Below average', 'Average', 'Above average; clear shape', 'Standout physique'] },
@@ -226,6 +231,7 @@ const FEMALE_REPRODUCTIVE_QUESTIONS = [
   { id: 'pat_1', subcategory: 'paternityCertainty', text: 'How loyal and faithful are you in committed relationships?', weight: 1.0, options: OPTS, optionLabels: ['Not loyal; history of infidelity', 'Struggle; tempted often', 'Moderately loyal; some lapses', 'Loyal; committed', 'Deeply loyal; never strayed'] },
   { id: 'pat_2', subcategory: 'paternityCertainty', text: 'How many sexual/romantic partners have you had?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['0-1', '2-4', '5-9', '10-19', '20+'] },
   { id: 'pat_3', subcategory: 'paternityCertainty', text: 'How transparent are you about your past and present?', weight: 1.0, options: OPTS, optionLabels: ['Hide a lot; significant secrets', 'Selective disclosure', 'Moderately transparent', 'Mostly transparent', 'Fully transparent; nothing hidden'] },
+  { id: 'pat_4', subcategory: 'paternityCertainty', text: 'Looking at men you have dated or been intimate with over recent years, how does their typical overall mate value (presentation, stability, status signals you care about) compare to what you believe you could attract at your personal best?', weight: 0.85, options: OPTS, optionLabels: ['Mostly far below my best range', 'Often below', 'About my realistic range', 'Often above my average', 'Often clearly above / unusually high caliber for me'] },
   // Nurturing Standard (3) — mother imprint benchmark
   { id: 'nurture_1', subcategory: 'nurturingStandard', text: 'How warm, caring, and nurturing are you toward a partner?', weight: 1.0, options: OPTS, optionLabels: ['Cold; struggle to show care', 'Limited; guarded', 'Moderately warm', 'Warm; naturally nurturing', 'Very warm; deeply caring'] },
   { id: 'nurture_2', subcategory: 'nurturingStandard', text: 'How would you care for someone who was sick or vulnerable?', weight: 1.0, options: OPTS, optionLabels: ['Avoid; not my strength', 'Minimal; feel awkward', 'Moderate; do my best', 'Well; naturally tend', 'Exceptionally; devoted care'] },
@@ -251,6 +257,7 @@ const FEMALE_AXIS_QUESTIONS = [
   { id: 'risk_1', subcategory: 'riskCost', text: 'How emotionally stable and predictable are you?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Very volatile; unpredictable', 'Often unstable', 'Moderately stable', 'Generally stable', 'Very stable; highly predictable'] },
   { id: 'risk_2', subcategory: 'riskCost', text: 'How present are red flags (substance abuse, mental health issues, destructive patterns)?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Multiple severe', 'Several moderate', 'A few minor', 'Very few', 'None significant'] },
   { id: 'risk_3', subcategory: 'riskCost', text: 'How much drama or chaos do you bring into relationships?', weight: 1.0, reverseScore: true, options: OPTS, optionLabels: ['Very high; constant drama', 'High; frequent', 'Moderate; some', 'Low; minimal', 'Very low; calm presence'] },
+  { id: 'risk_4', subcategory: 'riskCost', text: 'In the past few years, relationships you actively pursued skewed toward committed long-term intent versus casual or short-term connections.', weight: 0.85, options: OPTS, optionLabels: ['Almost all casual / short', 'Mostly casual', 'Mixed', 'Mostly committed long-term', 'Almost all serious / marriage-track intent'] },
   // Personality & factors hidden (expanded to improve reliability of thin subscales)
   { id: 'personality_1', subcategory: 'personality', text: 'How would you describe your personality — easy to get along with or high conflict?', weight: 1.0, options: OPTS, optionLabels: ['High conflict; difficult', 'Below average; some friction', 'Average', 'Easy-going; pleasant', 'Very easy; highly compatible'] },
   { id: 'personality_2', type: 'value_allocation', allocationTotal: 100, subcategory: 'personality', text: 'Across disagreements, how does your conflict style realistically distribute? (split 100% across what fits)', weight: 1.0, options: OPTS, optionLabels: ['Very poorly; escalation is common', 'Poorly; conflict lingers', 'Moderately; mixed outcomes', 'Well; usually de-escalate', 'Exceptionally; calm and constructive'] },
@@ -291,10 +298,11 @@ export const MALE_CLUSTERS = {
     id: 'axisOfAttraction',
     title: 'Axis of Attraction',
     subtitle: 'Wealth/Status/Performance + Looks/Physical/Aesthetic + Humour/Mind/Companionship — Bad Boy / Good Guy Grid',
-    description: 'Wealth, finance, status, productivity, talent, popularity; looks, physical, genetic, and aesthetic signals (face, body, symmetry, skin/hair, voice, height, grooming, vitality, style—weighted within Physical/Genetic; one optional sensitive item); humour, intelligence, and companionship. Drives initiation attraction, time-to-intimacy, investment requirement. Maps to Bad Boy / Good Guy grid.',
+    description: 'Wealth, finance, status, productivity, talent, popularity, visible mate-market traction, and a small dedicated mate-market proof slice; looks, physical, genetic, and aesthetic signals (face, body, symmetry, skin/hair, voice, height, grooming, vitality, style—weighted within Physical/Genetic; one optional sensitive item); humour, intelligence, and companionship. Drives initiation attraction, time-to-intimacy, investment requirement. Maps to Bad Boy / Good Guy grid.',
     subcategories: {
       radActivity: { label: 'Radical Activity (modifier)', desc: 'Not a core bar: whether your outside-relationship life reads as cool, novel, or radical—so a partner has something real to compete with for your time (boredom mitigation). Passive consumption reads as low signal; visible skill, risk, build, or mission reads high.' },
-      performanceStatus: { label: 'Wealth / status / performance', desc: 'Wealth, finance, status, productivity, talent, popularity, and social proof—see report bars for full shorthand.' },
+      performanceStatus: { label: 'Wealth / status / performance', desc: 'Wealth, finance, status, productivity, talent, popularity, and visible traction in dating contexts—see report bars for full shorthand.' },
+      mateMarketProof: { label: 'Mate-market proof', desc: 'Self-reported calibre of who showed interest, how observable it was, and whether interest came from independent sources—separate from generic popularity.' },
       physicalGenetic: { label: 'Looks / physical / aesthetic', desc: 'Face, body, genetic and aesthetic presentation, symmetry, skin/hair/teeth, voice and presence, height, grooming, vitality; one optional market-friction item.' },
       humour: { label: 'Humour / mind / companionship', desc: 'Wit, intelligence signal, and enjoyable companionship—not only jokes.' }
     },
@@ -322,7 +330,7 @@ export const FEMALE_CLUSTERS = {
     subtitle: 'Male Selection Criteria — Ejaculate, Co-raise, Live With',
     description: 'Determines a man\'s willingness to commit long-term resources and protection; comfort ejaculating and co-raising children with you.',
     subcategories: {
-      paternityCertainty: { label: 'Paternity Certainty', desc: 'Signals of loyalty and exclusivity.' },
+      paternityCertainty: { label: 'Paternity Certainty', desc: 'Signals of loyalty and exclusivity, partner history, transparency, and typical calibre of past partners (self-report).' },
       nurturingStandard: { label: 'Nurturing Standard', desc: 'Alignment with or exceeding maternal care baseline.' },
       collaborativeTrust: { label: 'Collaborative Trust Efficiency', desc: 'Ability to work with a male partner without waste, sabotage, or chronic conflict.' }
     },
@@ -332,10 +340,10 @@ export const FEMALE_CLUSTERS = {
     id: 'axisOfAttraction',
     title: 'Axis of Attraction',
     subtitle: 'Male Mate Choice Filters — Keeper-Sweeper Chart',
-    description: 'Fertility & Health cues (face, WHR, shape, skin/symmetry, optional visible-difference market read, age, net calibration—weighted within fertility); Risk Cost; personality; factors hidden. Maps to Keeper-Sweeper chart.',
+    description: 'Fertility & Health cues (face, WHR, shape, skin/symmetry, optional visible-difference market read, age, net calibration—weighted within fertility); Risk Cost (including commitment skew); personality; factors hidden. Maps to Keeper-Sweeper chart.',
     subcategories: {
       fertility: { label: 'Fertility & Health Cues (Hot)', desc: 'Face, waist–hip ratio, age bracket, skin/hair/teeth, symmetry, overall shape; weighted blend; includes an honest market-read item on visible difference (not a judgment of worth).' },
-      riskCost: { label: 'Risk Cost Indicators (Crazy)', desc: 'Volatility, infidelity risk, sabotage potential.' },
+      riskCost: { label: 'Risk Cost Indicators (Crazy)', desc: 'Volatility, red flags, drama, and skew toward casual versus committed relationship history.' },
       personality: { label: 'Personality', desc: 'Compatibility and ease of partnership.' },
       factorsHidden: { label: 'Factors Hidden', desc: 'Secrets or undisclosed elements that affect trust.' }
     },

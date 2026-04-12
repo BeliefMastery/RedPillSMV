@@ -191,6 +191,7 @@ function subcategoryLabel(subId) {
     socialInfluence: 'Social Influence',
     statusSignaling: 'Status Signaling',
     performanceStatus: 'Performance Status',
+    mateMarketProof: 'Mate-market proof',
     physicalGenetic: 'Physical / Genetic',
     radActivity: 'Radical Activity',
     // Female
@@ -860,6 +861,26 @@ export function buildAttractionLayer(snap) {
   };
 }
 
+const ALPHA_LINE_FEMALE_ARCHETYPE_IDS = new Set([
+  'alpha_female',
+  'alpha_xi_female',
+  'alpha_unicorn_female',
+  'alpha_iota_female',
+  'dark_alpha_female'
+]);
+
+/**
+ * Report-only cross-lens line (Option D): alpha-line female + elevated pat_2 bucket — no SMV math change.
+ */
+function integratedMapAlphaFemalePartnerHistoryNarrativeLine(archetypeSnap, attractionSnap) {
+  if (attractionSnap?.currentGender !== 'woman') return '';
+  const archId = archetypeSnap?.analysisData?.primaryArchetype?.id;
+  if (!archId || !ALPHA_LINE_FEMALE_ARCHETYPE_IDS.has(archId)) return '';
+  const pat2 = attractionSnap?.smv?.rawResponses?.pat_2;
+  if (typeof pat2 !== 'number' || pat2 < 5) return '';
+  return 'Cross-lens note: an alpha-line archetype plus an elevated partner-count bracket on your attraction snapshot is often read (fairly or not) as high openness to novelty alongside independence—worth aligning transparency, intent, and pacing so outside narratives match the relationship you want.';
+}
+
 export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attractionSnap) {
   const ad = archetypeSnap?.analysisData || {};
   const pd = polaritySnap?.analysisData || {};
@@ -944,7 +965,8 @@ export function buildCurrentPatternSummary(archetypeSnap, polaritySnap, attracti
                 : '');
         const pos = `SMV ~${o}th percentile${mp ? ` — ${mp}` : ''}. Access reads as ${accessTier}.`;
         const leverLine = `Improvement lever: ${trimTrailingPunctuation(String(lever || ''))}.`;
-        return [pos, leverLine, risk].filter(Boolean).join(' ');
+        const crossLens = integratedMapAlphaFemalePartnerHistoryNarrativeLine(archetypeSnap, attractionSnap);
+        return [pos, leverLine, risk, crossLens].filter(Boolean).join(' ');
       })()
     : `Attraction snapshot missing; complete the assessment for an SMV line in this summary.`;
 
