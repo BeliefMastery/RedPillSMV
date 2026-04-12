@@ -40,13 +40,6 @@ function canonicalFamilyId(clusterId) {
   return lower;
 }
 
-/** Short label for respondent copy, e.g. `gamma_female` → "Gamma". */
-function familyShortLabel(clusterArchId) {
-  const base = canonicalFamilyId(clusterArchId);
-  if (!base) return '';
-  return base.charAt(0).toUpperCase() + base.slice(1);
-}
-
 function transitionLikelihoodLabel(value) {
   if (value >= 0.45) return 'high';
   if (value >= 0.25) return 'moderate';
@@ -200,13 +193,13 @@ function resolveReportAlignedRunnerUp(d, archetypes, primaryArch, secondaryArch,
  * Text after "transition pressure toward *other* is **{label}**," — keyed by matrix band (low / moderate / high).
  * @param {{ label?: string }} transition
  */
-function transitionPressureOutcomeTail(transition, primaryPatternName, other, runnerShort) {
+function transitionPressureOutcomeTail(transition, primaryPatternName, other) {
   const lab = transition?.label;
   if (lab === 'very_low' || lab === 'low') {
     return `so you are most likely deepening into **${primaryPatternName}**.`;
   }
   if (lab === 'high' || lab === 'very_high') {
-    return `which suggests a transition toward *${other}* and growth into **${runnerShort}** or subtypes of **${runnerShort}**.`;
+    return `which suggests a transition toward *${other}*.`;
   }
   if (lab === 'moderate') {
     return `which suggests variability under conditions—your archetype may lean either way depending on context, circumstance, and triggers.`;
@@ -246,7 +239,6 @@ export function getProfileDecisivenessCalloutCopy(
       : d.transitionLikelihoodToRunnerUp ??
         transitionLikelihoodBetween(d.clusterWinnerId, d.clusterSecondId);
   const transitionLabel = transition.label.replace('_', ' ');
-  const runnerShort = competitorClusterId ? familyShortLabel(competitorClusterId) : '';
 
   const subtypeBoundaryText = (() => {
     if (!d.subtypeBlurry) return '';
@@ -271,13 +263,13 @@ export function getProfileDecisivenessCalloutCopy(
   } else if (d.familyBand === 'very_competitive') {
     lines = [
       other
-        ? `Your primary archetype is highly competitive between **${primaryPatternName}** and *${other}*. A small answer shift can change your primary; the transition pressure toward *${other}* is **${transitionLabel}**, ${transitionPressureOutcomeTail(transition, primaryPatternName, other, runnerShort)}`
+        ? `Your primary archetype is highly competitive between **${primaryPatternName}** and *${other}*. A small answer shift can change your primary; the transition pressure toward *${other}* is **${transitionLabel}**, ${transitionPressureOutcomeTail(transition, primaryPatternName, other)}`
         : `Your primary archetype is still wide open. A small answer shift can change your primary—treat this reading as a snapshot, not a fixed label.`
     ];
   } else {
     lines = [
       other
-        ? `Your result centers on **${primaryPatternName}** with *${other}* still competing. Transition pressure toward *${other}* is **${transitionLabel}**, ${transitionPressureOutcomeTail(transition, primaryPatternName, other, runnerShort)}`
+        ? `Your result centers on **${primaryPatternName}** with *${other}* still competing. Transition pressure toward *${other}* is **${transitionLabel}**, ${transitionPressureOutcomeTail(transition, primaryPatternName, other)}`
         : `You are consolidating around **${primaryPatternName}** with no single runner-up pattern standing out clearly.`
     ];
   }

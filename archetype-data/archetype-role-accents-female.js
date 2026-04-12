@@ -9,7 +9,7 @@ export const ARCHETYPE_ROLE_ACCENTS_FEMALE = {
   },
 
   alpha_xi_female: {
-    secondaryAccent: `Secondary Alpha-Xi often shows up as sharp discernment in dating, friendships, and professional vetting — you read motives fast and cut losses early. That protects you from obvious mistakes and can also dismiss repairable humans. The accent is high judgment bandwidth; the risk is loneliness dressed as standards. Saving discernment for commitments while allowing exploration to be imperfect opens more data.`,
+    secondaryAccent: `Alpha-Xi often shows up as sharp discernment in dating, friendships, and professional vetting — you read motives fast and cut losses early. That protects you from obvious mistakes and can also dismiss repairable humans. The accent is high judgment bandwidth; the risk is loneliness dressed as standards. Saving discernment for commitments while allowing exploration to be imperfect opens more data.`,
     tertiaryAccent: `After disappointment or betrayal, this tint can intensify as hypervigilance, contempt for “low awareness” men, or a frozen waiting posture. Under stress you may narrow the field to zero and call it wisdom. Aspirationally, you may want to be unfooled forever. The counterweight is one experiment with warmth that is not a verdict.`,
   },
 
@@ -19,7 +19,7 @@ export const ARCHETYPE_ROLE_ACCENTS_FEMALE = {
   },
 
   alpha_iota_female: {
-    secondaryAccent: `Secondary Alpha-Iota often appears as harmony maintenance: smoothing conflict, absorbing tension, keeping the aesthetic of peace. In family and partnership this stabilizes the environment — and can erase your preferences. Others experience calm; you experience invisible labor. The accent is grace under pressure; the cost is resentment when grace never becomes reciprocity.`,
+    secondaryAccent: `Alpha-Iota often appears as harmony maintenance: smoothing conflict, absorbing tension, keeping the aesthetic of peace. In family and partnership this stabilizes the environment — and can erase your preferences. Others experience calm; you experience invisible labor. The accent is grace under pressure; the cost is resentment when grace never becomes reciprocity.`,
     tertiaryAccent: `When you are depleted or afraid of being “difficult,” harmony can harden into passivity, self-abandonment, or silent martyrdom. Stress makes assertion feel dangerous. Aspirationally, you may idolize the woman who never rocks the boat. Small honest ripples — timed well — keep you inside the relationship, not beneath it.`,
   },
 
@@ -29,7 +29,7 @@ export const ARCHETYPE_ROLE_ACCENTS_FEMALE = {
   },
 
   beta_female: {
-    secondaryAccent: `Secondary Beta Female patterns often emerge around security math: housing, income, stability, children, survival stress. You optimize for workable bonds and reliable partners — pragmatic — while desire and identity can get deferred. The accent is “make it function,” which builds lives and can hollow them if wants never enter the spreadsheet. Periodic desire honesty is maintenance.`,
+    secondaryAccent: `Beta Female patterns often emerge around security math: housing, income, stability, children, survival stress. You optimize for workable bonds and reliable partners — pragmatic — while desire and identity can get deferred. The accent is “make it function,” which builds lives and can hollow them if wants never enter the spreadsheet. Periodic desire honesty is maintenance.`,
     tertiaryAccent: `Under scarcity mindset, comparison, or fear of starting over, you may tighten into resentment, covert contracts, or loyalty to a life that fits on paper. Stress makes exit feel impossible. Aspirationally, you may romanticize endurance. Dignity is sometimes a smaller life chosen, not a large one endured.`,
   },
 
@@ -44,7 +44,7 @@ export const ARCHETYPE_ROLE_ACCENTS_FEMALE = {
   },
 
   beta_rho_female: {
-    secondaryAccent: `Secondary Beta-Rho shows up in nurturing-heavy domains: children, sick partners, friends in crisis. You create, feed, organize, and hold — invaluable — while control can creep in as care. Others feel mothered; adults may chafe. Separating care from management preserves respect. Your creativity deserves outlets beyond managing people.`,
+    secondaryAccent: `Beta-Rho shows up in nurturing-heavy domains: children, sick partners, friends in crisis. You create, feed, organize, and hold — invaluable — while control can creep in as care. Others feel mothered; adults may chafe. Separating care from management preserves respect. Your creativity deserves outlets beyond managing people.`,
     tertiaryAccent: `When overwhelmed or unappreciated, smothering care can intensify: guilt, over-functioning, identity fusion with those you help. Stress makes everyone’s chaos your job. Aspirationally, you may need to be needed. Recovery includes letting capable people stumble.`,
   },
 
@@ -54,7 +54,7 @@ export const ARCHETYPE_ROLE_ACCENTS_FEMALE = {
   },
 
   gamma_theta_female: {
-    secondaryAccent: `Secondary Gamma-Theta often appears as visionary intensity: truth-telling, spiritual frames, moral heat. In some rooms you are the oracle; in intimate life you may scorch instead of guide. The accent is clarity at volume; the cost is tenderness. Saving fire for boundaries — not everyday conversation — keeps love breathable.`,
+    secondaryAccent: `Gamma-Theta often appears as visionary intensity: truth-telling, spiritual frames, moral heat. In some rooms you are the oracle; in intimate life you may scorch instead of guide. The accent is clarity at volume; the cost is tenderness. Saving fire for boundaries — not everyday conversation — keeps love breathable.`,
     tertiaryAccent: `Under stress, argument can become identity: you versus the blind world. It may emerge when you feel unseen for your depth. Aspirationally, righteousness feels like safety. The move is one conversation where being kind matters more than being right.`,
   },
 
@@ -69,7 +69,7 @@ export const ARCHETYPE_ROLE_ACCENTS_FEMALE = {
   },
 
   delta_female: {
-    secondaryAccent: `Secondary Delta Female warmth concentrates in home-making, emotional labor, and steady care — where you make life feel safe and fed. Partners rely on you; desire can flatten into appreciation for function. The accent is “I make the world soft,” beautiful until you vanish inside service. Claiming desirability as part of the role — not only duty — keeps eros in the house.`,
+    secondaryAccent: `Delta Female warmth concentrates in home-making, emotional labor, and steady care — where you make life feel safe and fed. Partners rely on you; desire can flatten into appreciation for function. The accent is “I make the world soft,” beautiful until you vanish inside service. Claiming desirability as part of the role — not only duty — keeps eros in the house.`,
     tertiaryAccent: `When you feel like a fixture, sacrifice can spike: over-giving, silent expectation, resentment dressed as fatigue. It may emerge with kids, illness, or a partner’s withdrawal. Aspirationally, martyrdom feels noble. Bounded care with explicit needs is sexier than endless silent endurance.`,
   },
 
@@ -84,7 +84,7 @@ export const ARCHETYPE_ROLE_ACCENTS_FEMALE = {
   },
 
   sigma_female: {
-    secondaryAccent: `Secondary Sigma Female autonomy spikes in travel, career, creative life, and dating where you refuse to be captured too fast. You are elusive and high-signal — exciting — and sometimes unreadable to men who need clearer bids for connection. The accent is “I belong to myself,” true and tuneable. Small consistent signals of chosen closeness prevent misreads.`,
+    secondaryAccent: `Sigma Female autonomy spikes in travel, career, creative life, and dating where you refuse to be captured too fast. You are elusive and high-signal — exciting — and sometimes unreadable to men who need clearer bids for connection. The accent is “I belong to myself,” true and tuneable. Small consistent signals of chosen closeness prevent misreads.`,
     tertiaryAccent: `Under intimacy fear or past betrayal, independence can harden into walls: secrecy, push-pull, preemptive endings. Aspirationally, aloofness feels like power. Stress makes need feel dangerous. One practiced ask — “stay” — said cleanly — changes the game more than another perfect exit.`,
   },
 
@@ -99,7 +99,7 @@ export const ARCHETYPE_ROLE_ACCENTS_FEMALE = {
   },
 
   omega_female: {
-    secondaryAccent: `Secondary Omega tendencies often appear in high-comparison arenas: social media, dating apps, scenes where rank feels loud. You protect with withdrawal, invisibility, or self-deprecation — understandable — and the accent can train others to overlook you. In safer micro-contexts you may be warmer than your global story admits. Situational confidence is worth mapping.`,
+    secondaryAccent: `Omega tendencies often appear in high-comparison arenas: social media, dating apps, scenes where rank feels loud. You protect with withdrawal, invisibility, or self-deprecation — understandable — and the accent can train others to overlook you. In safer micro-contexts you may be warmer than your global story admits. Situational confidence is worth mapping.`,
     tertiaryAccent: `Under rejection sensitivity or depression dips, the pattern can deepen: pre-abandonment, testing people to leave, interpreting ambiguity as verdict. Aspirationally, invisibility can feel safer than risk. Tiny outward bids — repeated — rewrite the evidence more than another internal analysis.`,
   },
 

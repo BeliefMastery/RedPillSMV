@@ -10,7 +10,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   alpha_xi: {
-    secondaryAccent: `Secondary Alpha-Xi often shows up as protector energy in specific domains — family logistics, workplace loyalty tests, friendships where someone is being mistreated. You become vivid when there is something to defend, and flatter when the battlefield is quiet. Partners can experience your readiness as steadiness or as low-grade vigilance they did not sign up for. Clarifying “this is a crisis posture” versus “this is daily life” keeps your courage from colonizing calm.`,
+    secondaryAccent: `Alpha-Xi often shows up as protector energy in specific domains — family logistics, workplace loyalty tests, friendships where someone is being mistreated. You become vivid when there is something to defend, and flatter when the battlefield is quiet. Partners can experience your readiness as steadiness or as low-grade vigilance they did not sign up for. Clarifying “this is a crisis posture” versus “this is daily life” keeps your courage from colonizing calm.`,
     tertiaryAccent: `This tint can intensify after perceived betrayal, boundary violations, or moments you feel responsible for everyone’s safety. It may also appear as an aspirational ideal — the honorable guardian self you wish you had been earlier. In those seasons you may provoke urgency, over-monitor, or struggle to downshift after the threat is gone. Recovery is practicing peace on purpose: proving to your nervous system that stillness is not abandonment.`,
   },
 
@@ -25,7 +25,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   beta: {
-    secondaryAccent: `Secondary Beta often emerges in stable partnerships, workplaces with clear hierarchies, and any setting where harmony is priced above friction. You accommodate early, clarify other people’s needs, and keep the machine running — a genuine gift — but resentment accrues when your preferences never enter the ledger. The accent is “I’ll make it easy,” which can read as virtue while it quietly trains others to take your flexibility for granted.`,
+    secondaryAccent: `Beta patterns often emerge in stable partnerships, workplaces with clear hierarchies, and any setting where harmony is priced above friction. You accommodate early, clarify other people’s needs, and keep the machine running — a genuine gift — but resentment accrues when your preferences never enter the ledger. The accent is “I’ll make it easy,” which can read as virtue while it quietly trains others to take your flexibility for granted.`,
     tertiaryAccent: `When you are tired, afraid of loss, or chasing an image of being “good,” this thread can intensify as over-giving, conflict avoidance, or silent scorekeeping. It may show up most in family duty, long relationships, or phases where you want to be chosen without having to risk desire. The opportunity is to practice bounded generosity: kindness with a voice, not a ledger.`,
   },
 
@@ -35,7 +35,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   beta_nu: {
-    secondaryAccent: `Secondary Beta-Nu shows up wherever tradition, duty, and long-horizon reliability matter — mortgages, children, extended family, institutions that reward consistency. You keep promises and hold structure, which stabilizes lives. The contextual risk is that the role can swallow individuality: you become “the dependable man” and wonder where desire went. Periodic honesty about what you want — not only what you owe — keeps duty from becoming quiet grief.`,
+    secondaryAccent: `Beta-Nu shows up wherever tradition, duty, and long-horizon reliability matter — mortgages, children, extended family, institutions that reward consistency. You keep promises and hold structure, which stabilizes lives. The contextual risk is that the role can swallow individuality: you become “the dependable man” and wonder where desire went. Periodic honesty about what you want — not only what you owe — keeps duty from becoming quiet grief.`,
     tertiaryAccent: `Under financial pressure, comparison to flashier men, or fear of losing the bond, you may tighten into rigid loyalty or numb pragmatism. Aspirationally, you may cling to an image of noble sacrifice. This thread can also emerge in faith communities and conservative social frames where obligation is praised. The growth move is negotiating needs before resentment writes the story for you.`,
   },
 
@@ -45,7 +45,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   beta_rho: {
-    secondaryAccent: `Secondary Beta-Rho often activates in caretaking contexts: parenting, partnerships under stress, friendships where someone is “falling apart.” You organize, nurture, and steer — helpful when chaos is real — but control can dress as love. Others may feel managed rather than held. Separating “I am helping” from “I cannot tolerate your autonomy” preserves intimacy.`,
+    secondaryAccent: `Beta-Rho often activates in caretaking contexts: parenting, partnerships under stress, friendships where someone is “falling apart.” You organize, nurture, and steer — helpful when chaos is real — but control can dress as love. Others may feel managed rather than held. Separating “I am helping” from “I cannot tolerate your autonomy” preserves intimacy.`,
     tertiaryAccent: `When you feel unappreciated or afraid of losing influence, this thread can intensify as smothering care, guilt induction, or fixing behaviors that keep people dependent. It may also appear as an aspirational identity: the indispensable man. Stress makes the nest tighter; health makes the nest spacious enough for adults.`,
   },
 
@@ -55,7 +55,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   gamma_nu: {
-    secondaryAccent: `Secondary Gamma-Nu often appears in romance and aesthetics: you want elevated feeling, devotion, and meaning — and you test reality against an inner ideal. In specific relationships you may escalate fast or hold out for a cinematic match. The accent beautifies love and can delay it. Enjoying ideals without making them the sole gate for human messiness keeps you available to real growth.`,
+    secondaryAccent: `Gamma-Nu often appears in romance and aesthetics: you want elevated feeling, devotion, and meaning — and you test reality against an inner ideal. In specific relationships you may escalate fast or hold out for a cinematic match. The accent beautifies love and can delay it. Enjoying ideals without making them the sole gate for human messiness keeps you available to real growth.`,
     tertiaryAccent: `After disappointment, this tint can flare as disillusionment, romantic shutdown, or a loop of “almost” connections that never land. Under stress you might chase intensity to feel alive, then withdraw when ordinariness returns. Aspirationally, you may cling to the perfect love story. Grounding desire in consistent behavior — not only peak moments — steadies the pattern.`,
   },
 
@@ -65,7 +65,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   gamma_pi: {
-    secondaryAccent: `Secondary Gamma-Pi shows up where risk, opportunity, and novelty are salient — deals, travel, dating apps, side hustles, social scenes with upside. You read odds fast and move before others commit — exciting — but reliability can become the variable you trade away. The accent is “one more bet,” which wins headlines and sometimes loses the long ledger.`,
+    secondaryAccent: `Gamma-Pi shows up where risk, opportunity, and novelty are salient — deals, travel, dating apps, side hustles, social scenes with upside. You read odds fast and move before others commit — exciting — but reliability can become the variable you trade away. The accent is “one more bet,” which wins headlines and sometimes loses the long ledger.`,
     tertiaryAccent: `Under restlessness, shame about being ordinary, or sudden openings, this thread can spike into impulsive leaps, hidden gambles, or chasing highs to feel potent. Stress makes the next chance look like destiny. Aspirationally, you may romanticize the outlaw winner. Cooling periods — boring on purpose — are how you keep luck from becoming a lifestyle that costs you roots.`,
   },
 
@@ -75,7 +75,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   delta: {
-    secondaryAccent: `Secondary Delta tends to activate in practical domains: finances, home maintenance, logistics, anything measured by competence and follow-through. You become the person who actually does the thing — invaluable — and sometimes invisible in desire-language because stability reads as baseline. The accent is “I handle it,” which can pair poorly if your partner mistakes reliability for emotional fullness.`,
+    secondaryAccent: `Delta patterns tend to activate in practical domains: finances, home maintenance, logistics, anything measured by competence and follow-through. You become the person who actually does the thing — invaluable — and sometimes invisible in desire-language because stability reads as baseline. The accent is “I handle it,” which can pair poorly if your partner mistakes reliability for emotional fullness.`,
     tertiaryAccent: `Under pressure to provide, comparison to flashier men, or fear of being replaced, you may overwork, over-give practically, or numb out in duty. It can spike during kids, illness, or career crunch. Aspirationally, you may cling to being the rock while skipping needs. Scheduling vulnerability like you schedule repairs keeps the foundation human.`,
   },
 
@@ -85,7 +85,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   dark_delta: {
-    secondaryAccent: `Secondary shadow Delta often appears as martyrdom in specific relationships: you give past your limit, then leak resentment through sighs, withdrawal, or passive sabotage. Others experience inconsistency: generous one day, bitter the next. The accent trades direct requests for moral debt. Naming wants early — awkward but clean — interrupts the cycle.`,
+    secondaryAccent: `Dark Delta often appears as martyrdom in specific relationships: you give past your limit, then leak resentment through sighs, withdrawal, or passive sabotage. Others experience inconsistency: generous one day, bitter the next. The accent trades direct requests for moral debt. Naming wants early — awkward but clean — interrupts the cycle.`,
     tertiaryAccent: `Under exhaustion or perceived ingratitude, sacrifice can spike into self-neglect, victim stories, or covert contracts nobody agreed to. Stress makes “look what I do” louder than “here is what I need.” Aspirationally, you may romanticize suffering as virtue. Dignity returns when service is bounded and voluntary.`,
   },
 
@@ -95,7 +95,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   sigma_kappa: {
-    secondaryAccent: `Secondary Sigma-Kappa shows up in strategy-heavy contexts: politics, business maneuvering, complex social maps where indirect influence wins. You read angles, plant seeds, and protect leverage — sharp — but intimacy can feel like another game board. Partners may wonder what is real when charm and calculation share a face. One lane of plain speech builds trust.`,
+    secondaryAccent: `Sigma-Kappa shows up in strategy-heavy contexts: politics, business maneuvering, complex social maps where indirect influence wins. You read angles, plant seeds, and protect leverage — sharp — but intimacy can feel like another game board. Partners may wonder what is real when charm and calculation share a face. One lane of plain speech builds trust.`,
     tertiaryAccent: `When you feel outgunned or exposed, manipulation temptation can rise: steer outcomes, withhold information, control narratives. It may spike in competitive workplaces or high-stakes dating. Aspirationally, you may admire the puppet master self. Stress makes shadows convenient; integrity makes sleep easier.`,
   },
 
@@ -110,7 +110,7 @@ export const ARCHETYPE_ROLE_ACCENTS_MALE = {
   },
 
   omega: {
-    secondaryAccent: `Secondary Omega tendencies often appear in social arenas that feel high-stakes: nightlife hierarchies, workplace visibility, dating markets where you believe you start behind. You protect yourself with withdrawal, humor, or invisibility — understandable — but the accent can become a self-fulfilling script. In safer micro-contexts (hobbies, small groups) you may be warmer than you think; the pattern is situational, not total.`,
+    secondaryAccent: `Omega tendencies often appear in social arenas that feel high-stakes: nightlife hierarchies, workplace visibility, dating markets where you believe you start behind. You protect yourself with withdrawal, humor, or invisibility — understandable — but the accent can become a self-fulfilling script. In safer micro-contexts (hobbies, small groups) you may be warmer than you think; the pattern is situational, not total.`,
     tertiaryAccent: `Under rejection, fatigue, or depression dips, passivity can deepen: opting out, procrastinating on self-presentation, interpreting ambiguity as proof. It may spike online in doom-scroll seasons. Aspirationally, you may romanticize the outsider observer. Gentle re-entry beats heroic transformation — one awkward action repeated.`,
   },
 
