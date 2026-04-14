@@ -29,7 +29,7 @@ export class RelationshipEngine {
     this.answers = {};
     this.questionSequence = [];
     this.weakestLinks = []; // Identified from Stage 1 (renamed to strain points in display)
-    this.assessmentMode = 'conflict'; // 'conflict' | 'viability' | 'both'
+    this.assessmentMode = 'both'; // 'conflict' | 'viability' | 'both' (default: full two-part flow)
     this.activePhase = 'conflict'; // when mode is 'both': 'conflict' | 'viability'
     this.viabilityScoresByDimension = {}; // filled after viability phase
     this.domainWeakAreas = {}; // Domain-specific weak areas from Stage 2
@@ -429,6 +429,25 @@ export class RelationshipEngine {
     });
   }
 
+  /**
+   * After Part 1 (no Stage 2/3) with mode "both", continue to viability questions.
+   * @returns {Promise<void>}
+   */
+  async transitionToViabilityPhase() {
+    try {
+      await this.buildViabilitySequence();
+      this.activePhase = 'viability';
+      this.currentQuestionIndex = 0;
+      this.renderCurrentQuestion();
+      this.updateProgressBar();
+      this.updateStageIndicator();
+      this.saveProgress();
+    } catch (error) {
+      this.debugReporter.logError(error, 'transitionToViabilityPhase');
+      this.finalizeResults();
+    }
+  }
+
   async buildViabilitySequence() {
     await this.loadRelationshipData();
     if (typeof getViabilityQuestions !== 'function') {
@@ -449,37 +468,8 @@ export class RelationshipEngine {
   }
 
   attachEventListeners() {
-    const cardConflict = document.getElementById('assessmentCardConflict');
-    const cardViability = document.getElementById('assessmentCardViability');
     const startBtn = document.getElementById('startAssessment');
-    if (cardConflict && cardViability && startBtn) {
-      const updateBeginState = () => {
-        const hasConflict = cardConflict.classList.contains('selected');
-        const hasViability = cardViability.classList.contains('selected');
-        startBtn.disabled = !hasConflict && !hasViability;
-      };
-      [cardConflict, cardViability].forEach(card => {
-        card.addEventListener('click', () => {
-          card.classList.toggle('selected');
-          card.setAttribute('aria-pressed', card.classList.contains('selected'));
-          updateBeginState();
-        });
-        card.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            card.classList.toggle('selected');
-            card.setAttribute('aria-pressed', card.classList.contains('selected'));
-            updateBeginState();
-          }
-        });
-      });
-      updateBeginState();
-      startBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.startAssessment();
-      });
-    } else if (startBtn) {
+    if (startBtn) {
       startBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -620,15 +610,6 @@ export class RelationshipEngine {
     }
   }
 
-  getSelectedAssessments() {
-    const cardConflict = document.getElementById('assessmentCardConflict');
-    const cardViability = document.getElementById('assessmentCardViability');
-    const selected = [];
-    if (cardConflict && cardConflict.classList.contains('selected')) selected.push('conflict');
-    if (cardViability && cardViability.classList.contains('selected')) selected.push('viability');
-    return selected.length > 0 ? selected : ['conflict'];
-  }
-
   /**
    * Start the assessment
    * @returns {Promise<void>}
@@ -637,9 +618,8 @@ export class RelationshipEngine {
     try {
       await this.loadRelationshipData();
 
-      const selected = this.getSelectedAssessments();
-      this.assessmentMode = selected.includes('conflict') && selected.includes('viability') ? 'both' : selected.includes('viability') ? 'viability' : 'conflict';
-      this.activePhase = this.assessmentMode === 'both' ? 'conflict' : this.assessmentMode;
+      this.assessmentMode = 'both';
+      this.activePhase = 'conflict';
 
       this.dataStore.clear('progress');
       this.resetAssessmentState();
@@ -818,7 +798,10 @@ export class RelationshipEngine {
         this.updateStageIndicator();
         return;
       } else {
-        // No weak areas, show results
+        if (this.assessmentMode === 'both') {
+          void this.transitionToViabilityPhase();
+          return;
+        }
         this.finalizeResults();
         return;
       }
@@ -1996,14 +1979,8 @@ export class RelationshipEngine {
     if (resultsSection) resultsSection.classList.remove('active');
     if (progressBarFill) progressBarFill.style.width = '0%'; // Progress bar width is dynamic, keep inline
     this.setLandingVisibility(true);
-    const cardConflict = document.getElementById('assessmentCardConflict');
-    const cardViability = document.getElementById('assessmentCardViability');
     const startBtn = document.getElementById('startAssessment');
-    if (cardConflict) cardConflict.classList.remove('selected');
-    if (cardViability) cardViability.classList.remove('selected');
-    if (cardConflict) cardConflict.setAttribute('aria-pressed', 'false');
-    if (cardViability) cardViability.setAttribute('aria-pressed', 'false');
-    if (startBtn) startBtn.disabled = true;
+    if (startBtn) startBtn.disabled = false;
     this.setReportHeaderState(false);
   }
 

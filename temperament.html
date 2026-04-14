@@ -63,27 +63,17 @@
   </header>
 
   <main>
-    <section id="suiteStageGate" class="integrated-map-gate suite-stage-gate" aria-label="Assessment prerequisite" hidden>
-      <h2 class="panel-title" style="margin-top:0;">Polarity is locked</h2>
-      <p style="color:var(--muted);line-height:1.55;margin:0 0 1rem;">Complete <strong>Modern Archetype Identification</strong> first. Polarity calibrates your temperament read using your archetype profile.</p>
-      <p style="margin:0;"><a class="btn btn-primary" href="archetype.html">Go to Archetype assessment</a></p>
-      <p style="margin:1rem 0 0;"><a href="index.html">Back to home</a></p>
-    </section>
     <!-- Universal Tool Container -->
      <div class="section-inner minimal-section suite-main-flow" id="temperamentMainFlow">
-        <h2 class="section-title-btn">⚖️ Polarity Position Mapping</h2>
-
-      
       <!-- Hero Image Section -->
       <div class="hero-image">
         <img src="./images/temperament-tool.jpg" alt="Polarity Position Mapping" class="hero-img">
       </div>
       
-      <!-- Intro Section: heading (pill) then subheading -->
+      <!-- Intro Section: compact title + tagline; detail in Extended Explanation -->
       <section class="intro-section" id="introSection">
-        <p class="assessment-subheading"><strong>Map your position on the masculine–feminine spectrum and see how it shapes polarity and compatibility.</strong></p>
-        <p>This masculine-feminine temperament assessment clarifies your polarity and relational fit by using behavioral patterns, intimate dynamics, attraction responsiveness, and relationship preferences to place you on the spectrum and flag where partner polarity fit may matter.</p>
-        <p class="form-help" style="margin-top: 0.75rem;">For couples, chemistry and support often track <strong>complementary opposites on the same dimensions</strong>—including <strong>similar intensity</strong> (mild with mild, stronger with stronger). Your results include a short guide on reading the spectrum and how temperament can shift over time.</p>
+        <h2 class="tool-intro-heading">⚖️ Polarity Position Mapping</h2>
+        <p class="assessment-subheading tool-intro-tagline">Map your position on the masculine–feminine spectrum and see how it shapes polarity and compatibility.</p>
 
         <!-- Extended Explanation Toggle -->
         <div class="extended-explanation-toggle" id="extendedExplanationToggle">
@@ -94,6 +84,10 @@
 
         <div class="extended-explanation-panel" id="extendedExplanationPanel">
           <div class="content-section">
+            <div class="tool-extended-summary">
+              <p>This masculine-feminine temperament assessment clarifies your polarity and relational fit by using behavioral patterns, intimate dynamics, attraction responsiveness, and relationship preferences to place you on the spectrum and flag where partner polarity fit may matter.</p>
+              <p>For couples, chemistry and support often track complementary opposites on the same dimensions—including similar intensity (mild with mild, stronger with stronger). Your results include a short guide on reading the spectrum and how temperament can shift over time.</p>
+            </div>
             <h3>Paradigm context</h3>
             <p>This assessment is part of the <strong>modern dating and relationship evaluation (unplugged / red-pill)</strong> paradigm: a realistic, no-holds-barred read on polarity, fit, and sexual-market implications. It clarifies your current expression pattern for decision quality, not identity policing.</p>
             <h3>Assessment stages</h3>
@@ -139,7 +133,15 @@
 
       <!-- Assessment Selection Section -->
       <section class="content-section" id="actionButtonsSection">
-        <div class="action-buttons">
+        <div id="suiteStageGateInline" class="suite-stage-gate-inline" hidden aria-live="polite">
+          <p class="suite-stage-gate-inline-title">Polarity is locked</p>
+          <p id="suiteStageGateInlineMessage" class="suite-stage-gate-inline-msg"></p>
+          <p class="suite-stage-gate-inline-links">
+            <a class="btn btn-primary btn-small" id="suiteStageGateInlineCtaPrimary" href="archetype.html">Go to Archetype assessment</a>
+            <a class="suite-stage-gate-inline-back" href="index.html">Back to home</a>
+          </p>
+        </div>
+        <div class="action-buttons" id="actionButtonsWrap">
           <button class="btn btn-secondary" id="generateSampleReport">Generate Sample Report</button>
           <button class="btn btn-primary" id="startAssessment">Map Your Polarity</button>
         </div>

@@ -1394,6 +1394,39 @@ button:disabled,
     margin-bottom: 0.75rem;
 }
 
+/* Tool page intro: title + one-line tagline above the fold */
+.tool-intro-heading {
+    margin: 1rem 0 0.35rem;
+    font-size: clamp(1.05rem, 2.85vw, 1.48rem);
+    font-weight: 700;
+    font-family: 'Oswald', sans-serif;
+    text-align: center;
+    line-height: 1.28;
+    letter-spacing: 0.03em;
+    color: var(--text, #e8e8ef);
+}
+
+.intro-section .tool-intro-tagline {
+    margin-top: 0.35rem;
+    margin-bottom: 0.65rem;
+    text-align: center;
+    max-width: 42em;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.55;
+    font-weight: 500;
+}
+
+.extended-explanation-panel .tool-extended-summary {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.extended-explanation-panel .tool-extended-summary p:last-child {
+    margin-bottom: 0;
+}
+
 /* Assessment page lead line (invitation copy from landing) */
 .assessment-lead {
     font-size: 1.15rem;
@@ -2250,6 +2283,53 @@ header.site-header a.suite-nav-locked {
 .suite-stage-gate.hidden,
 .suite-main-flow.hidden {
     display: none !important;
+}
+
+/* Inline prerequisite notice (Polarity / Attraction): compact, above action buttons */
+.suite-stage-gate-inline {
+    max-width: 36rem;
+    margin: 0 auto 1rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius, 8px);
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+    background: var(--glass, rgba(255, 255, 255, 0.04));
+    text-align: center;
+}
+.suite-stage-gate-inline-title {
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text, #e8e8ef);
+    letter-spacing: 0.02em;
+}
+.suite-stage-gate-inline-msg {
+    margin: 0 0 0.65rem;
+    color: var(--muted, rgba(230, 240, 255, 0.85));
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+.suite-stage-gate-inline-links {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 0.75rem;
+}
+.suite-stage-gate-inline-back {
+    font-size: 0.85rem;
+    color: var(--muted, rgba(230, 240, 255, 0.75));
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+.suite-stage-gate-inline-back:hover {
+    color: var(--accent, #ffd700);
+}
+
+.action-buttons.suite-action-locked .btn {
+    opacity: 0.52;
+    filter: grayscale(0.25);
+    cursor: not-allowed;
 }
 .suite-gender-badge {
     display: inline-flex;

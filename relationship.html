@@ -64,20 +64,15 @@
   <main>
     <!-- Universal Tool Container -->
      <div class="section-inner minimal-section">
-       <h2 class="section-title-btn">💑 Relationships</h2>
-      
       <!-- Hero Image Section -->
       <div class="hero-image">
         <img src="./images/relationship-tool.jpg" alt="Relationships" class="hero-img">
       </div>
       
-      <!-- Intro Section: heading (pill) then subheading -->
+      <!-- Intro Section: compact title + tagline; detail in Extended Explanation -->
       <section class="intro-section" id="introSection">
-        <p class="assessment-subheading"><strong>Relationship Assessment</strong></p>
-        <p>Score your relationship across key dimensions to identify strengths and strain points. Then choose how you want to dive deeper.</p>
-        <p>You can select one or both of the following assessments:</p>
-        <p><strong>Points of Conflict Assessment</strong><br>Identify strain across 20 key compatibility areas. Get a clear ranking of pressure points, targeted action strategies, and insight into the underlying archetypal dynamics at play.</p>
-        <p><strong>Relationship Viability Evaluation</strong><br>Assess whether this relationship supports your long-term vision and is genuinely worth investing in. This evaluation examines six key considerations and delivers an overall recommendation: focus on repair or consider stepping away.</p>
+        <h2 class="tool-intro-heading">💑 Relationships</h2>
+        <p class="assessment-subheading tool-intro-tagline">Score your relationship across key dimensions to identify strengths, strain points and viability.</p>
 
         <!-- Extended Explanation Toggle -->
         <div class="extended-explanation-toggle" id="extendedExplanationToggle">
@@ -88,35 +83,25 @@
 
         <div class="extended-explanation-panel" id="extendedExplanationPanel">
           <div class="content-section">
+            <div class="tool-extended-summary">
+              <p>The assessment runs in <strong>two stages</strong>, in order. First, <strong>Points of Conflict</strong> maps strain across 20 compatibility areas—ranked pressure points, targeted strategies, and archetypal dynamics where relevant. Then <strong>Relationship Viability</strong> examines six considerations and yields an overall band: whether repair-focused investment fits your situation or stepping away is clearer.</p>
+            </div>
             <h3>Paradigm context</h3>
             <p>This assessment sits in the <strong>modern dating and relationship evaluation (unplugged / red-pill)</strong> framework: realistic, no-holds-barred appraisal of relational strain, viability, and sexual-market context. It is a structural read for clearer decisions, not fault assignment or a command to stay/leave.</p>
-            <h3>Assessment stages</h3>
+            <h3>Assessment flow</h3>
             <ul class="feature-list">
-              <li><strong>Stage 1:</strong> Broad compatibility scan to map high-pressure conflict zones</li>
-              <li><strong>Stage 2:</strong> Targeted conflict diagnostics with priority-ranked strategy prompts</li>
-              <li><strong>Stage 3:</strong> Viability evaluation across six decision dimensions with final guidance band</li>
+              <li><strong>Part 1 — Points of Conflict (three phases):</strong> broad compatibility scan, domain deep dive on strain points, then scenario-based reflection</li>
+              <li><strong>Part 2 — Relationship Viability:</strong> six dimensions with an overall guidance band (worth investing / unclear / consider stepping away)</li>
             </ul>
             <h3>What you'll discover</h3>
             <ul class="feature-list">
-              <li><strong>Points of Conflict</strong>
-                <ul>
-                  <li>20 compatibility areas with impact tiers (Very High through Moderate)</li>
-                  <li>Strain ranked by priority and severity, with “what this is” and long-term impact per area</li>
-                  <li>Archetypal pressures (Coalition Rank, Reproductive Confidence, Axis of Attraction) where relevant</li>
-                  <li>Action strategies per area: self-regulation, invitations, boundaries, change vs. acceptance—only where specific</li>
-                </ul>
-              </li>
-              <li><strong>Relationship Viability Evaluation</strong>
-                <ul>
-                  <li>Six dimensions: future potential, temporary vs. pattern, energy investment, shared convictions, worthwhile-relationship indicators, decision clarity</li>
-                  <li>Overall band: worth investing / unclear / consider stepping away, plus your answers summarized by dimension</li>
-                </ul>
-              </li>
+              <li><strong>After Part 1:</strong> 20 compatibility areas with impact tiers; strain ranked by priority and severity; archetypal pressures where relevant; action strategies (self-regulation, invitations, boundaries, change vs. acceptance) where specific</li>
+              <li><strong>After Part 2:</strong> dimension-level read and overall viability band, plus reflection prompts aligned with your answers</li>
               <li>Closure and next steps; save a readable HTML report for AI-assisted review, printing, or PDF export</li>
             </ul>
 
             <h3>Theory: Strain points and viability</h3>
-            <p>This engine identifies pressure points in relational structure. It does not determine fault or whether a relationship should continue—it reflects your experience. The conflict assessment surfaces strain and targeted strategies; the viability evaluation reflects the six considerations that inform whether investing in resolution is likely to bring long-term value. Draws on relationship dynamics, polarity, and mating-market framing.</p>
+            <p>This engine identifies pressure points in relational structure. It does not determine fault or whether a relationship should continue—it reflects your experience. Part 1 surfaces strain and strategies; Part 2 applies the six viability considerations to whether investing in resolution is likely to bring long-term value. Draws on relationship dynamics, polarity, and mating-market framing.</p>
 
           </div>
         </div>
@@ -139,25 +124,10 @@
       </section>
       </section>
 
-      <!-- Assessment Selection Section -->
+      <!-- Assessment actions -->
       <section class="content-section" id="actionButtonsSection">
-        <p class="assessment-choice-intro">Choose one or both assessments, then click Begin.</p>
-        <div class="assessment-choice-cards" id="assessmentChoiceCards">
-          <div class="assessment-choice-card" id="assessmentCardConflict" data-assessment="conflict" role="button" tabindex="0" aria-pressed="false" aria-label="Select Points of Conflict Assessment">
-            <div class="assessment-card-inner">
-              <h3 class="assessment-card-title"><i>Points of Conflict Assessment</i></h3>
-              <span class="assessment-card-check" aria-hidden="true">✓</span>
-            </div>
-          </div>
-          <div class="assessment-choice-card" id="assessmentCardViability" data-assessment="viability" role="button" tabindex="0" aria-pressed="false" aria-label="Select Relationship Viability Evaluation">
-            <div class="assessment-card-inner">
-              <h3 class="assessment-card-title"><i>Relationship Viability Evaluation</i></h3>
-              <span class="assessment-card-check" aria-hidden="true">✓</span>
-            </div>
-          </div>
-        </div>
         <div class="action-buttons">
-          <button class="btn btn-primary" id="startAssessment" disabled>Begin Viability Assessment</button>
+          <button class="btn btn-primary" id="startAssessment">Begin assessment</button>
           <button class="btn btn-secondary" id="generateSampleReport" title="See what a full report looks like">View example report</button>
         </div>
       </section>

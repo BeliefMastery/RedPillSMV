@@ -61,25 +61,14 @@
   </header>
 
   <main>
-    <section id="suiteStageGate" class="integrated-map-gate suite-stage-gate" aria-label="Assessment prerequisite" hidden>
-      <h2 class="panel-title" style="margin-top:0;">Attraction is locked</h2>
-      <p id="suiteStageGateMessage" style="color:var(--muted);line-height:1.55;margin:0 0 1rem;">Complete <strong>Archetype</strong> and <strong>Polarity</strong> first. Attraction folds both into your Sexual Market Value read.</p>
-      <p style="margin:0 0 0.75rem;"><a class="btn btn-primary" id="suiteStageGateCtaPrimary" href="archetype.html">Go to Archetype assessment</a></p>
-      <p style="margin:0 0 1rem;"><a class="btn btn-secondary" id="suiteStageGateCtaSecondary" href="temperament.html">Go to Polarity assessment</a></p>
-      <p style="margin:0;"><a href="index.html">Back to home</a></p>
-    </section>
-     <div class="section-inner minimal-section suite-main-flow" id="attractionMainFlow">
-        <h2 class="section-title-btn">🏆 Attraction, Status and Selection</h2>
-
-      
+    <div class="section-inner minimal-section suite-main-flow" id="attractionMainFlow">
       <div class="hero-image">
         <img src="./images/attraction-tool.jpg" alt="Attraction, Status and Selection" class="hero-img">
       </div>
       
       <section class="intro-section" id="introSection">
-        <p class="assessment-subheading"><strong>Map your position across Coalition Rank, Reproductive Confidence, and Axis of Attraction—with percentile Sexual Market Value, delusion index, and market position.</strong></p>
-        <p>This tool measures your attraction profile and social leverage with clear scores. Select male or female for gender-specific weighting. You get percentile Sexual Market Value (0–100), cluster breakdowns, market position, delusion index (standards vs. reality), developmental level, a realistic-options band and potential mate quality snapshot, and strategic recommendations. Men also get provision/attraction balance and Radical Activity (cool/novel outside pursuits and mate competition for attention) when relevant; women get Keeper/Sleeper/Sweeper segmentation.</p>
-        <p class="intro-note">Axis physical items include separate face, body-shape, and presentation cues, and one question on how visible difference or health factors may affect <em>typical stranger or early dating</em> impressions. That item maps <strong>stranger-tier / early-filter</strong> friction, not depth or final valuation—answer as honestly as you can for calibration.</p>
+        <h2 class="tool-intro-heading">🏆 Attraction, Status and Selection</h2>
+        <p class="assessment-subheading tool-intro-tagline">Map your position across Coalition Rank, Reproductive Confidence, and Axis of Attraction—with percentile Sexual Market Value, delusion index, and market position.</p>
 
         <div class="extended-explanation-toggle" id="extendedExplanationToggle">
           <div class="extended-explanation-toggle-text">
@@ -89,6 +78,10 @@
 
         <div class="extended-explanation-panel" id="extendedExplanationPanel">
           <div class="content-section">
+            <div class="tool-extended-summary">
+              <p>This tool measures your attraction profile and social leverage with clear scores. Select male or female for gender-specific weighting. You get percentile Sexual Market Value (0–100), cluster breakdowns, market position, delusion index (standards vs. reality), developmental level, a realistic-options band and potential mate quality snapshot, and strategic recommendations. Men also get provision/attraction balance and Radical Activity (cool/novel outside pursuits and mate competition for attention) when relevant; women get Keeper/Sleeper/Sweeper segmentation.</p>
+              <p>Axis physical items include separate face, body-shape, and presentation cues, and one question on how visible difference or health factors may affect typical stranger or early dating impressions. That item maps stranger-tier / early-filter friction, not depth or final valuation—answer as honestly as you can for calibration.</p>
+            </div>
             <h3>Paradigm context</h3>
             <p>This tool applies the <strong>modern dating and relationship evaluation (unplugged / red-pill)</strong> lens to sexual-market positioning: realistic, no-holds-barred reflection on leverage, mate-selection signals, and constraints. It is a calibration model for current configuration, not a permanent label.</p>
             <h3>Assessment stages</h3>
@@ -135,7 +128,16 @@
       </section>
 
       <section class="content-section" id="actionButtonsSection">
-        <div class="action-buttons">
+        <div id="suiteStageGateInline" class="suite-stage-gate-inline" hidden aria-live="polite">
+          <p class="suite-stage-gate-inline-title">Attraction is locked</p>
+          <p id="suiteStageGateInlineMessage" class="suite-stage-gate-inline-msg"></p>
+          <p class="suite-stage-gate-inline-links">
+            <a class="btn btn-primary btn-small" id="suiteStageGateInlineCtaPrimary" href="archetype.html">Go to Archetype assessment</a>
+            <a class="btn btn-secondary btn-small" id="suiteStageGateInlineCtaSecondary" href="temperament.html" hidden>Go to Polarity assessment</a>
+            <a class="suite-stage-gate-inline-back" href="index.html">Back to home</a>
+          </p>
+        </div>
+        <div class="action-buttons" id="actionButtonsWrap">
           <button class="btn btn-secondary" id="generateSampleReport">Generate Sample Report</button>
           <button class="btn btn-primary" id="startAssessment">Begin Attraction Assessment</button>
         </div>

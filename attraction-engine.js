@@ -81,11 +81,12 @@ export class AttractionEngine {
     this.attachEventListeners();
 
     const gate = getStageGateState();
+    this.applyAttractionSuiteGateUI(gate);
+
     const restored = this.restoreLastResults();
     const resumed = !restored ? this.restoreInProgress() : false;
     if (!gate.attractionUnlocked) {
       if (!restored) {
-        this.showAttractionSuiteHardGate(gate);
         this.ui.transition('idle');
         return;
       }
@@ -95,11 +96,35 @@ export class AttractionEngine {
     this.ui.transition('idle');
   }
 
-  showAttractionSuiteHardGate(gate) {
-    const gateEl = document.getElementById('suiteStageGate');
-    const msg = document.getElementById('suiteStageGateMessage');
-    const ctaPri = document.getElementById('suiteStageGateCtaPrimary');
-    const ctaSec = document.getElementById('suiteStageGateCtaSecondary');
+  /**
+   * Inline prerequisite copy above action buttons; dim buttons while locked (still clickable for showAlert).
+   * @param {object} gate - from getStageGateState()
+   */
+  applyAttractionSuiteGateUI(gate) {
+    const inline = document.getElementById('suiteStageGateInline');
+    const msg = document.getElementById('suiteStageGateInlineMessage');
+    const ctaPri = document.getElementById('suiteStageGateInlineCtaPrimary');
+    const ctaSec = document.getElementById('suiteStageGateInlineCtaSecondary');
+    const wrap = document.getElementById('actionButtonsWrap');
+    const sample = document.getElementById('generateSampleReport');
+    const start = document.getElementById('startAssessment');
+    const descId = 'suiteStageGateInlineMessage';
+
+    if (gate.attractionUnlocked) {
+      if (inline) inline.hidden = true;
+      if (wrap) wrap.classList.remove('suite-action-locked');
+      if (sample) {
+        sample.removeAttribute('aria-disabled');
+        sample.removeAttribute('aria-describedby');
+      }
+      if (start) {
+        start.removeAttribute('aria-disabled');
+        start.removeAttribute('aria-describedby');
+      }
+      return;
+    }
+
+    if (inline) inline.hidden = false;
     if (msg) msg.textContent = gate.attractionBlockMessage;
     if (!gate.archetypeComplete) {
       if (ctaPri) {
@@ -118,8 +143,15 @@ export class AttractionEngine {
         ctaSec.textContent = 'Review Archetype results';
       }
     }
-    if (gateEl) gateEl.hidden = false;
-    // Keep #attractionMainFlow visible so Generate Sample Report works when prerequisites are missing (plan: gate normal flow, not demos).
+    if (wrap) wrap.classList.add('suite-action-locked');
+    if (sample) {
+      sample.setAttribute('aria-disabled', 'true');
+      sample.setAttribute('aria-describedby', descId);
+    }
+    if (start) {
+      start.setAttribute('aria-disabled', 'true');
+      start.setAttribute('aria-describedby', descId);
+    }
   }
 
   restoreLastResults() {
@@ -1411,6 +1443,11 @@ export class AttractionEngine {
   }
 
   generateSampleReport() {
+    const gate = getStageGateState();
+    if (!gate.attractionUnlocked) {
+      void showAlert(gate.attractionBlockMessage);
+      return;
+    }
     this.currentGender = Math.random() < 0.5 ? 'male' : 'female';
     this.responses = {};
     this.allocationResponses = {};

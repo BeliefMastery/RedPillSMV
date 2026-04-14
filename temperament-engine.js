@@ -264,9 +264,7 @@ export class TemperamentEngine {
    */
   init() {
     const gate = getStageGateState();
-    if (!gate.polarityUnlocked) {
-      this.showPolaritySuiteHardGate();
-    }
+    this.applyPolaritySuiteGateUI(gate);
     this.attachEventListeners();
     Promise.resolve(this.loadStoredData()).then(() => {
       if (this.shouldAutoGenerateSample()) {
@@ -277,11 +275,41 @@ export class TemperamentEngine {
     });
   }
 
-  /** Prerequisite banner only; main flow stays visible so Generate Sample Report remains usable (see plan: gate normal flow, not demos). */
-  showPolaritySuiteHardGate() {
-    const gateEl = document.getElementById('suiteStageGate');
-    if (gateEl) {
-      gateEl.hidden = false;
+  /**
+   * Inline prerequisite copy above action buttons; dim buttons while locked (still clickable for showAlert).
+   * @param {{ polarityUnlocked: boolean, polarityBlockMessage: string }} gate
+   */
+  applyPolaritySuiteGateUI(gate) {
+    const inline = document.getElementById('suiteStageGateInline');
+    const msgEl = document.getElementById('suiteStageGateInlineMessage');
+    const wrap = document.getElementById('actionButtonsWrap');
+    const sample = document.getElementById('generateSampleReport');
+    const start = document.getElementById('startAssessment');
+    const descId = 'suiteStageGateInlineMessage';
+
+    if (!gate.polarityUnlocked) {
+      if (inline) inline.hidden = false;
+      if (msgEl) msgEl.textContent = gate.polarityBlockMessage;
+      if (wrap) wrap.classList.add('suite-action-locked');
+      if (sample) {
+        sample.setAttribute('aria-disabled', 'true');
+        sample.setAttribute('aria-describedby', descId);
+      }
+      if (start) {
+        start.setAttribute('aria-disabled', 'true');
+        start.setAttribute('aria-describedby', descId);
+      }
+    } else {
+      if (inline) inline.hidden = true;
+      if (wrap) wrap.classList.remove('suite-action-locked');
+      if (sample) {
+        sample.removeAttribute('aria-disabled');
+        sample.removeAttribute('aria-describedby');
+      }
+      if (start) {
+        start.removeAttribute('aria-disabled');
+        start.removeAttribute('aria-describedby');
+      }
     }
   }
 
@@ -566,6 +594,11 @@ export class TemperamentEngine {
   }
 
   async generateSampleReport() {
+    const gate = getStageGateState();
+    if (!gate.polarityUnlocked) {
+      void showAlert(gate.polarityBlockMessage);
+      return;
+    }
     try {
       await this.loadTemperamentData();
       this.currentPhase = 1;
