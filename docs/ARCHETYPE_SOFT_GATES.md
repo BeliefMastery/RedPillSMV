@@ -72,3 +72,9 @@ It runs male/female synthetic scenarios and asserts:
 - high-alpha female profile retains strong alpha multiplier
 - normalized class winner is not biased by family channel count
 - vanilla subtype can still win when its weighted evidence is strongest
+
+---
+
+## Repository context
+
+This app ships as **static web** and **Capacitor Android**. **Polarity** and **Attraction** require a **Google Play** one-time unlock on native Android only; web builds are unaffected. See [ANDROID_IAP.md](ANDROID_IAP.md), [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md), and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

@@ -44,6 +44,12 @@ import { computeTargetMarketSummary, partnerRangeSublineFromOverall } from './sh
 import { maleAgeGapContext } from './shared/male-age-gap.js';
 import { getStageGateState, getSuiteSnapshots, getArchetypeGenderForSuite } from './shared/suite-completion.js';
 import { applyAttractionSuiteCalibration } from './shared/attraction-suite-calibration.mjs';
+import {
+  applyAndroidPolarityAttractionPremiumUI,
+  assertPolarityAttractionPremiumOrAlert,
+  premiumBlocksPolarityAttractionActions,
+  refreshPolarityAttractionEntitlementFromPlay
+} from './shared/premium-entitlement.js';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 const ATTRACTION_PROGRESS_KEY = 'attraction-assessment:progress';
@@ -82,6 +88,29 @@ export class AttractionEngine {
 
     const gate = getStageGateState();
     this.applyAttractionSuiteGateUI(gate);
+    window.addEventListener('redpill-premium-changed', () => {
+      const g = getStageGateState();
+      this.applyAttractionSuiteGateUI(g);
+      void applyAndroidPolarityAttractionPremiumUI('attraction', g);
+    });
+
+    void this.bootstrapFromStorage(gate);
+  }
+
+  /**
+   * After Play entitlement sync, restore completed or in-progress assessment without flashing wrong state.
+   * @param {{ attractionUnlocked: boolean }} gate
+   */
+  async bootstrapFromStorage(gate) {
+    await refreshPolarityAttractionEntitlementFromPlay();
+    const g = getStageGateState();
+    this.applyAttractionSuiteGateUI(g);
+    await applyAndroidPolarityAttractionPremiumUI('attraction', g);
+
+    if (premiumBlocksPolarityAttractionActions()) {
+      this.ui.transition('idle');
+      return;
+    }
 
     const restored = this.restoreLastResults();
     const resumed = !restored ? this.restoreInProgress() : false;
@@ -158,6 +187,7 @@ export class AttractionEngine {
     try {
       const gate = getStageGateState();
       if (!gate.attractionUnlocked) return false;
+      if (premiumBlocksPolarityAttractionActions()) return false;
       const raw = localStorage.getItem(ATTRACTION_RESULTS_KEY);
       if (!raw) return false;
       const d = JSON.parse(raw);
@@ -234,6 +264,7 @@ export class AttractionEngine {
     try {
       const gate = getStageGateState();
       if (!gate.attractionUnlocked) return false;
+      if (premiumBlocksPolarityAttractionActions()) return false;
       const raw = localStorage.getItem(ATTRACTION_PROGRESS_KEY);
       if (!raw) return false;
       const data = JSON.parse(raw);
@@ -280,8 +311,8 @@ export class AttractionEngine {
   attachEventListeners() {
     const ids = ['startAssessment', 'generateSampleReport', 'abandonAssessment', 'prevQuestion', 'nextQuestion', 'saveResults', 'newAssessment'];
     const handlers = {
-      startAssessment: () => this.startAssessment(),
-      generateSampleReport: () => this.generateSampleReport(),
+      startAssessment: () => void this.startAssessment(),
+      generateSampleReport: () => void this.generateSampleReport(),
       abandonAssessment: () => this.abandonAssessment(),
       prevQuestion: () => this.prevQuestion(),
       nextQuestion: () => this.nextQuestion(),
@@ -306,12 +337,13 @@ export class AttractionEngine {
     return this.currentGender === 'male' ? MALE_CLUSTER_WEIGHTS : FEMALE_CLUSTER_WEIGHTS;
   }
 
-  startAssessment() {
+  async startAssessment() {
     const gate = getStageGateState();
     if (!gate.attractionUnlocked) {
       void showAlert(gate.attractionBlockMessage);
       return;
     }
+    if (!(await assertPolarityAttractionPremiumOrAlert())) return;
     this.clearInProgress();
     const suiteG = getArchetypeGenderForSuite();
     this.setReportHeaderState(false);
@@ -1442,12 +1474,13 @@ export class AttractionEngine {
     return `<div class="standards-context-note" style="margin-top:1rem;padding:0.75rem 1rem;background:var(--glass);border-radius:var(--radius);font-size:0.9rem;line-height:1.5;border-left:3px solid var(--accent);"><strong>Preferences vs scored pillars:</strong><ul style="margin:0.5rem 0 0 1rem;">${parts.map(t => `<li>${SecurityUtils.sanitizeHTML(t)}</li>`).join('')}</ul></div>`;
   }
 
-  generateSampleReport() {
+  async generateSampleReport() {
     const gate = getStageGateState();
     if (!gate.attractionUnlocked) {
       void showAlert(gate.attractionBlockMessage);
       return;
     }
+    if (!(await assertPolarityAttractionPremiumOrAlert())) return;
     this.currentGender = Math.random() < 0.5 ? 'male' : 'female';
     this.responses = {};
     this.allocationResponses = {};

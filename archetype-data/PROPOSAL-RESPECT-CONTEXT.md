@@ -154,3 +154,9 @@ Treat **respect context** like **aspiration**: compute a **respect-context profi
 - [ ] Optionally add one sentence in the intro or methodology explaining that “respect in different parts of your life” is used to improve accuracy.
 
 This keeps the change **localized** (new questions + one adjustment layer) while making attribution **more accommodative** of the “called alpha at work but not respected at home” pattern and improving consistency **across all archetypes**.
+
+---
+
+## Repository context
+
+The app ships as **static web** and **Capacitor Android**. Polarity and Attraction require a **Google Play** one-time unlock on native Android only. See [docs/ANDROID_IAP.md](../docs/ANDROID_IAP.md), [docs/UI_AND_PLATFORM_ARCHITECTURE.md](../docs/UI_AND_PLATFORM_ARCHITECTURE.md), and [docs/DOCUMENTATION_INDEX.md](../docs/DOCUMENTATION_INDEX.md).

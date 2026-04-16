@@ -24,3 +24,9 @@
 ## Follow-up
 
 If ≥2 respondents conflate two dimensions, open a ticket to adjust **stems** (not weights) per [TEMPERAMENT_SPECTRUM_REEVALUATION_PLAN.md](./TEMPERAMENT_SPECTRUM_REEVALUATION_PLAN.md) Phase 1 matrix.
+
+---
+
+## Repository context
+
+This app ships as **static web** and **Capacitor Android**. **Polarity** and **Attraction** require a **Google Play** one-time unlock on native Android only; web builds are unaffected. See [ANDROID_IAP.md](ANDROID_IAP.md), [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md), and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

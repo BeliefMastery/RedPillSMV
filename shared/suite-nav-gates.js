@@ -4,6 +4,11 @@
  * @see getStageGateState in suite-completion.js
  */
 import { getStageGateState } from './suite-completion.js';
+import {
+  hasPolarityAttractionUnlock,
+  isNativeAndroid,
+  refreshPolarityAttractionEntitlementFromPlay
+} from './premium-entitlement.js';
 
 function normalizeHref(href) {
   if (!href || typeof href !== 'string') return '';
@@ -43,12 +48,22 @@ export function applySuiteStartGateHints() {
   const path = (window.location.pathname || '').split('/').pop() || '';
   let locked = false;
   let msg = '';
-  if (path === 'temperament.html' && !g.polarityUnlocked) {
-    locked = true;
-    msg = g.polarityBlockMessage;
-  } else if (path === 'attraction.html' && !g.attractionUnlocked) {
-    locked = true;
-    msg = g.attractionBlockMessage;
+  if (path === 'temperament.html') {
+    if (!g.polarityUnlocked) {
+      locked = true;
+      msg = g.polarityBlockMessage;
+    } else if (isNativeAndroid() && !hasPolarityAttractionUnlock()) {
+      locked = true;
+      msg = 'Unlock Polarity and Attraction with a one-time Google Play purchase (or Restore purchases), then return here.';
+    }
+  } else if (path === 'attraction.html') {
+    if (!g.attractionUnlocked) {
+      locked = true;
+      msg = g.attractionBlockMessage;
+    } else if (isNativeAndroid() && !hasPolarityAttractionUnlock()) {
+      locked = true;
+      msg = 'Unlock Polarity and Attraction with a one-time Google Play purchase (or Restore purchases), then return here.';
+    }
   }
   if (!locked || !msg) return;
 
@@ -78,13 +93,16 @@ export function applySuiteStartGateHints() {
 
 export function initSuiteNavGates() {
   const g = getStageGateState();
+  const premiumLocked = isNativeAndroid() && !hasPolarityAttractionUnlock();
 
   collectGateLinks().forEach((a) => {
     const file = normalizeHref(a.getAttribute('href'));
     if (file !== 'temperament.html' && file !== 'attraction.html') return;
 
     const locked =
-      file === 'temperament.html' ? !g.polarityUnlocked : !g.attractionUnlocked;
+      file === 'temperament.html'
+        ? !g.polarityUnlocked || premiumLocked
+        : !g.attractionUnlocked || premiumLocked;
     if (!locked) {
       a.classList.remove('suite-nav-locked');
       a.removeAttribute('data-suite-locked');
@@ -95,15 +113,45 @@ export function initSuiteNavGates() {
     a.classList.add('suite-nav-locked');
     a.setAttribute('data-suite-locked', 'true');
     const msg =
-      file === 'temperament.html' ? g.polarityBlockMessage : g.attractionBlockMessage;
+      file === 'temperament.html'
+        ? !g.polarityUnlocked
+          ? g.polarityBlockMessage
+          : premiumLocked
+            ? 'Requires one-time Polarity & Attraction unlock (Google Play).'
+            : ''
+        : !g.attractionUnlocked
+          ? g.attractionBlockMessage
+          : premiumLocked
+            ? 'Requires one-time Polarity & Attraction unlock (Google Play).'
+            : '';
     a.setAttribute('title', msg);
   });
 
   applySuiteStartGateHints();
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initSuiteNavGates());
-} else {
+function resetSuiteStartGateHint() {
+  document.getElementById('suiteStartPrereqHint')?.remove();
+  const start = document.getElementById('startAssessment');
+  if (start) {
+    start.classList.remove('suite-start-locked');
+    start.removeAttribute('aria-disabled');
+    start.removeAttribute('aria-describedby');
+  }
+}
+
+async function bootSuiteNavGates() {
+  if (isNativeAndroid()) await refreshPolarityAttractionEntitlementFromPlay();
   initSuiteNavGates();
+}
+
+window.addEventListener('redpill-premium-changed', () => {
+  resetSuiteStartGateHint();
+  void bootSuiteNavGates();
+});
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => void bootSuiteNavGates());
+} else {
+  void bootSuiteNavGates();
 }

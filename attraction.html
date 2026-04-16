@@ -70,11 +70,11 @@
         <h2 class="tool-intro-heading">🏆 Attraction, Status and Selection</h2>
         <p class="assessment-subheading tool-intro-tagline">Map your position across Coalition Rank, Reproductive Confidence, and Axis of Attraction—with percentile Sexual Market Value, delusion index, and market position.</p>
 
-        <div class="extended-explanation-toggle" id="extendedExplanationToggle">
-          <div class="extended-explanation-toggle-text">
+        <button type="button" class="extended-explanation-toggle disclosure-toggle" id="extendedExplanationToggle" data-disclosure-target="extendedExplanationPanel" aria-expanded="false" aria-controls="extendedExplanationPanel">
+          <span class="extended-explanation-toggle-text">
             <span>Extended Explanation</span>
-          </div>
-        </div>
+          </span>
+        </button>
 
         <div class="extended-explanation-panel" id="extendedExplanationPanel">
           <div class="content-section">
@@ -113,18 +113,6 @@
           </div>
         </div>
 
-        <div class="disclaimer-acknowledgement" id="disclaimerToggle">
-          <div class="disclaimer-acknowledgement-text">
-            <span>Disclaimer</span>
-          </div>
-        </div>
-
-        <section class="disclaimer-section" id="disclaimerSection">
-          <div class="ack-box">
-            <p><strong>Descriptive self-assessment only</strong>—not diagnosis, prediction, therapy, medical, or legal advice. A <strong>market-calibration</strong> instrument for sovereign self-inquiry: selection-pressure and leverage reads, not a guarantee of any single outcome. Your scored position can move with habits, lifestyle, and health; use results to inform your <strong>current configuration</strong>, as one input among many.</p>
-            <p class="disclaimer-privacy">Privacy by design: no personal data leaves your device.</p>
-          </div>
-        </section>
       </section>
 
       <section class="content-section" id="actionButtonsSection">
@@ -137,6 +125,15 @@
             <a class="suite-stage-gate-inline-back" href="index.html">Back to home</a>
           </p>
         </div>
+        <div id="androidPremiumPaywall" class="android-premium-paywall" hidden>
+          <p class="android-premium-paywall-title">Unlock Polarity &amp; Attraction (Google Play)</p>
+          <p id="androidPremiumPaywallPrice" class="android-premium-paywall-price" hidden></p>
+          <p id="androidPremiumPaywallMessage" class="android-premium-paywall-copy">One-time purchase unlocks both assessments in this Android app. Archetype and Relationships stay free. Use Restore if you already bought on this account.</p>
+          <div class="android-premium-paywall-actions">
+            <button type="button" class="btn btn-primary" id="androidPremiumUnlockBtn">Unlock</button>
+            <button type="button" class="btn btn-secondary" id="androidPremiumRestoreBtn">Restore purchases</button>
+          </div>
+        </div>
         <div class="action-buttons" id="actionButtonsWrap">
           <button class="btn btn-secondary" id="generateSampleReport">Generate Sample Report</button>
           <button class="btn btn-primary" id="startAssessment">Begin Attraction Assessment</button>
@@ -144,11 +141,11 @@
       </section>
 
       <section class="questionnaire-section" id="questionnaireSection">
-        <div class="instructions-toggle" id="instructionsToggle">
-          <div class="instructions-toggle-text">
+        <button type="button" class="instructions-toggle disclosure-toggle" id="instructionsToggle" data-disclosure-target="instructionsPanel" aria-expanded="false" aria-controls="instructionsPanel">
+          <span class="instructions-toggle-text">
             <span>❓ How to Use This Assessment</span>
-          </div>
-        </div>
+          </span>
+        </button>
         
         <div class="instructions-panel" id="instructionsPanel">
           <h3>❓ How to Use This Assessment</h3>
@@ -220,27 +217,13 @@
 
   <script src="./shared/background.js"></script>
   <script src="./shared/style-switcher.js"></script>
+  <script src="./shared/intro-disclosure-toggles.js"></script>
   <script type="module" src="./shared/suite-nav-gates.js"></script>
   <script type="module" src="./shared/swipe-nav.js"></script>
   <script type="module" src="attraction-engine.js"></script>
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const setupToggle = (btnId, panelId) => {
-        const btn = document.getElementById(btnId);
-        const panel = document.getElementById(panelId);
-        if (btn && panel) {
-          btn.addEventListener('click', () => {
-            btn.classList.toggle('expanded');
-            panel.classList.toggle('expanded');
-          });
-        }
-      };
-
-      setupToggle('extendedExplanationToggle', 'extendedExplanationPanel');
-      setupToggle('disclaimerToggle', 'disclaimerSection');
-      setupToggle('instructionsToggle', 'instructionsPanel');
-
       const hamburger = document.querySelector('.hamburger');
       const nav = document.querySelector('#top-nav');
       if (hamburger && nav) {

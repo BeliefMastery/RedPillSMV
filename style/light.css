@@ -155,7 +155,7 @@ header.site-header {
 }
 
 .btn-primary,
-button:not(.secondary):not(.hamburger):not(.close-btn) {
+button:not(.secondary):not(.hamburger):not(.close-btn):not(.disclosure-toggle) {
     background: var(--accent);
     color: white;
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);

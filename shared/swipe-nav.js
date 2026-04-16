@@ -16,14 +16,20 @@ const BASE_PAGES = [
 ];
 
 function currentFile() {
-  const parts = (window.location.pathname || '').split('/').filter(Boolean);
-  const file = (parts.pop() || 'index.html').toLowerCase();
-  return file || 'index.html';
+  let path = (window.location.pathname || '').replace(/\/+$/, '');
+  const parts = path.split('/').filter(Boolean);
+  let file = parts.length ? parts[parts.length - 1] : 'index.html';
+  // Directory URL (e.g. site root or /app/) — treat as index.html for cycle position.
+  if (!file.includes('.')) {
+    file = 'index.html';
+  }
+  return file.toLowerCase();
 }
 
 function shouldIgnoreSwipeTarget(target) {
   if (!(target instanceof Element)) return false;
-  if (target.closest('input, textarea, select, button, a, [contenteditable="true"]')) return true;
+  // Do not ignore <a>: the home page is mostly links (grid, nav); swipes would never register.
+  if (target.closest('input, textarea, select, button, [contenteditable="true"]')) return true;
   return false;
 }
 

@@ -19,6 +19,12 @@ import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import { EXPECTED_GENDER_TRENDS, formatCompositePositionDescription } from './shared/temperament-composite-meta.js';
 import { getStageGateState, getSuiteSnapshots, getArchetypeGenderForSuite } from './shared/suite-completion.js';
 import { applyArchetypePolarityCalibration } from './shared/archetype-polarity-calibration.mjs';
+import {
+  applyAndroidPolarityAttractionPremiumUI,
+  assertPolarityAttractionPremiumOrAlert,
+  premiumBlocksPolarityAttractionActions,
+  refreshPolarityAttractionEntitlementFromPlay
+} from './shared/premium-entitlement.js';
 
 // Data modules - will be loaded lazily
 let TEMPERAMENT_DIMENSIONS, INTIMATE_DYNAMICS;
@@ -265,6 +271,12 @@ export class TemperamentEngine {
   init() {
     const gate = getStageGateState();
     this.applyPolaritySuiteGateUI(gate);
+    void applyAndroidPolarityAttractionPremiumUI('polarity', gate);
+    window.addEventListener('redpill-premium-changed', () => {
+      const g = getStageGateState();
+      this.applyPolaritySuiteGateUI(g);
+      void applyAndroidPolarityAttractionPremiumUI('polarity', g);
+    });
     this.attachEventListeners();
     Promise.resolve(this.loadStoredData()).then(() => {
       if (this.shouldAutoGenerateSample()) {
@@ -527,6 +539,7 @@ export class TemperamentEngine {
   }
 
   shouldAutoGenerateSample() {
+    if (premiumBlocksPolarityAttractionActions()) return false;
     const params = new URLSearchParams(window.location.search);
     if (!params.has('sample')) return false;
     const value = params.get('sample');
@@ -599,6 +612,7 @@ export class TemperamentEngine {
       void showAlert(gate.polarityBlockMessage);
       return;
     }
+    if (!(await assertPolarityAttractionPremiumOrAlert())) return;
     try {
       await this.loadTemperamentData();
       this.currentPhase = 1;
@@ -625,6 +639,7 @@ export class TemperamentEngine {
       void showAlert(gate.polarityBlockMessage);
       return;
     }
+    if (!(await assertPolarityAttractionPremiumOrAlert())) return;
     const introSection = document.getElementById('introSection');
     const actionButtonsSection = document.getElementById('actionButtonsSection');
     const questionnaireSection = document.getElementById('questionnaireSection');
@@ -1862,6 +1877,8 @@ export class TemperamentEngine {
     try {
       const gate = getStageGateState();
       if (!gate.polarityUnlocked) return;
+      await refreshPolarityAttractionEntitlementFromPlay();
+      if (premiumBlocksPolarityAttractionActions()) return;
       const data = this.dataStore.load('progress');
       if (!data) return;
 

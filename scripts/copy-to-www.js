@@ -17,6 +17,31 @@ const INCLUDE = [
 
 const EXCLUDE = ['node_modules', '.git', 'package-lock.json', 'capacitor.config.json', 'capacitor.config.ts', 'android', 'ios', 'www', 'scripts'];
 
+/**
+ * Vendored ESM so static pages can import Capacitor + @capgo/native-purchases without a bundler.
+ * Rewrites plugin imports from '@capacitor/core' to '../capacitor-core.js'.
+ */
+function writeCapacitorNativePurchaseVendors() {
+  const vendorDir = path.join(ROOT, 'shared', 'vendor');
+  const capSrc = path.join(ROOT, 'node_modules', '@capacitor', 'core', 'dist', 'index.js');
+  const npDir = path.join(ROOT, 'node_modules', '@capgo', 'native-purchases', 'dist', 'esm');
+  if (!fs.existsSync(capSrc) || !fs.existsSync(npDir)) {
+    console.warn('Skip shared/vendor: install npm deps (@capacitor/core, @capgo/native-purchases)');
+    return;
+  }
+  fs.mkdirSync(path.join(vendorDir, 'native-purchases'), { recursive: true });
+  fs.copyFileSync(capSrc, path.join(vendorDir, 'capacitor-core.js'));
+  for (const f of ['index.js', 'web.js', 'definitions.js']) {
+    const srcText = fs.readFileSync(path.join(npDir, f), 'utf8');
+    const text = srcText
+      .split("from '@capacitor/core'").join("from '../capacitor-core.js'")
+      .split("from './definitions'").join("from './definitions.js'")
+      .split("import('./web')").join("import('./web.js')");
+    fs.writeFileSync(path.join(vendorDir, 'native-purchases', f), text);
+  }
+  console.log('Wrote shared/vendor (Capacitor core + NativePurchases ESM)');
+}
+
 function rmrf(dir) {
   if (fs.existsSync(dir)) {
     fs.readdirSync(dir).forEach(f => {
@@ -41,6 +66,8 @@ function copyRecurse(src, dest) {
     fs.copyFileSync(src, dest);
   }
 }
+
+writeCapacitorNativePurchaseVendors();
 
 rmrf(WWW);
 fs.mkdirSync(WWW, { recursive: true });

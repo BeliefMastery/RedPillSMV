@@ -66,3 +66,9 @@ Under this model, some content currently under **Expressive flow vs Focused acti
   - Phase 1 `temperament-orientation.js`: aligned with provision/nurture wording; p1_orientation_4 option text avoids ambiguous “staying present.”
 
 This document remains the roadmap for deeper instrument work (item matrix, optional new dimension, weight calibration). The vocabulary pass runs **before** Phase 3 weight changes. Structural Phases 2–5 (new items/dimensions) stay sequenced after the Phase 1 item-to-construct matrix is completed.
+
+---
+
+## Repository context
+
+This app ships as **static web** and **Capacitor Android**. **Polarity** and **Attraction** require a **Google Play** one-time unlock on native Android only; web builds are unaffected. See [ANDROID_IAP.md](ANDROID_IAP.md), [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md), and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

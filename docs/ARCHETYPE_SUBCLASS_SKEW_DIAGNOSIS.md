@@ -94,3 +94,9 @@ Additional diagnostics:
 - `phase6Results.targetFamilyIds`
 - `phase6Results.beforePhase6`
 - `phase6Results.afterPhase6`
+
+---
+
+## Repository context
+
+This app ships as **static web** and **Capacitor Android**. **Polarity** and **Attraction** require a **Google Play** one-time unlock on native Android only; web builds are unaffected. See [ANDROID_IAP.md](ANDROID_IAP.md), [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md), and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

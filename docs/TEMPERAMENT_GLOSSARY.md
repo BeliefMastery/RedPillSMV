@@ -44,3 +44,9 @@ Authoritative terms for polarity copy. Prefer these strings (or close variants) 
 ## Maintainer rule
 
 Any new question or label change should cite **at least one term ID** in the PR/commit note so regressions are traceable.
+
+---
+
+## Repository context
+
+This app ships as **static web** and **Capacitor Android**. **Polarity** and **Attraction** require a **Google Play** one-time unlock on native Android only; web builds are unaffected. See [ANDROID_IAP.md](ANDROID_IAP.md), [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md), and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

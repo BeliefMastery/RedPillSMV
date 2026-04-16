@@ -242,3 +242,9 @@ Re-run the script after changing questions, weights, or `scoreToPercentile`.
 **Phase 2 (optional):** Split axis into `physicalFace` / `physicalBody` sub-blends with their own rows in `AXIS_SUBCATEGORY_WEIGHTS` for direct control of face vs body share of overall SMV.
 
 Document any adopted change here and keep [`scripts/smv-sensitivity-check.mjs`](../scripts/smv-sensitivity-check.mjs) question IDs and weights aligned with [`attraction-data.js`](../attraction-data.js).
+
+---
+
+## Repository context
+
+This app ships as **static web** and **Capacitor Android**. **Polarity** and **Attraction** require a **Google Play** one-time unlock on native Android only; web builds are unaffected. See [ANDROID_IAP.md](ANDROID_IAP.md), [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md), and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

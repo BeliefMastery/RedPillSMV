@@ -148,5 +148,7 @@ If this file lives in a concrete repo, you may add one column mapping placeholde
 
 | Placeholder | Implementation notes |
 |-------------|------------------------|
-| *Surface_1* | *(fill locally)* |
-| *ScoringCore* | *(fill locally)* |
+| *Surface_1* | Static HTML pages: `archetype.html`, `temperament.html`, `attraction.html`, `relationship.html`; engines `*-engine.js`. |
+| *ScoringCore* | Domain logic in engines + `*-data*` / `shared/*-core.mjs`; extract for headless checks as needed. |
+
+**This repo:** Sample flows use `#generateSampleReport` where present. On **native Android**, Polarity and Attraction are additionally gated by Play Billing ([ANDROID_IAP.md](ANDROID_IAP.md)); web/CI paths stay open. Shell UX (themes, swipe, modals): [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md). Full doc list: [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

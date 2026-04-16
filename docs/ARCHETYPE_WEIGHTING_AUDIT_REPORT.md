@@ -132,3 +132,9 @@ Applied in `archetype-engine.js` to align outcomes with the audit findings:
 8. **Subtype refinement rebalanced** — Phase 2 forced-choice refinement options were normalized so vanilla subtype choices are no longer structurally underweighted versus variant or dark options.
 
 9. **Female consistency cleanup** — Female path mapping now consistently maps `alpha_rho` evidence into `alpha_xi_female`, and core group scoring now uses explicit female family members to avoid male-only group leakage in class-prep utilities.
+
+---
+
+## Repository context
+
+This app ships as **static web** and **Capacitor Android**. **Polarity** and **Attraction** require a **Google Play** one-time unlock on native Android only; web builds are unaffected. See [ANDROID_IAP.md](ANDROID_IAP.md), [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md), and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

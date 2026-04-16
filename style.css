@@ -1297,7 +1297,7 @@ button:hover::before {
 
 /* Primary "Golden Lightning" Button (High Contrast) */
 .btn-primary,
-button:not(.secondary):not(.close-btn),
+button:not(.secondary):not(.close-btn):not(.disclosure-toggle),
 #calculate-btn,
 .next-btn {
     background: linear-gradient(135deg, var(--accent), #ffb700) !important;
@@ -1306,7 +1306,7 @@ button:not(.secondary):not(.close-btn),
 }
 
 .btn-primary:hover,
-button:not(.secondary):not(.close-btn):hover {
+button:not(.secondary):not(.close-btn):not(.disclosure-toggle):hover {
     background: linear-gradient(135deg, var(--accent-hover), #ffc820) !important;
     box-shadow: 0 0 30px var(--glow-accent);
     transform: translateY(-3px) scale(1.02);
@@ -1403,7 +1403,7 @@ button:disabled,
     text-align: center;
     line-height: 1.28;
     letter-spacing: 0.03em;
-    color: var(--text, #e8e8ef);
+    color: var(--brand, #e8e8ef);
 }
 
 .intro-section .tool-intro-tagline {
@@ -2324,6 +2324,42 @@ header.site-header a.suite-nav-locked {
 }
 .suite-stage-gate-inline-back:hover {
     color: var(--accent, #ffd700);
+}
+
+/* Google Play one-time unlock (Android / Capacitor only; hidden on web) */
+.android-premium-paywall {
+    max-width: 36rem;
+    margin: 0 auto 1rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--radius, 8px);
+    border: 1px solid rgba(255, 193, 7, 0.35);
+    background: rgba(255, 193, 7, 0.06);
+    text-align: center;
+}
+.android-premium-paywall-title {
+    margin: 0 0 0.35rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text, #e8e8ef);
+}
+.android-premium-paywall-price {
+    margin: 0 0 0.4rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--accent, #ffd700);
+}
+.android-premium-paywall-copy {
+    margin: 0 0 0.75rem;
+    color: var(--muted, rgba(230, 240, 255, 0.85));
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+.android-premium-paywall-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 0.75rem;
 }
 
 .action-buttons.suite-action-locked .btn {
@@ -3381,43 +3417,63 @@ main > .section-inner.minimal-section > .section-title-btn {
     margin-left: 1.5rem;
 }
 
-/* Instruction, Extended Explanation & Disclaimer Toggles */
+/* Instruction and Extended Explanation toggles (simple home-info style) */
 .instructions-toggle,
 .extended-explanation-toggle,
 .disclaimer-acknowledgement {
-    background: var(--glass-light);
+    background: var(--glass);
     border: 1px solid var(--border-medium);
-    border-radius: var(--radius);
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
+    border-radius: var(--radius, 8px);
+    padding: 0.45rem 0.75rem;
+    margin-bottom: 0.9rem;
     cursor: pointer;
-    transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-/* Keep consistent breathing room before extended explanation on all tool pages */
-.extended-explanation-toggle {
-    margin-top: 1rem;
+button.instructions-toggle,
+button.extended-explanation-toggle,
+button.disclaimer-acknowledgement {
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
 }
 
-@media (hover: hover) {
-.instructions-toggle:hover,
-.extended-explanation-toggle:hover,
-.disclaimer-acknowledgement:hover {
-    background: rgba(255, 215, 0, 0.08);
-    border-color: var(--accent);
-    box-shadow: 0 0 20px var(--glow-accent);
+.disclosure-toggle {
+    text-transform: none;
+    letter-spacing: normal;
+    min-height: 0;
+    min-width: 0;
+    box-shadow: none;
 }
+
+.disclosure-toggle::before {
+    display: none;
+}
+
+.disclosure-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Keep consistent breathing room before extended explanation on all tool pages */
+.extended-explanation-toggle {
+    margin-top: 0.6rem;
+    margin-bottom: 0.9rem;
+}
+
+.disclaimer-acknowledgement {
+    margin-bottom: 0.9rem;
 }
 
 .instructions-toggle-text,
 .extended-explanation-toggle-text,
 .disclaimer-acknowledgement-text {
     font-weight: 600;
-    color: var(--brand);
-    font-size: 1rem;
+    color: var(--muted);
+    font-size: 0.98rem;
     display: flex;
     width: 100%;
     justify-content: space-between;
@@ -3428,16 +3484,15 @@ main > .section-inner.minimal-section > .section-title-btn {
 .instructions-toggle-text::after,
 .extended-explanation-toggle-text::after,
 .disclaimer-acknowledgement-text::after {
-    content: '▼';
-    font-size: 0.7rem;
-    color: var(--accent);
-    transition: transform 0.3s ease;
+    content: ' ▼';
+    font-size: 0.78em;
+    color: currentColor;
 }
 
 .instructions-toggle.expanded .instructions-toggle-text::after,
 .extended-explanation-toggle.expanded .extended-explanation-toggle-text::after,
 .disclaimer-acknowledgement.expanded .disclaimer-acknowledgement-text::after {
-    transform: rotate(180deg);
+    content: ' ▲';
 }
 
 /* Extended Explanation Panel */

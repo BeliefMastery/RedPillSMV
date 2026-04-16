@@ -2,6 +2,8 @@
 
 This spec implements the cross-assessment audit plan and translates it into an execution-ready design.
 
+**UI / platform:** How `value_allocation` and related controls are presented (themes, gestures, engine shell) is summarized in [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md). **Distribution:** [ANDROID_IAP.md](ANDROID_IAP.md) for native Android monetization on Polarity/Attraction.
+
 ## 1) Attraction Pilot Spec (`attraction-pilot-spec`)
 
 Primary files:

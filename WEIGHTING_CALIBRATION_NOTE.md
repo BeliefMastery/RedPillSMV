@@ -48,3 +48,9 @@ Effective tier multipliers after calibration:
 Current governance level is minimal. Upgrade to standard governance (`11B`) when either condition is met:
 - two additional weighting edits are made, or
 - a new Stage-1 compatibility tier is introduced.
+
+---
+
+## Repository context
+
+The same codebase runs as **static web** and **Capacitor Android**. Polarity and Attraction use a **Google Play** one-time unlock on native Android only. See [docs/ANDROID_IAP.md](docs/ANDROID_IAP.md) and [docs/DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md).

@@ -2,6 +2,8 @@
 
 Sequential unlock: **Archetype → Polarity → Attraction** (Relationship is independent).
 
+**Android distribution:** After suite prerequisites are satisfied, **Polarity** and **Attraction** also require a **one-time Google Play purchase** in the Capacitor app. Calibration and unlock order are unchanged—payment only removes the native paywall. Web builds have no IAP. Details: [ANDROID_IAP.md](ANDROID_IAP.md).
+
 **Gender:** The Archetype assessment selects respondent gender first. Polarity and Attraction use that same gender automatically (`getArchetypeGenderForSuite()` in [`shared/suite-completion.js`](../shared/suite-completion.js)) so the suite cannot be completed on mixed gender paths. Cached Attraction results that disagree with the stored Archetype gender are not restored.
 
 ## Source of truth
@@ -43,3 +45,9 @@ All tunables live in [`shared/suite-calibration-config.mjs`](../shared/suite-cal
 
 - `npm run suite:calibration-check` — polarity boundary sweep + attraction cap assertions + coherence spot check.
 - `npm run smv:sensitivity` — SMV pillar swings; includes a suite calibration fixture line.
+
+---
+
+## Repository context
+
+See also [UI_AND_PLATFORM_ARCHITECTURE.md](UI_AND_PLATFORM_ARCHITECTURE.md) (suite nav, paywall shell) and [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md).

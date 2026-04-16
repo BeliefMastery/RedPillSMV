@@ -1,6 +1,10 @@
 # Unplugged Dynamics: Red-Pill Relational Suite
 
-Map where you fit in the modern relationship marketplace. A self-contained app of **four assessment tools**: modern archetype identification, attraction/SMV, polarity (temperament), and relationship viability. Offline, no account, no tracking. Built for web and Capacitor Android.
+Map where you fit in the modern relationship marketplace. A self-contained app of **four assessment tools**: modern archetype identification, attraction/SMV, polarity (temperament), and relationship viability. Offline, no account, no tracking. Built for **static web** (e.g. GitHub Pages) and **Capacitor Android**.
+
+**Suite flow:** Archetype → Polarity → Attraction (sequential unlock); Relationship is separate. **Android app:** Polarity and Attraction require a **one-time Google Play purchase** after prerequisites are met; web builds stay fully free. See [`docs/ANDROID_IAP.md`](docs/ANDROID_IAP.md).
+
+**Docs:** [`docs/PLAY_STORE_PUBLISHING_CHECKLIST.md`](docs/PLAY_STORE_PUBLISHING_CHECKLIST.md) (Android publish + Play Billing) · [`docs/DOCUMENTATION_INDEX.md`](docs/DOCUMENTATION_INDEX.md) (all Markdown) · [`docs/UI_AND_PLATFORM_ARCHITECTURE.md`](docs/UI_AND_PLATFORM_ARCHITECTURE.md) (themes, swipe, sliders, shared UI).
 
 ---
 
@@ -20,8 +24,8 @@ Each assessment runs in-browser. Progress can be saved locally. After completion
 ## Tech stack
 
 - **Front end:** Vanilla HTML, CSS, JavaScript (no framework).
-- **Shared:** `shared/` — data-loader, export-utils (readable report generation), engine-ui-controller, debug-reporter, performance-monitor, utils (including SecurityUtils), confirm-modal, background (canvas + CSS).
-- **Mobile:** Capacitor 8 (Android). Optional `www/` and `android/` build targets.
+- **Shared:** `shared/` — data-loader, export-utils (readable report generation), engine-ui-controller, debug-reporter, performance-monitor, utils (including SecurityUtils), confirm-modal, suite-completion / suite-nav-gates / suite-index, premium entitlement (Android IAP), swipe-nav, style-switcher, background (canvas + CSS).
+- **Mobile:** Capacitor 8 (Android), Google Play Billing for Polarity+Attraction. `www/` is produced by `npm run copy:www`; `shared/vendor/` is regenerated there (Capacitor + billing plugin ESM for no-bundler loads).
 
 ---
 
@@ -46,8 +50,16 @@ Each assessment runs in-browser. Progress can be saved locally. After completion
 │   ├── performance-monitor.js
 │   ├── utils.js            # SecurityUtils, etc.
 │   ├── confirm-modal.js
+│   ├── suite-completion.js # Stage gates, gender, completion snapshots
+│   ├── suite-nav-gates.js  # Nav locks + Android premium hints
+│   ├── suite-index.js      # Home progress list + integrated-map CTA
+│   ├── premium-entitlement.js # Play IAP (Polarity + Attraction), Android only
+│   ├── swipe-nav.js        # Horizontal swipe between main pages
+│   ├── style-switcher.js   # Theme overlay + font scale
+│   ├── vendor/             # Generated: Capacitor + NativePurchases ESM (see copy-to-www)
 │   ├── background.js       # Nebula canvas
 │   └── background.css
+├── docs/                   # Specs, IAP, UI architecture index
 ├── relationship-engine.js
 ├── relationship-data/      # Compatibility points, strategies, viability, etc.
 ├── temperament-engine.js
@@ -83,12 +95,14 @@ Then open **http://localhost:3000** and use `index.html` as the entry point.
 
 ### Build for Android (optional)
 
+See **[ANDROID-BUILD.md](ANDROID-BUILD.md)** and **[docs/ANDROID_IAP.md](docs/ANDROID_IAP.md)** for Play Console product id, testers, and policy notes.
+
 ```bash
-npm run copy:www    # Copy root app into www/
-npm run cap:sync   # copy:www + cap sync android
+npm run copy:www    # Copy root app into www/ and refresh shared/vendor
+npm run cap:sync    # copy:www + cap sync android
 ```
 
-Then open the `android/` project in Android Studio and run on a device or emulator.
+Then open the `android/` project in Android Studio and run on a device or emulator with Google Play (for billing tests).
 
 ---
 
@@ -111,7 +125,7 @@ JSON, CSV, and Executive Brief exports have been removed; the readable report su
 
 - **No dependency on a parent site.** All navigation is app-only (Home + the four tools). Script and style paths are relative.
 - **Shared code is local:** `shared/` and `style.css` live inside the repo. Nothing is linked from an external codebase.
-- **To extract or reuse:** Copy the entire app folder into another repo. Serve `index.html` as the entry; the four tool pages and engines work as-is. For Capacitor, run `npm run copy:www` and `npx cap sync android` from the copied folder.
+- **To extract or reuse:** Copy the entire app folder into another repo. Serve `index.html` as the entry; the four tool pages and engines work as-is. For Capacitor, run `npm run copy:www` and `npx cap sync android` from the copied folder. If you keep Play Billing, retain `shared/premium-entitlement.js`, paywall markup on Polarity/Attraction, `shared/vendor/`, and plugin config (see `docs/ANDROID_IAP.md`); otherwise strip those pieces for a web-only fork.
 
 ---
 
