@@ -25,6 +25,15 @@ import {
   premiumBlocksPolarityAttractionActions,
   refreshPolarityAttractionEntitlementFromPlay
 } from './shared/premium-entitlement.js';
+import {
+  applyProgressSnapshotToDom,
+  attachRangeTouchGuard,
+  buildProgressSnapshot,
+  evaluateMidAssessment,
+  loadHintFlags,
+  persistHintFlags,
+  smoothScrollQuestionTop
+} from './shared/questionnaire-ux.js';
 
 // Data modules - will be loaded lazily
 let TEMPERAMENT_DIMENSIONS, INTIMATE_DYNAMICS;
@@ -238,6 +247,14 @@ export class TemperamentEngine {
       questionSequence: []
     };
     this.baseSectionTitleText = null;
+    this.hintStorageKey = 'temperament-assessment:ux-hints';
+    this.hintFlags = loadHintFlags(this.hintStorageKey);
+    this.midAssessmentShown = false;
+    this.instrumentation = {
+      firstCheckpointQuestionIndex: null,
+      continueFromCheckpoint: 0,
+      finishFromCheckpoint: 0
+    };
     
     // Initialize debug reporter
     this.debugReporter = createDebugReporter('TemperamentEngine');
@@ -690,7 +707,7 @@ export class TemperamentEngine {
       this.renderGenderQuestion(currentQ);
       // Scroll to question after rendering
       setTimeout(() => {
-        questionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        smoothScrollQuestionTop('questionContainer');
       }, 100);
       return;
     }
@@ -699,7 +716,7 @@ export class TemperamentEngine {
       this.renderThreePointQuestion(currentQ);
       // Scroll to question after rendering
       setTimeout(() => {
-        questionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        smoothScrollQuestionTop('questionContainer');
       }, 100);
       return;
     }
@@ -707,7 +724,7 @@ export class TemperamentEngine {
     if (currentQ.type === 'value_allocation') {
       this.renderPhase1DualAllocationQuestion(currentQ);
       setTimeout(() => {
-        questionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        smoothScrollQuestionTop('questionContainer');
       }, 100);
       return;
     }
@@ -715,7 +732,7 @@ export class TemperamentEngine {
     this.renderDeepMappingDualAllocationQuestion(currentQ);
     // Scroll to question after rendering
     setTimeout(() => {
-      questionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      smoothScrollQuestionTop('questionContainer');
     }, 100);
     } catch (error) {
       this.debugReporter.logError(error, 'renderCurrentQuestion');
@@ -890,7 +907,7 @@ export class TemperamentEngine {
               <strong id="dm_pct_left_${idSuffix}">${leftPct}%</strong>
             </div>
             <input type="range" min="0" max="100" value="${leftPct}" class="slider" id="dm_slider_left_${idSuffix}" step="1">
-            <div class="scale-labels">
+            <div class="scale-labels${this.hintFlags.hasSeenDualSliderHint ? ' hidden' : ''}">
               <span>Not important</span>
               <span>Very important</span>
             </div>
@@ -901,7 +918,7 @@ export class TemperamentEngine {
               <strong id="dm_pct_right_${idSuffix}">${rightPct}%</strong>
             </div>
             <input type="range" min="0" max="100" value="${rightPct}" class="slider" id="dm_slider_right_${idSuffix}" step="1">
-            <div class="scale-labels">
+            <div class="scale-labels${this.hintFlags.hasSeenDualSliderHint ? ' hidden' : ''}">
               <span>Not important</span>
               <span>Very important</span>
             </div>
@@ -928,11 +945,29 @@ export class TemperamentEngine {
       this.saveProgress();
     };
 
-    if (leftSlider) leftSlider.oninput = (event) => syncAnswer(event.target.value, 'left');
-    if (rightSlider) rightSlider.oninput = (event) => {
-      const rightValue = Math.max(0, Math.min(100, Math.round(Number(event.target.value) || 0)));
-      syncAnswer(100 - rightValue, 'right');
-    };
+    if (leftSlider) {
+      attachRangeTouchGuard(leftSlider);
+      leftSlider.oninput = (event) => {
+        syncAnswer(event.target.value, 'left');
+        if (!this.hintFlags.hasSeenDualSliderHint) {
+          this.hintFlags.hasSeenDualSliderHint = true;
+          persistHintFlags(this.hintStorageKey, this.hintFlags);
+          questionContainer.querySelectorAll('.scale-labels').forEach((el) => el.remove());
+        }
+      };
+    }
+    if (rightSlider) {
+      attachRangeTouchGuard(rightSlider);
+      rightSlider.oninput = (event) => {
+        const rightValue = Math.max(0, Math.min(100, Math.round(Number(event.target.value) || 0)));
+        syncAnswer(100 - rightValue, 'right');
+        if (!this.hintFlags.hasSeenDualSliderHint) {
+          this.hintFlags.hasSeenDualSliderHint = true;
+          persistHintFlags(this.hintStorageKey, this.hintFlags);
+          questionContainer.querySelectorAll('.scale-labels').forEach((el) => el.remove());
+        }
+      };
+    }
     syncAnswer(leftPct, 'init');
 
     this.updateProgress();
@@ -940,19 +975,70 @@ export class TemperamentEngine {
   }
 
   updateProgress() {
-    const progressFill = document.getElementById('progressFill');
-    if (progressFill) {
-      const totalQuestions = this.questionSequence.length || 1;
-      const currentProgress = this.currentQuestionIndex + 1;
-      const progress = (currentProgress / totalQuestions) * 100;
-      progressFill.style.width = `${progress}%`;
-    }
+    const totalQuestions = this.questionSequence.length || 1;
+    const snapshot = buildProgressSnapshot({
+      phaseIndex: 1,
+      phaseTotal: 1,
+      questionIndexInPhase: this.currentQuestionIndex + 1,
+      questionTotalInPhase: totalQuestions,
+      overallQuestionIndex: this.currentQuestionIndex + 1,
+      overallQuestionTotal: totalQuestions
+    });
+    applyProgressSnapshotToDom({
+      snapshot,
+      progressBarId: 'progressFill',
+      phaseLabelId: 'phaseIndicator',
+      questionLabelId: 'questionCount'
+    });
+  }
 
-    const questionCount = document.getElementById('questionCount');
-    if (questionCount) {
-      const remaining = this.questionSequence.length - this.currentQuestionIndex;
-      questionCount.textContent = `${remaining} question${remaining !== 1 ? 's' : ''} remaining`;
+  maybeShowMidAssessmentCheckpoint() {
+    if (this.midAssessmentShown) return false;
+    const answeredCount = Object.keys(this.answers || {}).length;
+    const scoreMap = {};
+    Object.entries(this.analysisData?.dimensionScores || {}).forEach(([key, value]) => {
+      scoreMap[key] = Number(value?.weightedScore || value?.score || value?.net || 0);
+    });
+    const evaluation = evaluateMidAssessment({
+      scoreMap,
+      answeredCount,
+      minimumAnswers: 8,
+      confidenceGap: 0.1
+    });
+    if (!evaluation.ready || !evaluation.definitive) return false;
+    this.midAssessmentShown = true;
+    if (this.instrumentation.firstCheckpointQuestionIndex == null) {
+      this.instrumentation.firstCheckpointQuestionIndex = this.currentQuestionIndex + 1;
     }
+    const questionContainer = document.getElementById('questionContainer');
+    if (!questionContainer) return false;
+    SecurityUtils.safeInnerHTML(questionContainer, `
+      <div class="transition-card panel text-center">
+        <h3 class="panel-title">Mid-assessment signal established</h3>
+        <p class="panel-text">Your polarity trend is already clear. Continue to deepen the insight and map edge-case dimensions.</p>
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="continueFromTemperamentCheckpoint">Continue to refine</button>
+          <button class="btn btn-secondary" id="finishTemperamentCheckpoint">Finish with current snapshot</button>
+        </div>
+      </div>
+    `);
+    const continueBtn = document.getElementById('continueFromTemperamentCheckpoint');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', () => {
+        this.instrumentation.continueFromCheckpoint += 1;
+        this.renderCurrentQuestion();
+      });
+    }
+    const finishBtn = document.getElementById('finishTemperamentCheckpoint');
+    if (finishBtn) {
+      finishBtn.addEventListener('click', () => {
+        this.instrumentation.finishFromCheckpoint += 1;
+        this.calculateResults();
+        void this.renderResults();
+      });
+    }
+    this.saveProgress();
+    return true;
   }
 
   nextQuestion() {
@@ -976,6 +1062,7 @@ export class TemperamentEngine {
     }
 
     if (this.currentQuestionIndex < this.questionSequence.length - 1) {
+      if (this.maybeShowMidAssessmentCheckpoint()) return;
       this.currentQuestionIndex++;
       this.renderCurrentQuestion();
       this.saveProgress();
@@ -1861,6 +1948,9 @@ export class TemperamentEngine {
         answers: this.answers,
         phase1Results: this.phase1Results,
         analysisData: this.analysisData,
+        hintFlags: this.hintFlags,
+        midAssessmentShown: this.midAssessmentShown,
+        instrumentation: this.instrumentation,
         timestamp: new Date().toISOString()
       };
       this.dataStore.save('progress', progressData);
@@ -1887,6 +1977,10 @@ export class TemperamentEngine {
       this.answers = data.answers || {};
       this.phase1Results = data.phase1Results || null;
       this.analysisData = data.analysisData || this.analysisData;
+      this.hintFlags = { ...this.hintFlags, ...(data.hintFlags || {}) };
+      this.midAssessmentShown = Boolean(data.midAssessmentShown);
+      this.instrumentation = { ...this.instrumentation, ...(data.instrumentation || {}) };
+      persistHintFlags(this.hintStorageKey, this.hintFlags);
       this.applySuiteGenderFromArchetypeIfNeeded();
 
       // PRIORITY: If we have completed results, show report immediately on revisit

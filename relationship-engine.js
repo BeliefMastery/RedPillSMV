@@ -8,6 +8,15 @@ import { ErrorHandler, DataStore, DOMUtils, SecurityUtils } from './shared/utils
 import { downloadFile, generateReadableReport } from './shared/export-utils.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm } from './shared/confirm-modal.js';
+import {
+  applyProgressSnapshotToDom,
+  attachRangeTouchGuard,
+  buildProgressSnapshot,
+  evaluateMidAssessment,
+  loadHintFlags,
+  persistHintFlags,
+  smoothScrollQuestionTop
+} from './shared/questionnaire-ux.js';
 
 // Data modules - will be loaded lazily
 let COMPATIBILITY_POINTS, IMPACT_TIER_WEIGHTS, SCORING_THRESHOLDS, SEVERITY_TIERS;
@@ -37,6 +46,12 @@ export class RelationshipEngine {
     this.stage2TransitionShown = false;
     this.stage3TransitionShown = false;
     this.groundingPauseShown = false;
+    this.midAssessmentShown = false;
+    this.instrumentation = {
+      firstCheckpointQuestionIndex: null,
+      continueFromCheckpoint: 0,
+      finishFromCheckpoint: 0
+    };
     this.analysisData = {
       timestamp: new Date().toISOString(),
       stage1Results: {},
@@ -49,6 +64,14 @@ export class RelationshipEngine {
       crossDomainSpillover: {}
     };
     this.baseSectionTitleText = null;
+    this.hintStorageKey = 'relationship-assessment:ux-hints';
+    this.hintFlags = loadHintFlags(this.hintStorageKey);
+    this.midAssessmentShown = false;
+    this.instrumentation = {
+      firstCheckpointQuestionIndex: null,
+      continueFromCheckpoint: 0,
+      finishFromCheckpoint: 0
+    };
     
     // Initialize debug reporter
     this.debugReporter = createDebugReporter('RelationshipEngine');
@@ -719,6 +742,7 @@ export class RelationshipEngine {
     const tipText = isViability
       ? 'Rate how true this is for your relationship (0 = not at all, 10 = fully).'
       : 'Rate your current relationship experience in this area (0 = significant problems, 10 = excellent alignment). I experience... I find myself...';
+    const showSliderHint = !this.hintFlags.hasSeenSliderHint;
 
     SecurityUtils.safeInnerHTML(questionContainer, `
       <div class="question-block">
@@ -738,26 +762,33 @@ export class RelationshipEngine {
           </div>
           <span class="scale-value" id="sliderValue">${savedAnswer}</span>
         </div>
-        <p style="font-size: 0.9em; color: var(--muted); margin-top: 0.5rem; font-style: italic;">
-          ${SecurityUtils.sanitizeHTML(tipText)}
-        </p>
+        ${showSliderHint ? `<details class="question-help-toggle" open>
+          <summary>How to use this slider</summary>
+          <p style="font-size: 0.9em; color: var(--muted); margin-top: 0.5rem; font-style: italic;">
+            ${SecurityUtils.sanitizeHTML(tipText)}
+          </p>
+        </details>` : ''}
       </div>
     `);
 
     const slider = document.getElementById('questionSlider');
     const sliderValueSpan = document.getElementById('sliderValue');
     if (slider && sliderValueSpan) {
+      attachRangeTouchGuard(slider);
       slider.oninput = (event) => {
         sliderValueSpan.textContent = event.target.value;
         this.answers[currentQ.id] = parseInt(event.target.value);
+        if (!this.hintFlags.hasSeenSliderHint) {
+          this.hintFlags.hasSeenSliderHint = true;
+          persistHintFlags(this.hintStorageKey, this.hintFlags);
+          const toggle = questionContainer.querySelector('.question-help-toggle');
+          if (toggle) toggle.remove();
+        }
         this.saveProgress();
       };
     }
 
-// Scroll to question after rendering
-    setTimeout(() => {
-      questionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    setTimeout(() => smoothScrollQuestionTop('questionContainer'), 100);
     
     prevBtn.disabled = this.currentQuestionIndex === 0;
     nextBtn.textContent = this.currentQuestionIndex === this.questionSequence.length - 1 ? 'Finish Assessment' : 'Next';
@@ -770,6 +801,7 @@ export class RelationshipEngine {
     }
 
     if (this.currentQuestionIndex < this.questionSequence.length - 1) {
+      if (this.maybeShowMidAssessmentCheckpoint()) return;
       this.currentQuestionIndex++;
       this.renderCurrentQuestion();
       this.updateProgressBar();
@@ -1206,11 +1238,71 @@ export class RelationshipEngine {
   }
 
   updateProgressBar() {
-    const progressBarFill = document.getElementById('progressBarFill');
-    if (progressBarFill) {
-      const progress = ((this.currentQuestionIndex + 1) / this.questionSequence.length) * 100;
-      progressBarFill.style.width = `${progress}%`; // Progress bar width is dynamic, keep inline
+    const total = this.questionSequence.length || 1;
+    const snapshot = buildProgressSnapshot({
+      phaseIndex: this.activePhase === 'viability' ? 2 : 1,
+      phaseTotal: this.assessmentMode === 'both' ? 2 : 1,
+      questionIndexInPhase: this.currentQuestionIndex + 1,
+      questionTotalInPhase: total,
+      overallQuestionIndex: this.currentQuestionIndex + 1,
+      overallQuestionTotal: total
+    });
+    applyProgressSnapshotToDom({
+      snapshot,
+      progressBarId: 'progressBarFill',
+      phaseLabelId: 'phaseCounter',
+      questionLabelId: 'questionCounter'
+    });
+  }
+
+  maybeShowMidAssessmentCheckpoint() {
+    if (this.midAssessmentShown) return false;
+    const answeredCount = Object.keys(this.answers || {}).length;
+    const scoreMap = {};
+    Object.entries(this.answers || {}).forEach(([key, value]) => {
+      scoreMap[key] = Number(value) || 0;
+    });
+    const evaluation = evaluateMidAssessment({
+      scoreMap,
+      answeredCount,
+      minimumAnswers: 6,
+      confidenceGap: 0.08
+    });
+    if (!evaluation.ready || !evaluation.definitive) return false;
+    this.midAssessmentShown = true;
+    if (this.instrumentation.firstCheckpointQuestionIndex == null) {
+      this.instrumentation.firstCheckpointQuestionIndex = this.currentQuestionIndex + 1;
     }
+    const container = document.getElementById('questionContainer');
+    if (!container) return false;
+    SecurityUtils.safeInnerHTML(container, `
+      <div class="transition-card panel text-center">
+        <h3 class="panel-title">Mid-assessment relationship signal</h3>
+        <p class="panel-text">
+          We already have a strong early read on your relationship dynamics. Continue to refine the areas that can customize your guidance.
+        </p>
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="continueFromRelationshipCheckpoint">Continue to refine</button>
+          <button class="btn btn-secondary" id="finishRelationshipCheckpoint">Finish with current snapshot</button>
+        </div>
+      </div>
+    `);
+    const continueBtn = document.getElementById('continueFromRelationshipCheckpoint');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', () => {
+        this.instrumentation.continueFromCheckpoint += 1;
+        this.renderCurrentQuestion();
+      });
+    }
+    const finishBtn = document.getElementById('finishRelationshipCheckpoint');
+    if (finishBtn) {
+      finishBtn.addEventListener('click', () => {
+        this.instrumentation.finishFromCheckpoint += 1;
+        this.completeStage();
+      });
+    }
+    this.saveProgress();
+    return true;
   }
 
   calculateResults() {
@@ -1816,6 +1908,9 @@ export class RelationshipEngine {
         stage2TransitionShown: this.stage2TransitionShown,
         stage3TransitionShown: this.stage3TransitionShown,
         groundingPauseShown: this.groundingPauseShown,
+        hintFlags: this.hintFlags,
+        midAssessmentShown: this.midAssessmentShown,
+        instrumentation: this.instrumentation,
         timestamp: new Date().toISOString()
       };
       this.dataStore.save('progress', progressData);
@@ -1853,6 +1948,10 @@ export class RelationshipEngine {
       this.stage2TransitionShown = data.stage2TransitionShown || false;
       this.stage3TransitionShown = data.stage3TransitionShown || false;
       this.groundingPauseShown = data.groundingPauseShown || false;
+      this.hintFlags = { ...this.hintFlags, ...(data.hintFlags || {}) };
+      this.midAssessmentShown = Boolean(data.midAssessmentShown);
+      this.instrumentation = { ...this.instrumentation, ...(data.instrumentation || {}) };
+      persistHintFlags(this.hintStorageKey, this.hintFlags);
 
       const hasConflictResults = this.analysisData && this.analysisData.compatibilityScores && Object.keys(this.analysisData.compatibilityScores).length > 0;
       const hasViabilityResults = this.viabilityScoresByDimension && Object.keys(this.viabilityScoresByDimension).length > 0;

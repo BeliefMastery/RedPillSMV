@@ -50,6 +50,15 @@ import {
   premiumBlocksPolarityAttractionActions,
   refreshPolarityAttractionEntitlementFromPlay
 } from './shared/premium-entitlement.js';
+import {
+  applyProgressSnapshotToDom,
+  attachRangeTouchGuard,
+  buildProgressSnapshot,
+  evaluateMidAssessment,
+  loadHintFlags,
+  persistHintFlags,
+  smoothScrollQuestionTop
+} from './shared/questionnaire-ux.js';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 const ATTRACTION_PROGRESS_KEY = 'attraction-assessment:progress';
@@ -74,6 +83,14 @@ export class AttractionEngine {
     this.preferences = {};
     this.smv = {};
     this.baseSectionTitleText = null;
+    this.hintStorageKey = 'attraction-assessment:ux-hints';
+    this.hintFlags = loadHintFlags(this.hintStorageKey);
+    this.midAssessmentShownByPhase = {};
+    this.instrumentation = {
+      firstCheckpointQuestionIndex: null,
+      continueFromCheckpoint: 0,
+      finishFromCheckpoint: 0
+    };
 
     this.debugReporter = createDebugReporter('AttractionEngine');
     this.debugReporter.markInitialized();
@@ -245,6 +262,9 @@ export class AttractionEngine {
         responses: this.responses,
         allocationResponses: this.allocationResponses,
         preferences: this.preferences,
+        hintFlags: this.hintFlags,
+        midAssessmentShownByPhase: this.midAssessmentShownByPhase,
+        instrumentation: this.instrumentation,
         savedAt: new Date().toISOString()
       }));
     } catch (e) {
@@ -281,6 +301,10 @@ export class AttractionEngine {
       this.responses = data.responses || {};
       this.allocationResponses = data.allocationResponses || {};
       this.preferences = data.preferences || {};
+      this.hintFlags = { ...this.hintFlags, ...(data.hintFlags || {}) };
+      this.midAssessmentShownByPhase = data.midAssessmentShownByPhase || {};
+      this.instrumentation = { ...this.instrumentation, ...(data.instrumentation || {}) };
+      persistHintFlags(this.hintStorageKey, this.hintFlags);
 
       this.setReportHeaderState(false);
       this.ui.transition('assessment');
@@ -363,6 +387,76 @@ export class AttractionEngine {
   setNavVisibility(visible) {
     const nav = document.querySelector('.navigation-buttons');
     if (nav) nav.style.display = visible ? '' : 'none';
+  }
+
+  updateProgressUI(questionTotal = 1) {
+    const clusters = this.getClusters();
+    const totalPhases = Object.keys(clusters).length || 1;
+    const snapshot = buildProgressSnapshot({
+      phaseIndex: Math.max(1, this.currentPhase + 1),
+      phaseTotal: totalPhases,
+      questionIndexInPhase: Math.max(1, this.currentQuestionIndex + 1),
+      questionTotalInPhase: Math.max(1, questionTotal),
+      overallQuestionIndex: Math.max(1, this.currentQuestionIndex + 1),
+      overallQuestionTotal: Math.max(1, questionTotal)
+    });
+    applyProgressSnapshotToDom({
+      snapshot,
+      progressBarId: 'progressFill',
+      phaseLabelId: 'phaseIndicator',
+      questionLabelId: 'questionCounter'
+    });
+  }
+
+  maybeShowMidAssessmentCheckpoint(questionTotal) {
+    const phaseKey = this.currentPhase;
+    if (this.midAssessmentShownByPhase[phaseKey]) return false;
+    const answeredInPhase = this.currentQuestionIndex + 1;
+    const scoreMap = {};
+    Object.entries(this.responses || {}).forEach(([key, value]) => {
+      scoreMap[key] = Number(value) || 0;
+    });
+    const evaluation = evaluateMidAssessment({
+      scoreMap,
+      answeredCount: answeredInPhase,
+      minimumAnswers: Math.max(4, Math.floor((questionTotal || 1) * 0.45)),
+      confidenceGap: 0.08
+    });
+    if (!evaluation.ready || !evaluation.definitive) return false;
+    this.midAssessmentShownByPhase[phaseKey] = true;
+    if (this.instrumentation.firstCheckpointQuestionIndex == null) {
+      this.instrumentation.firstCheckpointQuestionIndex = this.currentQuestionIndex + 1;
+    }
+    const container = document.getElementById('questionContainer');
+    if (!container) return false;
+    SecurityUtils.safeInnerHTML(container, `
+      <div class="transition-card panel text-center">
+        <h3 class="panel-title">Mid-assessment snapshot</h3>
+        <p class="panel-text">
+          We already have a strong early signal in this phase. Continue to refine cluster overlap and get more tailored recommendations.
+        </p>
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="continueFromAttractionCheckpoint">Continue to refine</button>
+          <button class="btn btn-secondary" id="finishAttractionCheckpoint">Finish with current snapshot</button>
+        </div>
+      </div>
+    `);
+    const continueBtn = document.getElementById('continueFromAttractionCheckpoint');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', () => {
+        this.instrumentation.continueFromCheckpoint += 1;
+        this.showPhaseQuestions(true);
+      });
+    }
+    const finishBtn = document.getElementById('finishAttractionCheckpoint');
+    if (finishBtn) {
+      finishBtn.addEventListener('click', () => {
+        this.instrumentation.finishFromCheckpoint += 1;
+        this.calculateAndShowResults();
+      });
+    }
+    this.saveInProgress();
+    return true;
   }
 
   showGenderSelection() {
@@ -527,9 +621,16 @@ export class AttractionEngine {
     };
     sliders.forEach((slider) => {
       const idx = Number(slider.dataset.allocIndex);
+      attachRangeTouchGuard(slider);
       slider.addEventListener('input', () => {
         state = this.redistributeAllocationPercents(state, idx, slider.value, total);
         sync();
+        if (!this.hintFlags.hasSeenAllocationHint) {
+          this.hintFlags.hasSeenAllocationHint = true;
+          persistHintFlags(this.hintStorageKey, this.hintFlags);
+          const helper = block.querySelector('.value-allocation-helper');
+          if (helper) helper.remove();
+        }
       });
     });
     sync();
@@ -627,6 +728,7 @@ export class AttractionEngine {
         <button class="btn btn-primary btn-large" id="startPhaseBtn">Begin Phase ${this.currentPhase + 1}</button>
       </div>`;
     document.getElementById('startPhaseBtn')?.addEventListener('click', () => this.showPhaseQuestions());
+    this.updateProgressUI(phase.questions.length || 1);
   }
 
   showPhaseQuestions(isResume = false) {
@@ -650,7 +752,7 @@ export class AttractionEngine {
         const total = Number(q.allocationTotal) || 100;
         optsHtml = `
           <div class="value-allocation-question" data-allocation-question="${SecurityUtils.sanitizeHTML(q.id)}">
-            <p class="value-allocation-helper">One shared budget: ${total}%. Moving one slider up lowers the others proportionally.</p>
+            ${this.hintFlags.hasSeenAllocationHint ? '' : `<details class="question-help-toggle" open><summary>How these sliders work</summary><p class="value-allocation-helper">One shared budget: ${total}%. Moving one slider up lowers the others proportionally.</p></details>`}
             <div class="value-allocation-list">
               ${labels.map((label, i) => `
                 <div class="value-allocation-item">
@@ -699,12 +801,14 @@ export class AttractionEngine {
     this.setNavVisibility(true);
     const prog = document.getElementById('questionProgress');
     if (prog) prog.textContent = `Question ${this.currentQuestionIndex + 1} of ${questions.length}`;
+    this.updateProgressUI(questions.length);
     questions.forEach((q, idx) => {
       if (q.type !== 'value_allocation') return;
       const block = container.querySelector(`.question-block[data-question-index="${idx}"][data-phase="${phaseName}"]`);
       this.setupAllocationControls(block, q);
     });
     this.updatePrevNextButtons();
+    smoothScrollQuestionTop('questionContainer');
     this.saveInProgress();
   }
 
@@ -753,6 +857,9 @@ export class AttractionEngine {
       }
     }
     this.saveInProgress();
+    if (this.maybeShowMidAssessmentCheckpoint(questions.length)) {
+      return;
+    }
 
     if (this.currentQuestionIndex >= questions.length - 1) {
       this.completePhase();
@@ -767,6 +874,8 @@ export class AttractionEngine {
       const prog = document.getElementById('questionProgress');
       if (prog) prog.textContent = `Question ${this.currentQuestionIndex + 1} of ${questions.length}`;
     }
+    this.updateProgressUI(questions.length);
+    smoothScrollQuestionTop('questionContainer');
     this.updatePrevNextButtons();
     this.saveInProgress();
   }
@@ -786,6 +895,8 @@ export class AttractionEngine {
       const prog = document.getElementById('questionProgress');
       if (prog) prog.textContent = `Question ${this.currentQuestionIndex + 1} of ${questions.length}`;
     }
+    this.updateProgressUI(questions.length);
+    smoothScrollQuestionTop('questionContainer');
     this.updatePrevNextButtons();
     this.saveInProgress();
   }

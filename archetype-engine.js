@@ -24,6 +24,16 @@ import {
   evaluatePhase6Decision,
   canonicalFamilyKeyFromNode
 } from './shared/archetype-phase6-logic.mjs';
+import {
+  applyProgressSnapshotToDom,
+  attachRangeTouchGuard,
+  buildProgressSnapshot,
+  evaluateMidAssessment,
+  loadHintFlags,
+  persistHintFlags,
+  prioritizeQuestionsForTopCandidates,
+  smoothScrollQuestionTop
+} from './shared/questionnaire-ux.js';
 
 // Share of identification ranking that follows within-family refinement (phase2+phase6) vs raw weighted.
 // Reduces defaulting to vanilla subtypes when questions mostly tag the base id (e.g. alpha) but variants show clearer subtype signal.
@@ -107,6 +117,17 @@ export class ArchetypeEngine {
     this.baseSectionTitleText = null;
     this.shuffledOptions = {};
     this.shuffledVignettes = {};
+    this.hintStorageKey = 'archetype-assessment:ux-hints';
+    this.hintFlags = loadHintFlags(this.hintStorageKey);
+    this.midAssessmentShownByPhase = {};
+    this.featureFlags = {
+      adaptiveQuestionOrdering: true
+    };
+    this.instrumentation = {
+      firstCheckpointQuestionIndex: null,
+      continueFromCheckpoint: 0,
+      finishFromCheckpoint: 0
+    };
     this.analysisData = {
       timestamp: new Date().toISOString(),
       gender: null,
@@ -781,6 +802,7 @@ showGenderSelection() {
     this.debugReporter.recordQuestionCount(questions.length);
     // Shuffle to mitigate order bias
     this.questionSequence.sort(() => Math.random() - 0.5);
+    this.applyAdaptiveOrderingIfEnabled();
     this.currentPhase = 1;
     this.currentQuestionIndex = 0;
   }
@@ -811,6 +833,7 @@ showGenderSelection() {
     this.debugReporter.recordQuestionCount(questions.length);
     // Shuffle to mitigate order bias
     this.questionSequence.sort(() => Math.random() - 0.5);
+    this.applyAdaptiveOrderingIfEnabled();
   }
 
   /**
@@ -842,6 +865,7 @@ showGenderSelection() {
     this.debugReporter.recordQuestionCount(questions.length);
     // Shuffle to mitigate order bias
     this.questionSequence.sort(() => Math.random() - 0.5);
+    this.applyAdaptiveOrderingIfEnabled();
   }
   
   filterQuestionsByIQ(questions, targetCount) {
@@ -940,6 +964,36 @@ showGenderSelection() {
     return selected.slice(0, targetCount);
   }
 
+  applyAdaptiveOrderingIfEnabled() {
+    if (!this.featureFlags.adaptiveQuestionOrdering || !Array.isArray(this.questionSequence) || this.questionSequence.length < 3) {
+      return;
+    }
+    const topCandidates = Object.entries(this.archetypeScores || {})
+      .sort((a, b) => (b[1]?.weighted || 0) - (a[1]?.weighted || 0))
+      .slice(0, 2)
+      .map(([key]) => key);
+    if (!topCandidates.length) return;
+    this.questionSequence = prioritizeQuestionsForTopCandidates(this.questionSequence, topCandidates);
+  }
+
+  applySavedQuestionOrder(savedIds) {
+    if (!Array.isArray(savedIds) || !savedIds.length || !Array.isArray(this.questionSequence) || !this.questionSequence.length) {
+      return;
+    }
+    const byId = new Map(this.questionSequence.map((q) => [q.id, q]));
+    const ordered = [];
+    savedIds.forEach((id) => {
+      const q = byId.get(id);
+      if (q) {
+        ordered.push(q);
+        byId.delete(id);
+      }
+    });
+    if (ordered.length) {
+      this.questionSequence = [...ordered, ...Array.from(byId.values())];
+    }
+  }
+
   /**
    * Build Phase 4 question sequence
    * @returns {Promise<void>}
@@ -1035,9 +1089,7 @@ showGenderSelection() {
     this.debugReporter.recordRender('question', renderDuration);
 
     // Scroll to question after rendering
-    setTimeout(() => {
-      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    setTimeout(() => smoothScrollQuestionTop('questionContainer'), 100);
     
     // Focus management for accessibility
     const firstInput = container.querySelector('input, button, select, textarea');
@@ -1206,10 +1258,17 @@ showGenderSelection() {
         for (let k = 0; k < n; k++) {
           const el = document.getElementById(`alloc_${qid}_${k}`);
           if (!el) continue;
+          attachRangeTouchGuard(el);
           el.addEventListener('input', () => {
             const raw = parseInt(el.value, 10);
             state = redistributeAllocationPercents(state, k, raw, total);
             syncDom();
+            if (!this.hintFlags.hasSeenAllocationHint) {
+              this.hintFlags.hasSeenAllocationHint = true;
+              persistHintFlags(this.hintStorageKey, this.hintFlags);
+              const helper = document.querySelector('.question-helper');
+              if (helper) helper.remove();
+            }
             this.processAnswer(question, state.slice());
           });
         }
@@ -1223,7 +1282,7 @@ showGenderSelection() {
     return `
       <div class="question-card value-allocation-card">
         <h3>${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
-        <p class="question-helper">One shared budget: ${total}%. Moving a slider up lowers the others in proportion to how much each still had left.</p>
+        ${this.hintFlags.hasSeenAllocationHint ? '' : `<details class="question-help-toggle" open><summary>How these sliders work</summary><p class="question-helper">One shared budget: ${total}%. Moving a slider up lowers the others in proportion to how much each still had left.</p></details>`}
         <p class="value-allocation-total-line">Total: <strong id="alloc_sum_${question.id}">${percents.reduce((a, b) => a + b, 0)}%</strong></p>
         <div class="value-allocation-list">
           ${rowsHTML}
@@ -1438,6 +1497,7 @@ showGenderSelection() {
     }
 
     this.saveProgress();
+    this.maybeShowMidAssessmentCheckpoint();
   }
 
   scorePhase1Answer(question, answerValue, prevAllocationPercents = null) {
@@ -3535,16 +3595,21 @@ showGenderSelection() {
   }
 
   updateNavigation() {
-    const progress = ((this.currentQuestionIndex + 1) / this.questionSequence.length) * 100;
-    const progressBar = document.getElementById('progressBar');
-    if (progressBar) {
-      progressBar.style.width = `${progress}%`;
-    }
-
-    const questionCounter = document.getElementById('questionCounter');
-    if (questionCounter) {
-      questionCounter.textContent = `Question ${this.currentQuestionIndex + 1} of ${this.questionSequence.length} (Phase ${this.currentPhase})`;
-    }
+    const total = this.questionSequence.length || 1;
+    const snapshot = buildProgressSnapshot({
+      phaseIndex: Math.max(1, Math.floor(this.currentPhase) || 1),
+      phaseTotal: 6,
+      questionIndexInPhase: this.currentQuestionIndex + 1,
+      questionTotalInPhase: total,
+      overallQuestionIndex: this.currentQuestionIndex + 1,
+      overallQuestionTotal: total
+    });
+    applyProgressSnapshotToDom({
+      snapshot,
+      progressBarId: 'progressBar',
+      phaseLabelId: 'phaseIndicator',
+      questionLabelId: 'questionCounter'
+    });
 
     const prevBtn = document.getElementById('prevQuestion');
     if (prevBtn) {
@@ -3568,6 +3633,64 @@ showGenderSelection() {
     if (questionContainer) questionContainer.classList.add('hidden');
     this.setReportHeaderState(true);
     this.ui.transition('results');
+  }
+
+  getArchetypeWeightedScoreMap() {
+    const scoreMap = {};
+    Object.entries(this.archetypeScores || {}).forEach(([key, value]) => {
+      scoreMap[key] = Number(value?.weighted || value?.total || 0);
+    });
+    return scoreMap;
+  }
+
+  maybeShowMidAssessmentCheckpoint() {
+    const phaseKey = Math.max(1, Math.floor(this.currentPhase) || 1);
+    if (this.midAssessmentShownByPhase[phaseKey]) return;
+    const answeredCount = Object.keys(this.answers || {}).length;
+    const evaluation = evaluateMidAssessment({
+      scoreMap: this.getArchetypeWeightedScoreMap(),
+      answeredCount,
+      minimumAnswers: 8,
+      confidenceGap: 0.1
+    });
+    if (!evaluation.ready || !evaluation.definitive) return;
+    this.midAssessmentShownByPhase[phaseKey] = true;
+    if (this.instrumentation.firstCheckpointQuestionIndex == null) {
+      this.instrumentation.firstCheckpointQuestionIndex = this.currentQuestionIndex + 1;
+    }
+    const container = document.getElementById('questionContainer');
+    if (!container) return;
+    const topName = ARCHETYPES?.[evaluation.top]?.name || evaluation.top;
+    const runnerUpName = ARCHETYPES?.[evaluation.runnerUp]?.name || evaluation.runnerUp;
+    SecurityUtils.safeInnerHTML(container, `
+      <div class="transition-card panel text-center">
+        <h3 class="panel-title">Mid-assessment signal: ${SecurityUtils.sanitizeHTML(topName)}</h3>
+        <p class="panel-text">
+          You are clearly trending ${SecurityUtils.sanitizeHTML(topName)} at this point. There are still some signals near ${SecurityUtils.sanitizeHTML(runnerUpName)}.
+        </p>
+        <p class="panel-text">
+          Continue to identify subtype precision and adjacent archetype overlap for a more tailored report.
+        </p>
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="continueFromCheckpoint">Continue to refine</button>
+          <button class="btn btn-secondary" id="finishFromCheckpoint">Finish with current snapshot</button>
+        </div>
+      </div>
+    `);
+    const continueBtn = document.getElementById('continueFromCheckpoint');
+    if (continueBtn) {
+      continueBtn.addEventListener('click', () => {
+        this.instrumentation.continueFromCheckpoint += 1;
+        this.renderCurrentQuestion();
+      });
+    }
+    const finishBtn = document.getElementById('finishFromCheckpoint');
+    if (finishBtn) {
+      finishBtn.addEventListener('click', async () => {
+        this.instrumentation.finishFromCheckpoint += 1;
+        await this.finalizeResults({ skipIdentify: false });
+      });
+    }
   }
 
   setReportHeaderState(isReport) {
@@ -3603,7 +3726,11 @@ showGenderSelection() {
         aspirationAnswers: this.aspirationAnswers,
         respectContextAnswers: this.respectContextAnswers,
         archetypeScores: this.archetypeScores,
-        analysisData: this.analysisData
+        analysisData: this.analysisData,
+        hintFlags: this.hintFlags,
+        midAssessmentShownByPhase: this.midAssessmentShownByPhase,
+        instrumentation: this.instrumentation,
+        questionSequenceIds: (this.questionSequence || []).map((q) => q.id)
       };
       this.dataStore.save('progress', progress);
     } catch (error) {
@@ -3631,6 +3758,10 @@ showGenderSelection() {
       this.respectContextAnswers = progress.respectContextAnswers || {};
       this.archetypeScores = progress.archetypeScores || {};
       this.analysisData = progress.analysisData || this.analysisData;
+      this.hintFlags = { ...this.hintFlags, ...(progress.hintFlags || {}) };
+      this.midAssessmentShownByPhase = progress.midAssessmentShownByPhase || {};
+      this.instrumentation = { ...this.instrumentation, ...(progress.instrumentation || {}) };
+      persistHintFlags(this.hintStorageKey, this.hintFlags);
 
       // Migration: normalize older saved entries missing familyType.
       const normalizeSavedEntry = (entry) => {
@@ -3714,6 +3845,7 @@ showGenderSelection() {
             || []
         );
       }
+      this.applySavedQuestionOrder(progress.questionSequenceIds);
 
       if (this.currentPhase <= 6 && this.questionSequence.length > 0) {
         this.renderCurrentQuestion();
