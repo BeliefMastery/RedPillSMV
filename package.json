@@ -5,7 +5,6 @@
   "main": "archetype-engine.js",
   "scripts": {
     "copy:www": "node scripts/copy-to-www.js",
-    "copy:www+v3": "node scripts/copy-to-www.js www-v3",
     "cap:sync": "npm run copy:www && npx cap sync android",
     "serve": "serve . -p 3000",
     "serve:www": "npm run copy:www && serve www -p 3000",
