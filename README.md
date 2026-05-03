@@ -2,6 +2,10 @@
 
 Map where you fit in the modern relationship marketplace. A self-contained app of **four assessment tools**: modern archetype identification, attraction/SMV, polarity (temperament), and relationship viability. Offline, no account, no tracking. Built for **static web** (e.g. GitHub Pages) and **Capacitor Android**.
 
+### Engine layout (for review or reuse)
+
+Each tool is backed by a dedicated **engine module** (client-side scoring, phased flows, and co-located data) with shared orchestration in `shared/engine-ui-controller.js`. Each `*-engine.js` plus its data folder or module is a self-contained slice: deterministic assessment logic, export, and UI wiring without a SPA framework.
+
 **Suite flow:** Archetype → Polarity → Attraction (sequential unlock); Relationship is separate. **Android app:** Polarity and Attraction require a **one-time Google Play purchase** after prerequisites are met; web builds stay fully free. See [`docs/ANDROID_IAP.md`](docs/ANDROID_IAP.md).
 
 **Docs:** [`docs/PLAY_STORE_PUBLISHING_CHECKLIST.md`](docs/PLAY_STORE_PUBLISHING_CHECKLIST.md) (Android publish + Play Billing) · [`docs/DOCUMENTATION_INDEX.md`](docs/DOCUMENTATION_INDEX.md) (all Markdown) · [`docs/UI_AND_PLATFORM_ARCHITECTURE.md`](docs/UI_AND_PLATFORM_ARCHITECTURE.md) (themes, swipe, sliders, shared UI).
@@ -10,12 +14,12 @@ Map where you fit in the modern relationship marketplace. A self-contained app o
 
 ## What’s in the app
 
-| Tool | Page | Description |
-|------|------|-------------|
-| **Modern Archetype Identification** | `archetype.html` | Identifies primary, secondary, and tertiary archetypes using normalized family-node class rollup (all subtypes including vanilla), subtype refinement, and an adaptive final determinative phase when subclass signal is sparse or tied. |
-| **Attraction, Status and Selection** | `attraction.html` | Gender-specific SMV: coalition rank, reproductive confidence, axis of attraction (weighted subcategory scoring for physical/fertility signifiers; optional skip on one sensitive item), market position, recommendations. |
-| **Polarity Position Mapping** | `temperament.html` | Masculine–feminine temperament mapping, dimension scores, cross-polarity detection, and context sensitivity. |
-| **Relationships** | `relationship.html` | Compatibility and strain across multiple points; viability evaluation; action strategies per strain point. |
+| Tool | Page | Engine & data | Description |
+|------|------|---------------|-------------|
+| **Modern Archetype Identification** | `archetype.html` | `archetype-engine.js`, `archetype-data/` | Identifies primary, secondary, and tertiary archetypes using normalized family-node class rollup (all subtypes including vanilla), subtype refinement, and an adaptive final determinative phase when subclass signal is sparse or tied. |
+| **Attraction, Status and Selection** | `attraction.html` | `attraction-engine.js`, `attraction-data.js` | Gender-specific SMV: coalition rank, reproductive confidence, axis of attraction (weighted subcategory scoring for physical/fertility signifiers; optional skip on one sensitive item), market position, recommendations. |
+| **Polarity Position Mapping** | `temperament.html` | `temperament-engine.js`, `temperament-data/` | Masculine–feminine temperament mapping, dimension scores, cross-polarity detection, and context sensitivity. |
+| **Relationships** | `relationship.html` | `relationship-engine.js`, `relationship-data/` | Compatibility and strain across multiple points; viability evaluation; action strategies per strain point. |
 
 Each assessment runs in-browser. Progress can be saved locally. After completion, **Save results** produces a single **readable HTML report** (open in browser, print, or save as PDF). There are no separate JSON, CSV, or “Executive Brief” exports; the saved report is the only export.
 
@@ -135,11 +139,9 @@ Assessments run in the browser. Progress and results can be stored locally (e.g.
 
 ---
 
-## License and attribution
+## License
 
-© 2025 Belief Mastery & Sovereign of Mind. All rights reserved.
-
-Frameworks referenced in the tools: Belief Mastery, Sovereign of Mind.
+© 2025–2026 Unplugged Dynamics. All rights reserved.
 
 ---
 

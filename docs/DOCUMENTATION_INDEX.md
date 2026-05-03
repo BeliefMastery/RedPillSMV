@@ -2,6 +2,8 @@
 
 Central map of Markdown in this repository (excluding `node_modules/` and generated copies under `www/` / `android/.../public/`). Use this when onboarding or porting the app.
 
+**README highlights:** Overview, per-tool **engine** (`*-engine.js`) and data table, scripts, web vs Android—see [README](../README.md). Internal engine-validation patterns: [engine-proofing-blueprint.md](engine-proofing-blueprint.md).
+
 | Document | Purpose |
 |----------|---------|
 | [README.md](../README.md) | Project overview, structure, scripts, web vs Android, privacy |
