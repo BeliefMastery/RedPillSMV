@@ -141,7 +141,14 @@ function resetSuiteStartGateHint() {
 }
 
 async function bootSuiteNavGates() {
-  if (isNativeAndroid()) await refreshPolarityAttractionEntitlementFromPlay();
+  // Apply stage locks immediately from localStorage; do not block first paint on Play billing.
+  initSuiteNavGates();
+  if (!isNativeAndroid()) return;
+  try {
+    await refreshPolarityAttractionEntitlementFromPlay();
+  } catch {
+    // keep cached unlock flag; user can use Restore
+  }
   initSuiteNavGates();
 }
 

@@ -4,7 +4,7 @@
  */
 import { Capacitor } from './vendor/capacitor-core.js';
 import { showAlert } from './confirm-modal.js';
-import { getStageGateState } from './suite-completion.js';
+import { getStageGateState, invalidateSuiteCompletionCache } from './suite-completion.js';
 
 /** Must match the managed product id in Play Console (see docs/ANDROID_IAP.md). */
 export const POLARITY_ATTRACTION_PRODUCT_ID = 'com.beliefmastery.redpill.unlock_polarity_attraction';
@@ -48,6 +48,7 @@ function setStoredUnlockFlag(on) {
   } catch {
     // no-op
   }
+  invalidateSuiteCompletionCache();
 }
 
 function transactionIsValidPurchase(t) {

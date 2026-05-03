@@ -17,6 +17,7 @@ android/
 
 # Capacitor www output (not needed if you serve from repo root)
 www/
+www-v3/
 
 # Git
 .git/

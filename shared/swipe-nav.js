@@ -33,15 +33,17 @@ function shouldIgnoreSwipeTarget(target) {
   return false;
 }
 
-/** Avoid stealing horizontal scroll from carousels / wide tables. */
+/**
+ * Avoid stealing horizontal scroll from carousels / wide tables.
+ * Fast path: scrollWidth only; only then pay for getComputedStyle (one call).
+ */
 function isInHorizontallyScrollable(el) {
-  let n = el;
-  for (let i = 0; n && n !== document.body && i < 24; i++, n = n.parentElement) {
+  let n = el instanceof Element ? el : null;
+  for (let i = 0; n && n !== document.body && i < 10; i++, n = n.parentElement) {
     try {
+      if (n.scrollWidth <= n.clientWidth + 4) continue;
       const s = getComputedStyle(n);
-      if ((s.overflowX === 'auto' || s.overflowX === 'scroll') && n.scrollWidth > n.clientWidth + 4) {
-        return true;
-      }
+      if (s.overflowX === 'auto' || s.overflowX === 'scroll') return true;
     } catch {
       break;
     }
@@ -135,16 +137,46 @@ export function initSwipeNav() {
   let tracking = false;
   let locked = false;
   let touchId = null;
+  let rafId = 0;
+  let pendingDx = 0;
+  let willChangeSet = false;
+
+  const clearRaf = () => {
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+    pendingDx = 0;
+  };
 
   const applyDrag = (dx) => {
-    document.body.style.willChange = 'transform';
+    if (!willChangeSet) {
+      document.body.style.willChange = 'transform';
+      willChangeSet = true;
+    }
     document.body.style.transform = `translate3d(${dx}px, 0, 0)`;
+  };
+
+  const scheduleDrag = (dx) => {
+    pendingDx = dx;
+    if (rafId) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = 0;
+      applyDrag(pendingDx);
+    });
+  };
+
+  const resetAfterGesture = () => {
+    clearRaf();
+    willChangeSet = false;
+    clearBodyTransform();
   };
 
   document.addEventListener(
     'touchstart',
     (ev) => {
       if (!ev.touches || ev.touches.length !== 1) return;
+      clearRaf();
       if (shouldIgnoreSwipeTarget(ev.target) || isInHorizontallyScrollable(ev.target)) {
         tracking = false;
         return;
@@ -171,7 +203,7 @@ export function initSwipeNav() {
         if (Math.abs(dx) < DIRECTION_LOCK_PX && Math.abs(dy) < DIRECTION_LOCK_PX) return;
         if (Math.abs(dy) * VERTICAL_DOMINANCE > Math.abs(dx)) {
           tracking = false;
-          clearBodyTransform();
+          resetAfterGesture();
           return;
         }
         locked = true;
@@ -179,7 +211,7 @@ export function initSwipeNav() {
       }
 
       ev.preventDefault();
-      applyDrag(dx);
+      scheduleDrag(dx);
     },
     { passive: false }
   );
@@ -189,16 +221,21 @@ export function initSwipeNav() {
     const t =
       ev.changedTouches &&
       (Array.from(ev.changedTouches).find((x) => x.identifier === touchId) || ev.changedTouches[0]);
+    const wasLocked = locked;
     tracking = false;
     touchId = null;
+    clearRaf();
 
-    if (!locked) {
+    if (!wasLocked) {
+      willChangeSet = false;
       clearBodyTransform();
       return;
     }
     locked = false;
 
     const dx = t ? t.clientX - startX : 0;
+    // Align transform with final finger position (rAF may not have run yet)
+    applyDrag(dx);
     const vw = window.innerWidth || document.documentElement.clientWidth || 320;
 
     const goNext = dx < -SWIPE_COMMIT_PX;
@@ -210,10 +247,14 @@ export function initSwipeNav() {
       const onEnd = (e) => {
         if (e.propertyName !== 'transform') return;
         document.body.removeEventListener('transitionend', onEnd);
+        willChangeSet = false;
         clearBodyTransform();
       };
       document.body.addEventListener('transitionend', onEnd);
-      window.setTimeout(() => clearBodyTransform(), 380);
+      window.setTimeout(() => {
+        willChangeSet = false;
+        clearBodyTransform();
+      }, 380);
     };
 
     if (!goNext && !goPrev) {
@@ -243,10 +284,14 @@ export function initSwipeNav() {
     const onEnd = (e) => {
       if (e.propertyName !== 'transform') return;
       document.body.removeEventListener('transitionend', onEnd);
+      willChangeSet = false;
       go();
     };
     document.body.addEventListener('transitionend', onEnd);
-    window.setTimeout(go, 420);
+    window.setTimeout(() => {
+      willChangeSet = false;
+      go();
+    }, 420);
   };
 
   document.addEventListener('touchend', finish, { passive: true });

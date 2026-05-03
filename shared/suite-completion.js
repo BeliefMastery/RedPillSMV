@@ -8,6 +8,30 @@
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 
+/** Same-tab burst dedup + cross-tab invalidation (storage event). */
+let suiteCompletionMemo = { value: null, at: 0 };
+const SUITE_COMPLETION_TTL_MS = 400;
+
+function shouldInvalidateStorageKey(key) {
+  if (!key) return true;
+  return (
+    key === 'archetype-assessment:progress' ||
+    key === ATTRACTION_RESULTS_KEY ||
+    key === 'temperament-assessment:progress' ||
+    key === 'redpill_unlock_polarity_attraction_v1'
+  );
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (shouldInvalidateStorageKey(e.key)) suiteCompletionMemo = { value: null, at: 0 };
+  });
+}
+
+export function invalidateSuiteCompletionCache() {
+  suiteCompletionMemo = { value: null, at: 0 };
+}
+
 /** @param {string|null} raw localStorage value */
 export function parseDataStoreProgress(raw) {
   if (!raw || typeof raw !== 'string') return null;
@@ -58,6 +82,14 @@ export function getArchetypeGenderForSuite() {
  * mismatch: boolean
  * }} */
 export function getSuiteCompletion() {
+  const now = Date.now();
+  if (
+    suiteCompletionMemo.value &&
+    now - suiteCompletionMemo.at < SUITE_COMPLETION_TTL_MS
+  ) {
+    return suiteCompletionMemo.value;
+  }
+
   const archRaw = readLocalStorage('archetype-assessment:progress');
   const archData = parseDataStoreProgress(archRaw);
   const archetype = Boolean(archData?.analysisData?.primaryArchetype);
@@ -87,7 +119,7 @@ export function getSuiteCompletion() {
   const sameRespondentGender = allThree && completeGenders.length === 3 && new Set(completeGenders).size === 1;
   const mismatch = allThree && !sameRespondentGender;
 
-  return {
+  const result = {
     archetype,
     attraction,
     polarity,
@@ -100,6 +132,8 @@ export function getSuiteCompletion() {
     sameRespondentGender,
     mismatch
   };
+  suiteCompletionMemo = { value: result, at: now };
+  return result;
 }
 
 /**

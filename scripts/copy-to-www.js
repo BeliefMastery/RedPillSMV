@@ -67,18 +67,40 @@ function copyRecurse(src, dest) {
   }
 }
 
+function assertDestUnderRoot(absDest) {
+  const rel = path.relative(ROOT, absDest);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
+    throw new Error(`Refusing to write outside repo root: ${absDest}`);
+  }
+}
+
+/**
+ * @param {string} destRoot — e.g. www/ or www-v3/ (Capacitor or second-site mirror)
+ */
+function copyBundleTo(destRoot) {
+  rmrf(destRoot);
+  fs.mkdirSync(destRoot, { recursive: true });
+  INCLUDE.forEach((item) => {
+    const src = path.join(ROOT, item);
+    const dest = path.join(destRoot, item);
+    if (fs.existsSync(src)) {
+      copyRecurse(src, dest);
+      console.log('Copied:', item, '→', path.relative(ROOT, dest));
+    }
+  });
+}
+
 writeCapacitorNativePurchaseVendors();
 
-rmrf(WWW);
-fs.mkdirSync(WWW, { recursive: true });
+copyBundleTo(WWW);
 
-INCLUDE.forEach(item => {
-  const src = path.join(ROOT, item);
-  const dest = path.join(WWW, item);
-  if (fs.existsSync(src)) {
-    copyRecurse(src, dest);
-    console.log('Copied:', item);
-  }
-});
+const extraRelDirs = process.argv.slice(2).filter(Boolean);
+for (const rel of extraRelDirs) {
+  const dest = path.resolve(ROOT, rel);
+  assertDestUnderRoot(dest);
+  if (path.resolve(dest) === path.resolve(WWW)) continue;
+  copyBundleTo(dest);
+  console.log('Extra bundle:', path.relative(ROOT, dest));
+}
 
 console.log('Done. www/ ready for Capacitor.');
