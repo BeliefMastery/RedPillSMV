@@ -34,6 +34,7 @@ import {
   persistHintFlags,
   smoothScrollQuestionTop
 } from './shared/questionnaire-ux.js';
+import { bootEngineIfLegacy } from './shared/engine-spa-boot.js';
 
 // Data modules - will be loaded lazily
 let TEMPERAMENT_DIMENSIONS, INTIMATE_DYNAMICS;
@@ -231,7 +232,9 @@ export class TemperamentEngine {
   /**
    * Initialize the temperament engine
    */
-  constructor() {
+  constructor(options = {}) {
+    this.externalUI = Boolean(options.externalUI);
+    this.onNotify = typeof options.onNotify === 'function' ? options.onNotify : () => {};
     this.currentPhase = 1;
     this.currentQuestionIndex = 0;
     this.answers = {};
@@ -2087,13 +2090,7 @@ export class TemperamentEngine {
   }
 }
 
-// Initialize when DOM is ready
-// Initialize engine when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    window.temperamentEngine = new TemperamentEngine();
-  });
-} else {
+bootEngineIfLegacy(() => {
   window.temperamentEngine = new TemperamentEngine();
-}
+});
 

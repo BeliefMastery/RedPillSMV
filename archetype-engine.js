@@ -34,6 +34,7 @@ import {
   prioritizeQuestionsForTopCandidates,
   smoothScrollQuestionTop
 } from './shared/questionnaire-ux.js';
+import { bootEngineIfLegacy } from './shared/engine-spa-boot.js';
 
 // Share of identification ranking that follows within-family refinement (phase2+phase6) vs raw weighted.
 // Reduces defaulting to vanilla subtypes when questions mostly tag the base id (e.g. alpha) but variants show clearer subtype signal.
@@ -102,7 +103,9 @@ function redistributeAllocationPercents(current, changedIndex, newValue, total) 
 }
 
 export class ArchetypeEngine {
-  constructor() {
+  constructor(options = {}) {
+    this.externalUI = Boolean(options.externalUI);
+    this.onNotify = typeof options.onNotify === 'function' ? options.onNotify : () => {};
     this.currentPhase = 0; // 0 = gender selection, 0.5 = IQ bracket, 1-4 = assessment phases
     this.currentQuestionIndex = 0;
     this.gender = null; // 'male' or 'female'
@@ -3942,15 +3945,7 @@ showGenderSelection() {
   }
 }
 
-// Initialize engine when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    window.archetypeEngine = new ArchetypeEngine();
-  });
-} else {
-  // DOM already ready, but wait a tick to ensure all elements are available
-  setTimeout(() => {
-    window.archetypeEngine = new ArchetypeEngine();
-  }, 0);
-}
+bootEngineIfLegacy(() => {
+  window.archetypeEngine = new ArchetypeEngine();
+});
 

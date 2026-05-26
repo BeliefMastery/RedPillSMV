@@ -1,0 +1,125 @@
+/* Assessment UI — scoped under .bm-engine-content */
+
+.bm-engine-content {
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.bm-engine-content .btn,
+.bm-engine-content .v3-btn {
+  min-height: 44px;
+}
+
+.bm-progress {
+  height: 8px;
+  background: color-mix(in srgb, var(--v3-text) 12%, transparent);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: var(--v3-space-2);
+}
+
+.bm-progress__fill,
+.bm-engine-content .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--v3-accent), var(--v3-accent-strong));
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.bm-progress__text,
+.bm-engine-content .progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--v3-muted);
+  margin-bottom: var(--v3-space-3);
+}
+
+.bm-question-hint,
+.bm-engine-content .question-helper {
+  border-left: 3px solid var(--v3-accent);
+  background: var(--question-hint-bg);
+  padding: var(--v3-space-2) var(--v3-space-3);
+  margin-bottom: var(--v3-space-3);
+  border-radius: 0 var(--v3-radius) var(--v3-radius) 0;
+  color: var(--v3-muted);
+  font-size: 0.95rem;
+}
+
+.bm-question-stem {
+  font-size: 1.1rem;
+  color: var(--v3-heading);
+  margin-bottom: var(--v3-space-3);
+}
+
+.bm-question-nav,
+.bm-engine-content .navigation-buttons {
+  display: flex;
+  gap: var(--v3-space-2);
+  margin-top: var(--v3-space-4);
+  flex-wrap: wrap;
+}
+
+.bm-allocation-flow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--v3-space-3);
+}
+
+.bm-allocation-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--v3-space-2);
+  align-items: center;
+}
+
+.bm-allocation-row input[type="range"] {
+  width: 100%;
+}
+
+.bm-allocation-sum {
+  font-weight: 600;
+  color: var(--v3-muted);
+}
+
+.bm-allocation-sum--ok {
+  color: var(--v3-accent);
+}
+
+.bm-selection-grid {
+  display: grid;
+  gap: var(--v3-space-2);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.bm-selection-card {
+  padding: var(--v3-space-3);
+  border: 1px solid var(--v3-surface-border);
+  border-radius: var(--v3-radius);
+  cursor: pointer;
+  background: var(--v3-surface);
+}
+
+.bm-selection-card--selected {
+  border-color: var(--v3-accent);
+  box-shadow: 0 0 0 1px var(--v3-accent);
+}
+
+.bm-results-bridge {
+  margin-top: var(--v3-space-4);
+}
+
+.bm-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--v3-space-2);
+  margin-top: var(--v3-space-3);
+}
+
+.bm-engine .kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--v3-accent);
+  margin: 0 0 var(--v3-space-1);
+}

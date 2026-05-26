@@ -59,6 +59,7 @@ import {
   persistHintFlags,
   smoothScrollQuestionTop
 } from './shared/questionnaire-ux.js';
+import { bootEngineIfLegacy } from './shared/engine-spa-boot.js';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 const ATTRACTION_PROGRESS_KEY = 'attraction-assessment:progress';
@@ -74,7 +75,9 @@ function describePartnerRangeForAria(min, max) {
 }
 
 export class AttractionEngine {
-  constructor() {
+  constructor(options = {}) {
+    this.externalUI = Boolean(options.externalUI);
+    this.onNotify = typeof options.onNotify === 'function' ? options.onNotify : () => {};
     this.currentGender = null;
     this.currentPhase = -1;
     this.currentQuestionIndex = 0;
@@ -1675,8 +1678,6 @@ export class AttractionEngine {
 
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => { window.attractionEngine = new AttractionEngine(); });
-} else {
+bootEngineIfLegacy(() => {
   window.attractionEngine = new AttractionEngine();
-}
+});

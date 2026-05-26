@@ -4,11 +4,15 @@
   "description": "Modern dating and relationship evaluation—unplugged red-pill suite: archetype, SMV, polarity, viability. Realistic, no-holds-barred calibration on selection dynamics. Offline; no login; no tracking.",
   "main": "archetype-engine.js",
   "scripts": {
-    "copy:www": "node scripts/copy-to-www.js",
-    "cap:sync": "npm run copy:www && npx cap sync android",
+    "v3:dev": "vite --config v3/vite.config.js",
+    "v3:build": "vite build --config v3/vite.config.js && node scripts/post-v3-build.js",
+    "v3:preview": "npm run v3:build && serve www -p 3000",
+    "copy:www": "npm run v3:build",
+    "cap:sync": "npm run v3:build && npx cap sync android",
     "serve": "serve . -p 3000",
-    "serve:www": "npm run copy:www && serve www -p 3000",
+    "serve:www": "serve www -p 3000",
     "test": "playwright test",
+    "test:allocation": "node --test tests/allocation-scales.test.mjs",
     "test:e2e": "playwright test",
     "playwright:install": "node scripts/playwright-install.cjs",
     "smv:sensitivity": "node scripts/smv-sensitivity-check.mjs",
@@ -27,7 +31,12 @@
     "@capacitor/core": "^8.1.0",
     "@fontsource/inter": "^5.2.8",
     "@playwright/test": "^1.59.1",
-    "serve": "^14.2.4"
+    "@vitejs/plugin-react": "^4.7.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.1",
+    "serve": "^14.2.4",
+    "vite": "^6.4.2"
   },
   "dependencies": {
     "@capgo/native-purchases": "^8.3.3"

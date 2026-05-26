@@ -1,0 +1,199 @@
+/**
+ * Bridge: legacy engine DOM classes used by *-engine.js renderers.
+ * Keeps assessment pages functional without loading full style.css.
+ */
+
+.hidden {
+  display: none !important;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  background: var(--v3-nav-bg);
+  border-bottom: 1px solid var(--v3-surface-border);
+}
+
+.nav {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+.nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list a {
+  color: var(--v3-muted);
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+}
+
+.nav-list a.active,
+.nav-list a[aria-current="page"] {
+  color: var(--v3-accent);
+}
+
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  position: sticky;
+  bottom: 0;
+  background: var(--v3-nav-bg);
+  border-top: 1px solid var(--v3-surface-border);
+  padding: 0.35rem 0;
+  z-index: 100;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--v3-muted);
+  padding: 0.35rem;
+}
+
+.bottom-nav-item.active {
+  color: var(--v3-accent);
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--v3-text);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+  .nav-list:not(.active) {
+    display: none;
+  }
+  .nav-list.active {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+.hero-image img,
+.hero-img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: var(--v3-radius);
+}
+
+.tool-intro-heading {
+  font-size: 1.5rem;
+  color: var(--v3-heading);
+}
+
+.assessment-subheading,
+.tool-intro-tagline {
+  color: var(--v3-muted);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.55rem 1rem;
+  border-radius: var(--v3-radius);
+  border: 1px solid var(--border-medium);
+  background: var(--glass);
+  color: var(--brand);
+  cursor: pointer;
+  font: inherit;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: var(--v3-on-accent, #1a0c0e);
+  border-color: transparent;
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: var(--border-medium);
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.questionnaire-section,
+.results-section {
+  margin-top: 1.5rem;
+}
+
+.likert-option,
+.option-label,
+.narrative-option {
+  display: block;
+  padding: 0.75rem;
+  margin: 0.35rem 0;
+  border: 1px solid var(--v3-surface-border);
+  border-radius: var(--v3-radius);
+  cursor: pointer;
+}
+
+.likert-option.selected,
+.option-label.selected,
+.narrative-option.selected {
+  border-color: var(--v3-accent);
+  background: color-mix(in srgb, var(--v3-accent) 12%, transparent);
+}
+
+.suite-start-locked {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.suite-start-prereq-hint,
+.suite-mismatch-note {
+  color: var(--v3-muted);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.android-premium-paywall {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--v3-accent);
+  border-radius: var(--v3-radius);
+}
+
+footer {
+  margin-top: auto;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--v3-muted);
+}
+
+footer a {
+  color: var(--v3-accent);
+}
+
+.extended-explanation-panel[hidden],
+.suite-integrated-cta[hidden] {
+  display: none !important;
+}

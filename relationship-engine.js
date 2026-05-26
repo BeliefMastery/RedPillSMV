@@ -17,6 +17,7 @@ import {
   persistHintFlags,
   smoothScrollQuestionTop
 } from './shared/questionnaire-ux.js';
+import { bootEngineIfLegacy } from './shared/engine-spa-boot.js';
 
 // Data modules - will be loaded lazily
 let COMPATIBILITY_POINTS, IMPACT_TIER_WEIGHTS, SCORING_THRESHOLDS, SEVERITY_TIERS;
@@ -32,7 +33,9 @@ export class RelationshipEngine {
   /**
    * Initialize the relationship engine
    */
-  constructor() {
+  constructor(options = {}) {
+    this.externalUI = Boolean(options.externalUI);
+    this.onNotify = typeof options.onNotify === 'function' ? options.onNotify : () => {};
     this.currentStage = 1; // 1: Broad Assessment, 2: Domain Deep Dive, 3: Scenarios
     this.currentQuestionIndex = 0;
     this.answers = {};
@@ -2106,4 +2109,7 @@ export class RelationshipEngine {
   }
 }
 
+bootEngineIfLegacy(() => {
+  window.relationshipEngine = new RelationshipEngine();
+});
 

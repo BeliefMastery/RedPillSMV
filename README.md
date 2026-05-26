@@ -2,9 +2,15 @@
 
 Map where you fit in the modern relationship marketplace. A self-contained app of **four assessment tools**: modern archetype identification, attraction/SMV, polarity (temperament), and relationship viability. Offline, no account, no tracking. Built for **static web** (e.g. GitHub Pages) and **Capacitor Android**.
 
+### V3 SPA (current UI)
+
+The site shell is a **Vite + React 19** single-page app under [`v3/spa/`](v3/spa/) with **hash routing** (`#/`, `#/engines/archetype`, etc.). Assessment logic remains in root-level `*-engine.js` modules, hosted via `externalUI` and the shared bridge in [`shared/spa-questionnaire-host.js`](shared/spa-questionnaire-host.js). Production assets are emitted to [`www/`](www/) via `npm run v3:build`. Legacy multi-page HTML lives in [`archive/legacy/`](archive/legacy/) for reference.
+
+See [`docs/V3_ARCHITECTURE_REPLICATION_GUIDE.md`](docs/V3_ARCHITECTURE_REPLICATION_GUIDE.md) for the full architecture spec.
+
 ### Engine layout (for review or reuse)
 
-Each tool is backed by a dedicated **engine module** (client-side scoring, phased flows, and co-located data) with shared orchestration in `shared/engine-ui-controller.js`. Each `*-engine.js` plus its data folder or module is a self-contained slice: deterministic assessment logic, export, and UI wiring without a SPA framework.
+Each tool is backed by a dedicated **engine module** (client-side scoring, phased flows, and co-located data). Each `*-engine.js` plus its data folder or module is a self-contained slice: deterministic assessment logic, export, and UI wiring. The React shell provides navigation, themes, and engine chrome.
 
 **Suite flow:** Archetype → Polarity → Attraction (sequential unlock); Relationship is separate. **Android app:** Polarity and Attraction require a **one-time Google Play purchase** after prerequisites are met; web builds stay fully free. See [`docs/ANDROID_IAP.md`](docs/ANDROID_IAP.md).
 
@@ -14,12 +20,12 @@ Each tool is backed by a dedicated **engine module** (client-side scoring, phase
 
 ## What’s in the app
 
-| Tool | Page | Engine & data | Description |
-|------|------|---------------|-------------|
-| **Modern Archetype Identification** | `archetype.html` | `archetype-engine.js`, `archetype-data/` | Identifies primary, secondary, and tertiary archetypes using normalized family-node class rollup (all subtypes including vanilla), subtype refinement, and an adaptive final determinative phase when subclass signal is sparse or tied. |
-| **Attraction, Status and Selection** | `attraction.html` | `attraction-engine.js`, `attraction-data.js` | Gender-specific SMV: coalition rank, reproductive confidence, axis of attraction (weighted subcategory scoring for physical/fertility signifiers; optional skip on one sensitive item), market position, recommendations. |
-| **Polarity Position Mapping** | `temperament.html` | `temperament-engine.js`, `temperament-data/` | Masculine–feminine temperament mapping, dimension scores, cross-polarity detection, and context sensitivity. |
-| **Relationships** | `relationship.html` | `relationship-engine.js`, `relationship-data/` | Compatibility and strain across multiple points; viability evaluation; action strategies per strain point. |
+| Tool | Route | Engine & data | Description |
+|------|-------|---------------|-------------|
+| **Modern Archetype Identification** | `#/engines/archetype` | `archetype-engine.js`, `archetype-data/` | Identifies primary, secondary, and tertiary archetypes using normalized family-node class rollup (all subtypes including vanilla), subtype refinement, and an adaptive final determinative phase when subclass signal is sparse or tied. |
+| **Attraction, Status and Selection** | `#/engines/attraction` | `attraction-engine.js`, `attraction-data.js` | Gender-specific SMV: coalition rank, reproductive confidence, axis of attraction (weighted subcategory scoring for physical/fertility signifiers; optional skip on one sensitive item), market position, recommendations. |
+| **Polarity Position Mapping** | `#/engines/polarity` | `temperament-engine.js`, `temperament-data/` | Masculine–feminine temperament mapping, dimension scores, cross-polarity detection, and context sensitivity. |
+| **Relationships** | `#/engines/relationship` | `relationship-engine.js`, `relationship-data/` | Compatibility and strain across multiple points; viability evaluation; action strategies per strain point. |
 
 Each assessment runs in-browser. Progress can be saved locally. After completion, **Save results** produces a single **readable HTML report** (open in browser, print, or save as PDF). There are no separate JSON, CSV, or “Executive Brief” exports; the saved report is the only export.
 
@@ -27,9 +33,10 @@ Each assessment runs in-browser. Progress can be saved locally. After completion
 
 ## Tech stack
 
-- **Front end:** Vanilla HTML, CSS, JavaScript (no framework).
-- **Shared:** `shared/` — data-loader, export-utils (readable report generation), engine-ui-controller, debug-reporter, performance-monitor, utils (including SecurityUtils), confirm-modal, suite-completion / suite-nav-gates / suite-index, premium entitlement (Android IAP), swipe-nav, style-switcher, background (canvas + CSS).
-- **Mobile:** Capacitor 8 (Android), Google Play Billing for Polarity+Attraction. `www/` is produced by `npm run copy:www`; `shared/vendor/` is regenerated there (Capacitor + billing plugin ESM for no-bundler loads).
+- **Shell:** Vite 6, React 19, React Router (hash), CSS tokens in `v3/spa/src/styles/`.
+- **Assessments:** Vanilla ES module engines at repo root (`*-engine.js`, `*-data/`).
+- **Shared:** `shared/` — export-utils, engine-ui-controller, suite gates, premium entitlement (Android IAP), SPA bridge (`spa-questionnaire-host.js`, `allocation-scales.mjs`, etc.).
+- **Mobile:** Capacitor 8 (Android), Google Play Billing for Polarity+Attraction. `www/` is produced by `npm run v3:build`; `shared/vendor/` is regenerated in post-build (Capacitor + billing plugin ESM).
 
 ---
 
@@ -72,9 +79,14 @@ Each assessment runs in-browser. Progress can be saved locally. After completion
 ├── archetype-data/        # Archetypes, questions, spread, BRUTAL-TRUTH
 ├── attraction-engine.js
 ├── attraction-data.js      # Clusters, weights, market segments
+├── v3/
+│   ├── vite.config.js
+│   └── spa/                # React SPA source
+├── archive/legacy/         # Archived MPA HTML (data-bm-legacy-page)
 ├── scripts/
-│   └── copy-to-www.js      # Copy app into www/ for Capacitor
-├── www/                    # Build target (npm run copy:www)
+│   ├── post-v3-build.js    # Copy engines/data into www/ after Vite
+│   └── copy-to-www.js      # Deprecated: use v3:build
+├── www/                    # Production web root (npm run v3:build)
 ├── android/                # Capacitor Android project
 └── package.json
 ```
@@ -92,10 +104,17 @@ Each assessment runs in-browser. Progress can be saved locally. After completion
 
 ```bash
 npm install
-npm run serve
+npm run v3:dev
 ```
 
-Then open **http://localhost:3000** and use `index.html` as the entry point.
+Then open **http://localhost:5173** (Vite dev server with hash routes).
+
+Production build:
+
+```bash
+npm run v3:build
+npm run serve:www   # serves www/ on port 3000
+```
 
 ### Build for Android (optional)
 

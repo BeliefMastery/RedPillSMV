@@ -36,28 +36,28 @@ test.beforeEach(async ({ page }) => {
 const cases = [
   {
     name: 'attraction',
-    path: '/attraction.html',
+    path: '/#/engines/attraction',
     resultsSelector: '#resultsSection',
     sampleTimeout: 60000,
     exportMustInclude: ['Your Sexual Market Value Profile', 'Achievable partner quality']
   },
   {
     name: 'temperament',
-    path: '/temperament.html',
+    path: '/#/engines/polarity',
     resultsSelector: '#resultsSection',
     sampleTimeout: 90000,
     exportMustInclude: ['Your Temperament Analysis', 'Polarity Position']
   },
   {
     name: 'relationship',
-    path: '/relationship.html',
+    path: '/#/engines/relationship',
     resultsSelector: '#resultsSection',
     sampleTimeout: 240000,
     exportMustInclude: ['Relationships Analysis', 'Strain Points']
   },
   {
     name: 'archetype',
-    path: '/archetype.html',
+    path: '/#/engines/archetype',
     resultsSelector: '#resultsContainer',
     sampleTimeout: 120000,
     exportMustInclude: ['Your Archetype Profile', 'Primary archetype']
