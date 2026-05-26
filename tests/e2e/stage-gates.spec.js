@@ -14,7 +14,9 @@ test.beforeEach(async ({ page }) => {
 
 test('home: locked Polarity nav shows lock hint', async ({ page }) => {
   await page.goto('/#/');
-  const locked = page.getByTitle(/Archetype/i).first();
+  const locked = page
+    .locator('header nav')
+    .getByTitle(/Complete Modern Archetype Identification first\. Polarity/i);
   await expect(locked).toBeVisible();
 });
 

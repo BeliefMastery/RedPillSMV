@@ -21,6 +21,10 @@ module.exports = defineConfig({
     command: 'npm run v3:build && npx serve www -p 4173',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
-    timeout: 120000
+    timeout: 120000,
+    env: {
+      ...process.env,
+      GITHUB_PAGES: ''
+    }
   }
 });

@@ -3,7 +3,7 @@ import QuestionnaireEngineView from "../shared/QuestionnaireEngineView.jsx";
 const intro = (
   <section className="intro-section" id="introSection">
     <div className="hero-image">
-      <img src="./images/attraction-cover.jpg" alt="" className="hero-img" />
+      <img src="./images/attraction-tool.jpg" alt="" className="hero-img" />
     </div>
     <h2 className="tool-intro-heading">Attraction, Status and Selection</h2>
     <p className="assessment-subheading tool-intro-tagline">

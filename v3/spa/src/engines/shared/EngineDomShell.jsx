@@ -1,20 +1,67 @@
 /**
  * Legacy-compatible DOM shell expected by *-engine.js (IDs and sections).
  */
+import { useEffect } from "react";
+
 export default function EngineDomShell({
   intro,
   resultsId = "resultsContainer",
   showSuiteGate = false,
   engineId,
 }) {
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = async () => {
+      const gates = await import("@site/shared/suite-nav-gates.js");
+      if (cancelled) return;
+      gates.initSuiteNavGates();
+      if (showSuiteGate) gates.applySuiteStartGateHints();
+    };
+    void refresh();
+    window.addEventListener("storage", refresh);
+    window.addEventListener("redpill-premium-changed", refresh);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener("redpill-premium-changed", refresh);
+    };
+  }, [showSuiteGate, engineId]);
+
+  const gateTitle =
+    engineId === "polarity"
+      ? "Polarity is locked"
+      : engineId === "attraction"
+        ? "Attraction is locked"
+        : "Assessment is locked";
+
   return (
     <div className="bm-engine-content section-inner minimal-section">
       {intro}
 
       {showSuiteGate && (
-        <div id="suiteStageGateInline" className="suite-stage-gate-inline" hidden>
-          <p id="suiteStageGateInlineMessage" />
-          <div id="suiteStageGateInlineCta" />
+        <div id="suiteStageGateInline" className="suite-stage-gate-inline" hidden aria-live="polite">
+          <p className="suite-stage-gate-inline-title">{gateTitle}</p>
+          <p id="suiteStageGateInlineMessage" className="suite-stage-gate-inline-msg" />
+          <p className="suite-stage-gate-inline-links">
+            <a
+              className="btn btn-primary btn-small"
+              id="suiteStageGateInlineCtaPrimary"
+              href="#/engines/archetype"
+            >
+              Go to Archetype assessment
+            </a>
+            <a
+              className="btn btn-secondary btn-small"
+              id="suiteStageGateInlineCtaSecondary"
+              href="#/engines/polarity"
+              hidden
+            >
+              Go to Polarity assessment
+            </a>
+            <a className="suite-stage-gate-inline-back" href="#/">
+              Back to home
+            </a>
+          </p>
         </div>
       )}
 

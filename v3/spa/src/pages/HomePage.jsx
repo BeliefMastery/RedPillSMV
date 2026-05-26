@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getSuiteCompletion, getStageGateState } from "@site/shared/suite-completion.js";
+import { useSuiteGates } from "../hooks/useSuiteGates.js";
 import { engineRoutes } from "../routes.js";
 
 function genderBadge(gender) {
@@ -10,6 +11,7 @@ function genderBadge(gender) {
 }
 
 export default function HomePage() {
+  const { isLocked } = useSuiteGates();
   const [completion, setCompletion] = useState(null);
   const [gate, setGate] = useState(null);
 
@@ -55,11 +57,26 @@ export default function HomePage() {
         </p>
 
         <div className="home-image-grid" role="navigation" aria-label="Assessment tools">
-          {engineRoutes.map((r) => (
-            <Link key={r.id} to={r.path} className="home-image-grid-link">
-              <img src={r.cover} alt={r.label} loading="lazy" />
-            </Link>
-          ))}
+          {engineRoutes.map((r) => {
+            const lockHint = isLocked(r.path);
+            if (lockHint) {
+              return (
+                <span
+                  key={r.id}
+                  className="home-image-grid-link suite-nav-locked"
+                  title={lockHint}
+                  aria-disabled="true"
+                >
+                  <img src={r.cover} alt={r.label} loading="lazy" />
+                </span>
+              );
+            }
+            return (
+              <Link key={r.id} to={r.path} className="home-image-grid-link">
+                <img src={r.cover} alt={r.label} loading="lazy" />
+              </Link>
+            );
+          })}
         </div>
 
         <div className="suite-progress-wrap">

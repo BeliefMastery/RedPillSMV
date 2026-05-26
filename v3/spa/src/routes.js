@@ -23,7 +23,7 @@ export const engineRoutes = [
     label: "Polarity Position Mapping",
     shortLabel: "Polarity",
     cover: "./images/temperament-analysis-cover.jpg",
-    hero: "./images/temperament-analysis-cover.jpg",
+    hero: "./images/temperament-tool.jpg",
     engineModule: "temperament-engine.js",
     engineClass: "TemperamentEngine",
   },
@@ -33,7 +33,7 @@ export const engineRoutes = [
     label: "Attraction, Status and Selection",
     shortLabel: "Attraction",
     cover: "./images/attraction-cover.jpg",
-    hero: "./images/attraction-cover.jpg",
+    hero: "./images/attraction-tool.jpg",
   },
   {
     id: "relationship",
@@ -41,7 +41,7 @@ export const engineRoutes = [
     label: "Relationship Viability",
     shortLabel: "Relationships",
     cover: "./images/relationship-optimization-cover.jpg",
-    hero: "./images/relationship-optimization-cover.jpg",
+    hero: "./images/relationship-tool.jpg",
   },
 ];
 

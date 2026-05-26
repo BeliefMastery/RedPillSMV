@@ -3,7 +3,7 @@ import QuestionnaireEngineView from "../shared/QuestionnaireEngineView.jsx";
 const intro = (
   <section className="intro-section" id="introSection">
     <div className="hero-image">
-      <img src="./images/temperament-analysis-cover.jpg" alt="" className="hero-img" />
+      <img src="./images/temperament-tool.jpg" alt="" className="hero-img" />
     </div>
     <h2 className="tool-intro-heading">Polarity Position Mapping</h2>
     <p className="assessment-subheading tool-intro-tagline">

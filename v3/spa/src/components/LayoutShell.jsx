@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { initSuiteNavGates } from "@site/shared/suite-nav-gates.js";
 import {
   applyThemeToDocument,
   getTheme,
@@ -23,6 +24,17 @@ export default function LayoutShell() {
     applyThemeToDocument(getTheme());
     setThemeState(getTheme());
   }, []);
+
+  useEffect(() => {
+    initSuiteNavGates();
+    const refresh = () => initSuiteNavGates();
+    window.addEventListener("storage", refresh);
+    window.addEventListener("redpill-premium-changed", refresh);
+    return () => {
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener("redpill-premium-changed", refresh);
+    };
+  }, [location.pathname, location.hash]);
 
   const onThemeChange = (next) => {
     setTheme(next);

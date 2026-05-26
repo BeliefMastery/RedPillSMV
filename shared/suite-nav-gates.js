@@ -12,6 +12,13 @@ import {
 
 function normalizeHref(href) {
   if (!href || typeof href !== 'string') return '';
+  const raw = href.toLowerCase();
+  if (raw.includes('engines/polarity') || raw.includes('temperament.html')) {
+    return 'temperament.html';
+  }
+  if (raw.includes('engines/attraction') || raw.includes('attraction.html')) {
+    return 'attraction.html';
+  }
   try {
     const u = new URL(href, window.location.href);
     const path = u.pathname || '';
@@ -20,6 +27,14 @@ function normalizeHref(href) {
   } catch {
     return '';
   }
+}
+
+function currentEnginePage() {
+  const hash = (window.location.hash || '').replace(/^#\/?/, '').toLowerCase();
+  if (hash.startsWith('engines/polarity')) return 'temperament.html';
+  if (hash.startsWith('engines/attraction')) return 'attraction.html';
+  const path = (window.location.pathname || '').split('/').pop() || '';
+  return path.toLowerCase();
 }
 
 /**
@@ -45,7 +60,7 @@ export function applySuiteStartGateHints() {
   const start = document.getElementById('startAssessment');
   if (!start) return;
 
-  const path = (window.location.pathname || '').split('/').pop() || '';
+  const path = currentEnginePage();
   let locked = false;
   let msg = '';
   if (path === 'temperament.html') {

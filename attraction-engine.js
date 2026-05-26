@@ -6,6 +6,7 @@
  */
 
 import { createDebugReporter } from './shared/debug-reporter.js';
+import { suiteEngineHref } from './shared/suite-href.js';
 import { SecurityUtils } from './shared/utils.js';
 import { downloadFile, generateReadableReport } from './shared/export-utils.js';
 import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
@@ -183,18 +184,18 @@ export class AttractionEngine {
     if (msg) msg.textContent = gate.attractionBlockMessage;
     if (!gate.archetypeComplete) {
       if (ctaPri) {
-        ctaPri.href = 'archetype.html';
+        ctaPri.href = suiteEngineHref('archetype');
         ctaPri.textContent = 'Go to Archetype assessment';
       }
       if (ctaSec) ctaSec.hidden = true;
     } else {
       if (ctaPri) {
-        ctaPri.href = 'temperament.html';
+        ctaPri.href = suiteEngineHref('polarity');
         ctaPri.textContent = 'Go to Polarity assessment';
       }
       if (ctaSec) {
         ctaSec.hidden = false;
-        ctaSec.href = 'archetype.html';
+        ctaSec.href = suiteEngineHref('archetype');
         ctaSec.textContent = 'Review Archetype results';
       }
     }
