@@ -85,4 +85,6 @@ for (const file of COPY_FILES) {
 }
 
 writeCapacitorNativePurchaseVendors();
+
+fs.writeFileSync(path.join(WWW, ".nojekyll"), "");
 console.log("post-v3-build complete");

@@ -39,9 +39,14 @@ function serveRepoStatic() {
   };
 }
 
+/** GitHub project site: https://beliefmastery.github.io/RedPillSMV/ */
+const pagesBase =
+  process.env.VITE_BASE ||
+  (process.env.GITHUB_PAGES === "true" ? "/RedPillSMV/" : "./");
+
 export default defineConfig({
   root: path.join(__dirname, "spa"),
-  base: "./",
+  base: pagesBase,
   plugins: [react(), serveRepoStatic()],
   resolve: {
     alias: {

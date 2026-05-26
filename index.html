@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="refresh" content="0; url=./www/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Red-Pill Relational Suite</title>
-  <script>location.replace('./www/index.html' + (location.hash || ''));</script>
 </head>
 <body>
-  <p><a href="./www/index.html">Open Red-Pill Relational Suite</a></p>
+  <p>
+    The live site is published from the V3 build (<code>www/</code>) via GitHub Actions.
+    Open
+    <a href="https://beliefmastery.github.io/RedPillSMV/">https://beliefmastery.github.io/RedPillSMV/</a>
+    after Pages is set to <strong>GitHub Actions</strong> (not repo root).
+  </p>
+  <p>Local preview: <code>npm run v3:build &amp;&amp; npm run serve:www</code></p>
 </body>
 </html>
