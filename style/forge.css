@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ================================================
+   REDPILLAPP STYLE VARIATION 1 — "MATRIX FORGE"
+   ================================================
+   Aesthetic: Raw red-pill intensity. Deep obsidian void with molten red-orange lightning 
+   and subtle digital scanline glows. Feels like waking up inside the simulation and 
+   forging your archetype in fire. Perfect for archetype classification & SMV evaluation — 
+   aggressive, masculine, high-stakes energy. High contrast for instant impact on mobile.
+   Control-group friendly: dramatically different from original cosmic blue/gold.
+*/
+
+:root {
+    /* Primary Colors — RED PILL FIRE */
+    --brand: #fff3e8;           /* Brighter warm text for stronger pop */
+    --muted: #c8ac8f;           /* Lifted muted text for readability */
+    --accent: #ff3d00;          /* Molten red-orange lightning */
+    --accent-hover: #ff6a00;    /* Brighter flame hover */
+
+    /* Backgrounds — Obsidian Matrix */
+    --bg: #020202;              /* Slightly deeper base */
+    --glass: rgba(14, 7, 6, 0.94);       /* Darker panel shell */
+    --glass-light: rgba(22, 12, 10, 0.88);
+    --card-bg: rgba(17, 9, 8, 0.97);
+    --card-hover: rgba(30, 15, 12, 0.99);
+    --accent-panel: rgba(255, 61, 0, 0.14);
+    --accent-panel-strong: rgba(255, 61, 0, 0.22);
+    --brand-panel: rgba(255, 243, 232, 0.12);
+
+    /* Borders & Glows — Digital scanline style */
+    --border-subtle: rgba(255, 80, 30, 0.25);
+    --border-medium: rgba(255, 110, 50, 0.4);
+    --border-bright: rgba(255, 140, 70, 0.6);
+    --glow-blue: rgba(255, 80, 30, 0.18);   /* Renamed but kept for compatibility */
+    --glow-bright: rgba(255, 140, 70, 0.28);
+    --glow-accent: rgba(255, 61, 0, 0.35);
+
+    /* Shadows — Deeper, more dramatic */
+    --shadow-sm: 0 6px 20px rgba(0, 0, 0, 0.6);
+    --shadow-md: 0 12px 40px rgba(0, 0, 0, 0.75);
+    --shadow-lg: 0 20px 60px rgba(255, 61, 0, 0.25);
+
+    /* Functional */
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #ff3d00;
+
+    /* Layout — Slightly sharper edges */
+    --radius: 8px;
+    --transition: all .18s cubic-bezier(.55, 0, .2, 1);
+
+    /* Typography & accessibility */
+    --text-primary: #fff3e8;
+    --text-secondary: #c8ac8f;
+    --link-color: #ff3d00;
+    --focus-color: #ff3d00;
+    --brand-dark: #ff3d00;
+    --font-size-base: clamp(1rem, 0.92rem + 0.45vw, 1.12rem);
+    --font-size-heading: clamp(1.65rem, 1.35rem + 1.6vw, 2.7rem);
+    --font-size-subheading: clamp(1.25rem, 1.1rem + 0.6vw, 1.6rem);
+}
+
+/* Typography aligned to Obsidian theme */
+html, body {
+    font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+}
+
+h1, h2, h3 {
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    text-shadow: 0 0 12px rgba(255, 106, 0, 0.25);
+}
+
+h4, h5, h6 {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.85em;
+}
+
+/* ================== KEY OVERRIDES FOR MATRIX FORGE ================== */
+
+/* Header — Scanline effect */
+header.site-header {
+    background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
+    box-shadow: 0 0 30px rgba(255, 61, 0, 0.4);
+    border-bottom: 1px solid #ff3d00;
+}
+
+/* Primary buttons — Molten metal feel */
+.btn-primary,
+button:not(.secondary):not(.close-btn),
+#calculate-btn,
+.next-btn {
+    background: linear-gradient(135deg, #ff3d00, #ff8a00) !important;
+    box-shadow: 0 0 25px rgba(255, 61, 0, 0.6);
+}
+.btn-primary:hover {
+    box-shadow: 0 0 45px rgba(255, 61, 0, 0.9);
+    transform: translateY(-3px) scale(1.04);
+}
+
+/* Cards — Heavy scanline hover */
+.card,
+.tool-card,
+.portal-card,
+.option-card {
+    border: 1px solid #ff3d00;
+    box-shadow: 0 8px 30px rgba(255, 61, 0, 0.15);
+}
+@media (hover: hover) {
+    .card:hover,
+    .tool-card:hover,
+    .portal-card:hover {
+        border-color: #ff8a00;
+        box-shadow: 0 0 40px rgba(255, 61, 0, 0.6);
+    }
+}
+
+/* Accent bars — Red lightning */
+.tool-card::before,
+.portal-card::before,
+.image-card-frame::before {
+    background: linear-gradient(90deg, #ff3d00, #ff8a00, transparent);
+}
+
+/* Text emphasis — Fire highlights */
+.text-accent,
+.accent-heading,
+.panel-title {
+    color: #ff3d00;
+    text-shadow: 0 0 10px rgba(255, 61, 0, 0.35);
+}
+
+/* Bottom nav active state */
+.bottom-nav-item[href*="archetype"].active,
+.bottom-nav-item[href*="attraction"].active,
+.bottom-nav-item[href*="temperament"].active,
+.bottom-nav-item[href*="relationship"].active {
+    color: #ff3d00;
+    text-shadow: 0 0 12px #ff3d00;
+}

@@ -1,0 +1,30 @@
+{
+  "name": "Unplugged Dynamics: Red-Pill Relational Suite",
+  "short_name": "Unplugged Dynamics",
+  "description": "Archetype, polarity, attraction/SMV, and relationship calibration — offline suite.",
+  "icons": [
+    {
+      "src": "images/pillblack192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/pillblack512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/pillblack1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f"
+}

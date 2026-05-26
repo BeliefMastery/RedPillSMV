@@ -1,0 +1,70 @@
+/* Crossfade between two quoted memetic summaries (5s interval driven by JS). */
+.archetype-memetic-rotator {
+  position: relative;
+  min-height: 1.35em;
+}
+
+.archetype-memetic-rotator .archetype-memetic-rotator__line {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  opacity: 0;
+  transition: opacity 0.55s ease-in-out;
+  pointer-events: none;
+}
+
+.archetype-memetic-rotator .archetype-memetic-rotator__line--active {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.archetype-spread-memetic-cell {
+  position: relative;
+  min-height: 1.35em;
+  font-style: italic;
+  color: var(--muted);
+  vertical-align: top;
+}
+
+.archetype-spread-memetic-cell .archetype-memetic-rotator__line {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  opacity: 0;
+  transition: opacity 0.55s ease-in-out;
+  pointer-events: none;
+}
+
+.archetype-spread-memetic-cell .archetype-memetic-rotator__line--active {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.archetype-spread-popout__memetic-rotator {
+  position: relative;
+  min-height: 1.35em;
+  font-style: italic;
+}
+
+.archetype-spread-popout__memetic-rotator .archetype-memetic-rotator__line {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  opacity: 0;
+  transition: opacity 0.55s ease-in-out;
+  pointer-events: none;
+}
+
+.archetype-spread-popout__memetic-rotator .archetype-memetic-rotator__line--active {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
+}

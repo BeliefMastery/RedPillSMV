@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap');
+
+/* Variation 2: Brutal Neomorphism */
+:root {
+    --brand: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #ff5f1f; /* Neon Safety Orange */
+    --accent-hover: #ff7a3d;
+
+    --bg: #1e293b;
+    --glass: rgba(30, 41, 59, 0.98);
+    --glass-light: rgba(51, 65, 85, 0.95);
+    --card-bg: #1e293b;
+    --card-hover: #334155;
+
+    --accent-panel: rgba(255, 95, 31, 0.1);
+    --accent-panel-strong: rgba(255, 95, 31, 0.18);
+    --brand-panel: rgba(226, 232, 240, 0.06);
+
+    --border-subtle: rgba(255, 95, 31, 0.15);
+    --border-medium: rgba(255, 95, 31, 0.28);
+    --border-bright: rgba(255, 95, 31, 0.5);
+
+    --glow-blue: rgba(255, 95, 31, 0.08);
+    --glow-bright: rgba(255, 95, 31, 0.14);
+    --glow-accent: rgba(255, 95, 31, 0.2);
+
+    --shadow-sm: 6px 6px 12px #151d29, -6px -6px 12px #27354d;
+    --shadow-md: 8px 8px 16px #151d29, -8px -8px 16px #27354d;
+    --shadow-lg: 12px 12px 24px #151d29, -12px -12px 24px #27354d;
+    --shadow: 8px 8px 16px #151d29, -8px -8px 16px #27354d;
+
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #f87171;
+
+    --radius: 20px;
+    --transition: all 0.2s ease;
+
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --link-color: #ff5f1f;
+    --focus-color: #ff5f1f;
+    --brand-dark: #ff5f1f;
+}
+
+/* Typography aligned to Signal theme */
+html, body {
+    font-family: 'Space Mono', 'Courier New', monospace;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+section, .panel, .tool-card {
+    background: var(--bg);
+    border: none;
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-primary {
+    background: var(--bg) !important;
+    color: var(--accent) !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:active {
+    box-shadow: inset 4px 4px 8px #151d29, inset -4px -4px 8px #27354d;
+}
