@@ -30,7 +30,8 @@ html.theme-earth {
   --v3-accent: #ffd700;
   --v3-accent-strong: #ffe84d;
   --v3-on-accent: #1a0c0e;
-  --v3-backdrop-art-url: url("./images/SupernovaBLUE.jpg");
+  /* Set at runtime from main.jsx (Vite ?url) — avoids assets/images 404 */
+  --v3-backdrop-art-url: none;
   --v3-backdrop-art-hue: 158deg;
   --v3-backdrop-art-saturate: 1.22;
   --v3-backdrop-art-brightness: 0.9;

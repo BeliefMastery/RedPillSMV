@@ -6,10 +6,6 @@ export default function QuestionHtmlBridge({ engine, tick }) {
   useEffect(() => {
     if (!engine || !ref.current) return;
     engine.setExternalQuestionMount?.(ref.current);
-    const container = document.getElementById("questionContainer");
-    if (container && ref.current && !ref.current.contains(container)) {
-      ref.current.appendChild(container);
-    }
     if (typeof engine.renderCurrentQuestion === "function") {
       engine.renderCurrentQuestion();
     }

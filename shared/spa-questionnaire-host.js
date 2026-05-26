@@ -73,13 +73,12 @@ export function attachDomQuestionSpaApi(engine) {
       const question = this.questionSequence?.[this.currentQuestionIndex];
       if (this.externalUI && question && externalRenderQuestion(this, question)) {
         const mount = this._externalQuestionMount;
-        const container =
-          mount || document.getElementById("questionContainer");
+        const container = document.getElementById("questionContainer");
         if (container && this.usesDomQuestions()) {
-          origRender();
-          if (mount && container.parentElement !== mount) {
+          if (mount && !mount.contains(container)) {
             mount.appendChild(container);
           }
+          origRender();
         }
         notifyEngine(this, "question");
         return;
