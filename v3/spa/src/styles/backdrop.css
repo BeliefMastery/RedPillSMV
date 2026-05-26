@@ -1,0 +1,57 @@
+/**
+ * Full-bleed Supernova art + theme scrims (legacy cosmic layering, V3 tokens).
+ * Base asset: images/SupernovaBLUE.jpg — hue-rotated per html.theme-* in tokens.css.
+ */
+
+.app {
+  isolation: isolate;
+}
+
+.app::before,
+.app::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Nebula art — blue-on-black source, recolored per theme */
+.app::before {
+  background-image: var(--v3-backdrop-art-url);
+  background-size: cover;
+  background-position: center 32%;
+  background-repeat: no-repeat;
+  opacity: var(--v3-backdrop-art-opacity);
+  filter: hue-rotate(var(--v3-backdrop-art-hue))
+    saturate(var(--v3-backdrop-art-saturate))
+    brightness(var(--v3-backdrop-art-brightness))
+    blur(var(--v3-backdrop-art-blur));
+  mix-blend-mode: var(--v3-backdrop-art-blend);
+}
+
+/* Tint + vignette so content stays readable over bright nebula cores */
+.app::after {
+  background: var(--v3-backdrop-vignette), var(--v3-backdrop-scrim);
+}
+
+.app > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 1023px) {
+  .app::before {
+    opacity: min(var(--v3-backdrop-art-opacity), 0.2);
+    filter: hue-rotate(var(--v3-backdrop-art-hue))
+      saturate(var(--v3-backdrop-art-saturate))
+      brightness(var(--v3-backdrop-art-brightness));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app::before,
+  .app::after {
+    animation: none !important;
+  }
+}

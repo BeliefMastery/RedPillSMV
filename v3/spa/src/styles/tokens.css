@@ -20,17 +20,35 @@ html.theme-earth {
   --v3-bg: #120809;
   --v3-bg-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201, 72, 72, 0.15), transparent);
   --v3-bg-soft: #1a0c0e;
-  --v3-surface: rgba(42, 16, 18, 0.9);
+  --v3-surface: rgba(42, 16, 18, 0.78);
   --v3-surface-border: rgba(198, 86, 86, 0.24);
-  --v3-nav-bg: rgba(18, 8, 9, 0.92);
+  --v3-nav-bg: rgba(18, 8, 9, 0.82);
+  --v3-surface-blur: blur(14px) saturate(1.12);
   --v3-text: #f5e9e9;
   --v3-heading: #f5e9e9;
   --v3-muted: #c7a7a7;
   --v3-accent: #ffd700;
   --v3-accent-strong: #ffe84d;
   --v3-on-accent: #1a0c0e;
-  --v3-backdrop-art-opacity: 0.12;
-  --v3-backdrop-art-filter: blur(2px);
+  --v3-backdrop-art-url: url("./images/SupernovaBLUE.jpg");
+  --v3-backdrop-art-hue: 158deg;
+  --v3-backdrop-art-saturate: 1.22;
+  --v3-backdrop-art-brightness: 0.9;
+  --v3-backdrop-art-blur: 0px;
+  --v3-backdrop-art-opacity: 0.38;
+  --v3-backdrop-art-blend: screen;
+  --v3-backdrop-scrim: linear-gradient(
+    180deg,
+    rgba(18, 8, 9, 0.52) 0%,
+    rgba(26, 12, 14, 0.68) 45%,
+    rgba(18, 8, 9, 0.78) 100%
+  );
+  --v3-backdrop-vignette: radial-gradient(
+    ellipse 95% 85% at 50% 45%,
+    transparent 0%,
+    rgba(8, 4, 5, 0.35) 62%,
+    rgba(4, 2, 3, 0.72) 100%
+  );
 
   --brand: var(--v3-text);
   --muted: var(--v3-muted);
@@ -52,9 +70,28 @@ html.theme-earth {
 html.theme-light {
   --v3-bg: #f4f0ee;
   --v3-bg-soft: #ebe4e0;
-  --v3-surface: rgba(255, 255, 255, 0.92);
+  --v3-bg-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(185, 28, 28, 0.08), transparent);
+  --v3-surface: rgba(255, 255, 255, 0.82);
   --v3-surface-border: rgba(80, 60, 60, 0.15);
-  --v3-nav-bg: rgba(255, 255, 255, 0.95);
+  --v3-nav-bg: rgba(255, 255, 255, 0.88);
+  --v3-surface-blur: blur(12px) saturate(1.05);
+  --v3-backdrop-art-hue: 142deg;
+  --v3-backdrop-art-saturate: 0.75;
+  --v3-backdrop-art-brightness: 1.2;
+  --v3-backdrop-art-opacity: 0.14;
+  --v3-backdrop-art-blend: soft-light;
+  --v3-backdrop-scrim: linear-gradient(
+    180deg,
+    rgba(248, 244, 242, 0.82) 0%,
+    rgba(244, 240, 238, 0.9) 50%,
+    rgba(235, 228, 224, 0.94) 100%
+  );
+  --v3-backdrop-vignette: radial-gradient(
+    ellipse 90% 80% at 50% 40%,
+    transparent 0%,
+    rgba(244, 240, 238, 0.25) 55%,
+    rgba(230, 222, 218, 0.55) 100%
+  );
   --v3-text: #2a1818;
   --v3-heading: #1a0c0c;
   --v3-muted: #6b5252;
@@ -71,9 +108,28 @@ html.theme-light {
 html.theme-forge {
   --v3-bg: #0a0a0c;
   --v3-bg-soft: #121218;
-  --v3-surface: rgba(24, 24, 32, 0.94);
+  --v3-bg-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 61, 0, 0.12), transparent);
+  --v3-surface: rgba(24, 24, 32, 0.8);
   --v3-surface-border: rgba(120, 120, 140, 0.2);
-  --v3-nav-bg: rgba(10, 10, 12, 0.95);
+  --v3-nav-bg: rgba(10, 10, 12, 0.84);
+  --v3-surface-blur: blur(14px) saturate(1.15);
+  --v3-backdrop-art-hue: 118deg;
+  --v3-backdrop-art-saturate: 1.35;
+  --v3-backdrop-art-brightness: 0.92;
+  --v3-backdrop-art-opacity: 0.34;
+  --v3-backdrop-art-blend: screen;
+  --v3-backdrop-scrim: linear-gradient(
+    180deg,
+    rgba(10, 10, 12, 0.55) 0%,
+    rgba(14, 10, 12, 0.72) 50%,
+    rgba(8, 6, 8, 0.82) 100%
+  );
+  --v3-backdrop-vignette: radial-gradient(
+    ellipse 95% 85% at 50% 42%,
+    transparent 0%,
+    rgba(6, 4, 6, 0.4) 60%,
+    rgba(2, 2, 4, 0.78) 100%
+  );
   --v3-text: #e8e6e3;
   --v3-heading: #f0eeeb;
   --v3-muted: #9a9895;
@@ -90,9 +146,28 @@ html.theme-forge {
 html.theme-neomorphism {
   --v3-bg: #2d2d3a;
   --v3-bg-soft: #353545;
-  --v3-surface: #3a3a4a;
+  --v3-bg-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(126, 184, 218, 0.14), transparent);
+  --v3-surface: rgba(58, 58, 74, 0.82);
   --v3-surface-border: rgba(255, 255, 255, 0.06);
-  --v3-nav-bg: rgba(45, 45, 58, 0.95);
+  --v3-nav-bg: rgba(45, 45, 58, 0.86);
+  --v3-surface-blur: blur(16px) saturate(1.08);
+  --v3-backdrop-art-hue: 28deg;
+  --v3-backdrop-art-saturate: 1.08;
+  --v3-backdrop-art-brightness: 0.95;
+  --v3-backdrop-art-opacity: 0.32;
+  --v3-backdrop-art-blend: screen;
+  --v3-backdrop-scrim: linear-gradient(
+    180deg,
+    rgba(45, 45, 58, 0.5) 0%,
+    rgba(53, 53, 69, 0.65) 50%,
+    rgba(40, 40, 52, 0.78) 100%
+  );
+  --v3-backdrop-vignette: radial-gradient(
+    ellipse 95% 85% at 50% 45%,
+    transparent 0%,
+    rgba(35, 35, 48, 0.35) 58%,
+    rgba(28, 28, 38, 0.7) 100%
+  );
   --v3-text: #e8e8f0;
   --v3-heading: #f4f4fa;
   --v3-muted: #a8a8b8;

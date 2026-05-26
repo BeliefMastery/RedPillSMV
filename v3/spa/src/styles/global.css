@@ -31,21 +31,6 @@ body {
   position: relative;
 }
 
-.app::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: var(--v3-backdrop-art-opacity);
-  filter: var(--v3-backdrop-art-filter);
-  z-index: 0;
-}
-
-.app > * {
-  position: relative;
-  z-index: 1;
-}
-
 .container {
   width: min(var(--v3-layout-max), 100% - 2 * var(--v3-gutter));
   margin: 0 auto;
@@ -72,6 +57,8 @@ body {
   border-radius: var(--v3-radius);
   padding: clamp(1rem, 2.5vw, 1.5rem);
   box-shadow: var(--shadow-sm);
+  -webkit-backdrop-filter: var(--v3-surface-blur);
+  backdrop-filter: var(--v3-surface-blur);
 }
 
 .grid {
