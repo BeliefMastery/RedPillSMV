@@ -12,7 +12,7 @@
     "serve": "serve . -p 3000",
     "serve:www": "serve www -p 3000",
     "test": "playwright test",
-    "test:allocation": "node --test tests/allocation-scales.test.mjs",
+    "test:allocation": "node --test tests/allocation-scales.test.mjs tests/questionnaire-allocation.test.mjs",
     "test:e2e": "playwright test",
     "playwright:install": "node scripts/playwright-install.cjs",
     "smv:sensitivity": "node scripts/smv-sensitivity-check.mjs",

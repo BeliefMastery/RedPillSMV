@@ -7,7 +7,7 @@ import {
   mapQuestionForAllocation,
   weightsFromValueAllocation,
   weightsToAllocationPercents,
-} from "./questionnaire-allocation.js";
+} from "./questionnaire-allocation.mjs";
 
 export function buildQuestionSnapshot(engine, question) {
   if (!question) return null;

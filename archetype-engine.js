@@ -35,6 +35,12 @@ import {
   smoothScrollQuestionTop
 } from './shared/questionnaire-ux.js';
 import { bootEngineIfLegacy } from './shared/engine-spa-boot.js';
+import {
+  attachAllocationSliders,
+  displayPercentsFromQuestion,
+  memberIdsFromQuestion,
+  sumDisplayPercents
+} from './shared/questionnaire-allocation.mjs';
 
 // Share of identification ranking that follows within-family refinement (phase2+phase6) vs raw weighted.
 // Reduces defaulting to vanilla subtypes when questions mostly tag the base id (e.g. alpha) but variants show clearer subtype signal.
@@ -54,52 +60,6 @@ let ARCHETYPE_ROLE_ACCENTS;
 function memeticSummaryHtml(archetype, { margin = '0.15rem 0 0.9rem', fontSize = '1rem' } = {}) {
   const lines = getMemeticDisplayLinesForEngine(archetype);
   return memeticSummaryBlockHtml(lines, (s) => SecurityUtils.sanitizeHTML(s), { margin, fontSize });
-}
-
-/** When one slider moves, adjust the others so all values still sum to `total` (fixed impression budget). */
-function redistributeAllocationPercents(current, changedIndex, newValue, total) {
-  const n = current.length;
-  if (n === 0) return [];
-  newValue = Math.max(0, Math.min(total, Math.round(Number(newValue) || 0)));
-  const old = current.map((x) => Math.round(Number(x) || 0));
-  const oldK = old[changedIndex];
-  const othersOldSum = total - oldK;
-  const newOthersSum = total - newValue;
-  const next = old.slice();
-  next[changedIndex] = newValue;
-  if (n === 1) return next;
-  if (othersOldSum <= 0) {
-    const m = n - 1;
-    const base = Math.floor(newOthersSum / m);
-    let rem = newOthersSum - base * m;
-    for (let i = 0; i < n; i++) {
-      if (i === changedIndex) continue;
-      next[i] = base + (rem > 0 ? 1 : 0);
-      if (rem > 0) rem--;
-    }
-  } else {
-    for (let i = 0; i < n; i++) {
-      if (i === changedIndex) continue;
-      next[i] = Math.round((old[i] * newOthersSum) / othersOldSum);
-    }
-  }
-  let sum = next.reduce((a, b) => a + b, 0);
-  let drift = total - sum;
-  let guard = 0;
-  while (drift !== 0 && guard < n * 200) {
-    for (let i = 0; i < n && drift !== 0; i++) {
-      if (i === changedIndex) continue;
-      if (drift > 0) {
-        next[i]++;
-        drift--;
-      } else if (next[i] > 0) {
-        next[i]--;
-        drift++;
-      }
-    }
-    guard++;
-  }
-  return next;
 }
 
 export class ArchetypeEngine {
@@ -1211,18 +1171,8 @@ showGenderSelection() {
   renderValueAllocationQuestion(question, isLocked = false) {
     const n = question.options?.length || 0;
     const total = question.allocationTotal || 100;
-    const existing = this.answers[question.id]?.allocationPercents;
-    let percents;
-    if (Array.isArray(existing) && existing.length === n) {
-      percents = existing.map((x) => Math.round(Number(x) || 0));
-    } else {
-      const base = Math.floor(total / n);
-      percents = Array(n).fill(base);
-      let rem = total - base * n;
-      for (let i = 0; rem > 0; i = (i + 1) % n, rem--) {
-        percents[i]++;
-      }
-    }
+    const memberIds = memberIdsFromQuestion(question, n);
+    const percents = displayPercentsFromQuestion(question, this.answers);
 
     const rowsHTML = question.options.map((option, index) => `
       <div class="value-allocation-row" data-allocation-index="${index}">
@@ -1231,50 +1181,63 @@ showGenderSelection() {
           <span class="value-allocation-pct" id="pct_${question.id}_${index}">${percents[index]}%</span>
         </div>
         <input type="range" class="value-allocation-slider" id="alloc_${question.id}_${index}"
-          min="0" max="${total}" value="${percents[index]}"
+          data-allocation-index="${index}"
+          min="0" max="100" step="0.1" value="${percents[index]}"
           ${isLocked ? 'disabled' : ''}
-          aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${percents[index]}"
+          aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percents[index]}"
           aria-label="${SecurityUtils.sanitizeHTML(option.text || `Domain ${index + 1}`)}">
       </div>
     `).join('');
 
     const lockedNotice = '';
+    const qid = question.id;
 
     if (!isLocked) {
       setTimeout(() => {
-        const qid = question.id;
+        const card = document.querySelector(`#alloc_${qid}_0`)?.closest('.value-allocation-card');
+        const root = card || document.getElementById('questionContainer');
+        if (!root) return;
+
         let state = percents.slice();
-        const syncDom = () => {
-          for (let i = 0; i < n; i++) {
-            const slider = document.getElementById(`alloc_${qid}_${i}`);
-            const pctEl = document.getElementById(`pct_${qid}_${i}`);
-            if (slider) {
-              slider.value = String(state[i]);
-              slider.setAttribute('aria-valuenow', String(state[i]));
-            }
-            if (pctEl) pctEl.textContent = `${state[i]}%`;
+
+        const syncUi = (i, pct) => {
+          const slider = document.getElementById(`alloc_${qid}_${i}`);
+          const pctEl = document.getElementById(`pct_${qid}_${i}`);
+          if (slider) {
+            slider.value = String(pct);
+            slider.setAttribute('aria-valuenow', String(pct));
           }
+          if (pctEl) pctEl.textContent = `${pct}%`;
           const sumEl = document.getElementById(`alloc_sum_${qid}`);
-          if (sumEl) sumEl.textContent = String(state.reduce((a, b) => a + b, 0));
+          if (sumEl) {
+            const sum = Math.round(sumDisplayPercents(state) * 10) / 10;
+            sumEl.textContent = String(sum);
+          }
         };
 
-        for (let k = 0; k < n; k++) {
-          const el = document.getElementById(`alloc_${qid}_${k}`);
-          if (!el) continue;
+        root.querySelectorAll('.value-allocation-slider').forEach((el) => {
           attachRangeTouchGuard(el);
-          el.addEventListener('input', () => {
-            const raw = parseInt(el.value, 10);
-            state = redistributeAllocationPercents(state, k, raw, total);
-            syncDom();
+        });
+
+        attachAllocationSliders(root, {
+          memberIds,
+          sliderSelector: '.value-allocation-slider',
+          getPercents: () => state.slice(),
+          setPercents: (next) => {
+            state = next.slice();
+          },
+          syncUi: (i, pct) => syncUi(i, pct),
+          onInput: () => {
             if (!this.hintFlags.hasSeenAllocationHint) {
               this.hintFlags.hasSeenAllocationHint = true;
               persistHintFlags(this.hintStorageKey, this.hintFlags);
-              const helper = document.querySelector('.question-helper');
+              const helper = root.querySelector('.question-helper');
               if (helper) helper.remove();
             }
             this.processAnswer(question, state.slice());
-          });
-        }
+          },
+          isLocked: false
+        });
 
         if (!this.answers[qid]?.allocationPercents) {
           this.processAnswer(question, state.slice());
@@ -1282,11 +1245,13 @@ showGenderSelection() {
       }, 0);
     }
 
+    const totalDisplay = Math.round(sumDisplayPercents(percents) * 10) / 10;
+
     return `
       <div class="question-card value-allocation-card">
         <h3>${SecurityUtils.sanitizeHTML(question.question || '')}</h3>
-        ${this.hintFlags.hasSeenAllocationHint ? '' : `<details class="question-help-toggle" open><summary>How these sliders work</summary><p class="question-helper">One shared budget: ${total}%. Moving a slider up lowers the others in proportion to how much each still had left.</p></details>`}
-        <p class="value-allocation-total-line">Total: <strong id="alloc_sum_${question.id}">${percents.reduce((a, b) => a + b, 0)}%</strong></p>
+        ${this.hintFlags.hasSeenAllocationHint ? '' : `<details class="question-help-toggle" open><summary>How these sliders work</summary><p class="question-helper">One shared budget: ${total}%. Moving a slider up lowers the others in proportion to how much each still had left. Zero axes stay at 0% until you raise them.</p></details>`}
+        <p class="value-allocation-total-line">Total: <strong id="alloc_sum_${question.id}">${totalDisplay}%</strong></p>
         <div class="value-allocation-list">
           ${rowsHTML}
         </div>

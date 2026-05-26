@@ -35,6 +35,10 @@ import {
   smoothScrollQuestionTop
 } from './shared/questionnaire-ux.js';
 import { bootEngineIfLegacy } from './shared/engine-spa-boot.js';
+import {
+  DUAL_POLE_MEMBER_IDS,
+  redistributeDisplayPercents
+} from './shared/questionnaire-allocation.mjs';
 
 // Data modules - will be loaded lazily
 let TEMPERAMENT_DIMENSIONS, INTIMATE_DYNAMICS;
@@ -885,8 +889,15 @@ export class TemperamentEngine {
     const idSuffix = String(question.id || 'q').replace(/[^a-zA-Z0-9_-]/g, '_');
     const saved = this.answers[question.id];
     const savedLeft = Array.isArray(saved?.allocationPercents) ? Number(saved.allocationPercents[0]) : null;
-    const leftPct = Number.isFinite(savedLeft) ? Math.max(0, Math.min(100, Math.round(savedLeft))) : 50;
-    const rightPct = 100 - leftPct;
+    const savedRight = Array.isArray(saved?.allocationPercents) ? Number(saved.allocationPercents[1]) : null;
+    let leftPct = Number.isFinite(savedLeft) ? savedLeft : 50;
+    let rightPct = Number.isFinite(savedRight) ? savedRight : 50;
+    if (!Number.isFinite(savedLeft) && !Number.isFinite(savedRight)) {
+      leftPct = 50;
+      rightPct = 50;
+    }
+    leftPct = Math.round(leftPct * 10) / 10;
+    rightPct = Math.round(rightPct * 10) / 10;
     const categoryLine = opts.categoryLine
       ? `<p class="description">${SecurityUtils.sanitizeHTML(opts.categoryLine)}</p>`
       : '';
@@ -909,7 +920,7 @@ export class TemperamentEngine {
               <span>${SecurityUtils.sanitizeHTML(opts.leftLabel || '')}</span>
               <strong id="dm_pct_left_${idSuffix}">${leftPct}%</strong>
             </div>
-            <input type="range" min="0" max="100" value="${leftPct}" class="slider" id="dm_slider_left_${idSuffix}" step="1">
+            <input type="range" min="0" max="100" value="${leftPct}" class="slider" id="dm_slider_left_${idSuffix}" step="0.1" data-pole-index="0">
             <div class="scale-labels${this.hintFlags.hasSeenDualSliderHint ? ' hidden' : ''}">
               <span>Not important</span>
               <span>Very important</span>
@@ -920,7 +931,7 @@ export class TemperamentEngine {
               <span>${SecurityUtils.sanitizeHTML(opts.rightLabel || '')}</span>
               <strong id="dm_pct_right_${idSuffix}">${rightPct}%</strong>
             </div>
-            <input type="range" min="0" max="100" value="${rightPct}" class="slider" id="dm_slider_right_${idSuffix}" step="1">
+            <input type="range" min="0" max="100" value="${rightPct}" class="slider" id="dm_slider_right_${idSuffix}" step="0.1" data-pole-index="1">
             <div class="scale-labels${this.hintFlags.hasSeenDualSliderHint ? ' hidden' : ''}">
               <span>Not important</span>
               <span>Very important</span>
@@ -934,13 +945,23 @@ export class TemperamentEngine {
     const rightSlider = document.getElementById(`dm_slider_right_${idSuffix}`);
     const leftPctEl = document.getElementById(`dm_pct_left_${idSuffix}`);
     const rightPctEl = document.getElementById(`dm_pct_right_${idSuffix}`);
-    const syncAnswer = (leftValue, origin) => {
-      const left = Math.max(0, Math.min(100, Math.round(Number(leftValue) || 0)));
-      const right = 100 - left;
+    const memberIds = DUAL_POLE_MEMBER_IDS;
+    let state = [leftPct, rightPct];
+
+    const syncAnswer = (changedIndex, displayValue) => {
+      state = redistributeDisplayPercents(state, memberIds, changedIndex, displayValue);
+      const left = state[0];
+      const right = state[1];
       if (leftPctEl) leftPctEl.textContent = `${left}%`;
       if (rightPctEl) rightPctEl.textContent = `${right}%`;
-      if (leftSlider && origin !== 'left') leftSlider.value = String(left);
-      if (rightSlider && origin !== 'right') rightSlider.value = String(right);
+      if (leftSlider) {
+        leftSlider.value = String(left);
+        leftSlider.setAttribute('aria-valuenow', String(left));
+      }
+      if (rightSlider) {
+        rightSlider.value = String(right);
+        rightSlider.setAttribute('aria-valuenow', String(right));
+      }
       this.answers[question.id] = {
         type: 'value_allocation',
         allocationPercents: [left, right]
@@ -948,30 +969,33 @@ export class TemperamentEngine {
       this.saveProgress();
     };
 
+    const onFirstInput = () => {
+      if (!this.hintFlags.hasSeenDualSliderHint) {
+        this.hintFlags.hasSeenDualSliderHint = true;
+        persistHintFlags(this.hintStorageKey, this.hintFlags);
+        questionContainer.querySelectorAll('.scale-labels').forEach((el) => el.remove());
+      }
+    };
+
     if (leftSlider) {
       attachRangeTouchGuard(leftSlider);
       leftSlider.oninput = (event) => {
-        syncAnswer(event.target.value, 'left');
-        if (!this.hintFlags.hasSeenDualSliderHint) {
-          this.hintFlags.hasSeenDualSliderHint = true;
-          persistHintFlags(this.hintStorageKey, this.hintFlags);
-          questionContainer.querySelectorAll('.scale-labels').forEach((el) => el.remove());
-        }
+        syncAnswer(0, event.target.value);
+        onFirstInput();
       };
     }
     if (rightSlider) {
       attachRangeTouchGuard(rightSlider);
       rightSlider.oninput = (event) => {
-        const rightValue = Math.max(0, Math.min(100, Math.round(Number(event.target.value) || 0)));
-        syncAnswer(100 - rightValue, 'right');
-        if (!this.hintFlags.hasSeenDualSliderHint) {
-          this.hintFlags.hasSeenDualSliderHint = true;
-          persistHintFlags(this.hintStorageKey, this.hintFlags);
-          questionContainer.querySelectorAll('.scale-labels').forEach((el) => el.remove());
-        }
+        syncAnswer(1, event.target.value);
+        onFirstInput();
       };
     }
-    syncAnswer(leftPct, 'init');
+    this.answers[question.id] = {
+      type: 'value_allocation',
+      allocationPercents: [state[0], state[1]]
+    };
+    this.saveProgress();
 
     this.updateProgress();
     this.updateNavigationButtons();
@@ -1082,10 +1106,14 @@ export class TemperamentEngine {
     if (!question?.id) return;
     const idSuffix = String(question.id).replace(/[^a-zA-Z0-9_-]/g, '_');
     const leftSlider = document.getElementById(`dm_slider_left_${idSuffix}`);
-    if (leftSlider) {
-      const left = Math.max(0, Math.min(100, Math.round(Number(leftSlider.value) || 0)));
-      this.answers[question.id] = { type: 'value_allocation', allocationPercents: [left, 100 - left] };
-    }
+    const rightSlider = document.getElementById(`dm_slider_right_${idSuffix}`);
+    if (!leftSlider || !rightSlider) return;
+    const left = Math.max(0, Math.min(100, Number(leftSlider.value) || 0));
+    const right = Math.max(0, Math.min(100, Number(rightSlider.value) || 0));
+    this.answers[question.id] = {
+      type: 'value_allocation',
+      allocationPercents: [left, right]
+    };
   }
 
   prevQuestion() {

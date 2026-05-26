@@ -6,7 +6,7 @@ import {
 import {
   allocationAnswerFromWeights,
   valueAllocationFromAnswer,
-} from "./questionnaire-allocation.js";
+} from "./questionnaire-allocation.mjs";
 
 export function attachDomQuestionSpaApi(engine) {
   engine.getPhase = () => resolveEnginePhase(engine);

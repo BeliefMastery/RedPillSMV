@@ -54,8 +54,8 @@ flowchart TB
     Bridge[QuestionHtmlBridge]
   end
   subgraph shared [Shared libs]
-    Alloc[allocation-scales.js]
-    QAlloc[questionnaire-allocation.js]
+    Alloc[allocation-scales.mjs]
+    QAlloc[questionnaire-allocation.mjs]
     SpaHost[spa-questionnaire-host.js]
     SpaSnap[spa-questionnaire-engine.js]
   end
@@ -550,7 +550,7 @@ The changed member is **pinned** to the user’s new value; all adjustment happe
 
 ### 11.3 Core function: `redistributeOnChange`
 
-**Reference:** `shared/allocation-scales.js` — export `redistributeOnChange(changedId, newValue, weights, targetSum, allIds)`.
+**Reference:** `shared/allocation-scales.mjs` — export `redistributeOnChange(changedId, newValue, weights, targetSum, allIds)`.
 
 **Inputs:**
 
@@ -778,7 +778,7 @@ setWeights((prev) =>
 );
 ```
 
-**DOM (`questionnaire-allocation.js`):** same `redistributeOnChange` on `input`; slider `min="0" max="100" step="0.1"`; labels via `formatAllocationPercent`.
+**DOM (`questionnaire-allocation.mjs`):** same `redistributeOnChange` on `input`; slider `min="0" max="100" step="0.1"`; labels via `formatAllocationPercent`.
 
 **Do not** call `normalizeAllocation` on every drag — only for export/submit if you need a canonical snapshot; live coupling must use raw `redistributeOnChange` output.
 
@@ -936,8 +936,8 @@ sequenceDiagram
 
 ### C. Shared libraries
 
-- [ ] `allocation-scales.js` — precision, redistribute, format/parse
-- [ ] `questionnaire-allocation.js` — map types, DOM HTML, scoring helpers
+- [ ] `allocation-scales.mjs` — precision, redistribute, format/parse
+- [ ] `questionnaire-allocation.mjs` — map types, DOM HTML, scoring helpers
 - [ ] `spa-questionnaire-engine.js` — snapshots
 - [ ] `spa-questionnaire-host.js` — host API, `allocationNextQuestion`
 - [ ] `spa-engine-external.js` — `externalUI`, `onNotify`, legacy boot gate
@@ -981,8 +981,8 @@ Use these paths in the reference repo when implementing or debugging. Replace na
 | Host hook | `v3/spa/src/engines/shared/useEngineHost.js` |
 | Questionnaire shell | `v3/spa/src/engines/shared/QuestionnaireEngineView.jsx` |
 | Question UI | `v3/spa/src/engines/shared/QuestionFlow.jsx`, `AllocationSliders.jsx` |
-| Allocation math | `shared/allocation-scales.js` |
-| Allocation scoring/DOM | `shared/questionnaire-allocation.js` |
+| Allocation math | `shared/allocation-scales.mjs` |
+| Allocation scoring/DOM | `shared/questionnaire-allocation.mjs` |
 | Snapshots | `shared/spa-questionnaire-engine.js` |
 | Host API | `shared/spa-questionnaire-host.js` |
 | External UI events | `shared/spa-engine-external.js` |

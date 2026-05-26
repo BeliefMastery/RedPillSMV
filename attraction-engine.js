@@ -60,6 +60,12 @@ import {
   smoothScrollQuestionTop
 } from './shared/questionnaire-ux.js';
 import { bootEngineIfLegacy } from './shared/engine-spa-boot.js';
+import {
+  attachAllocationSliders,
+  displayPercentsFromQuestion,
+  memberIdsFromQuestion,
+  sumDisplayPercents
+} from './shared/questionnaire-allocation.mjs';
 
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 const ATTRACTION_PROGRESS_KEY = 'attraction-assessment:progress';
@@ -530,64 +536,13 @@ export class AttractionEngine {
   }
 
   getInitialAllocationPercents(question) {
-    const existing = this.allocationResponses?.[question.id];
     const n = question.options?.length || 0;
-    const total = question.allocationTotal || 100;
+    const existing = this.allocationResponses?.[question.id];
+    const answers = {};
     if (Array.isArray(existing) && existing.length === n) {
-      return existing.map((x) => Math.round(Number(x) || 0));
+      answers[question.id] = { allocationPercents: existing };
     }
-    if (!n) return [];
-    const base = Math.floor(total / n);
-    const percents = Array(n).fill(base);
-    let rem = total - (base * n);
-    for (let i = 0; rem > 0; i = (i + 1) % n, rem--) {
-      percents[i]++;
-    }
-    return percents;
-  }
-
-  redistributeAllocationPercents(state, changedIdx, desiredValue, total) {
-    const n = state.length;
-    const next = state.slice();
-    const bounded = Math.max(0, Math.min(total, Math.round(Number(desiredValue) || 0)));
-    const prev = next[changedIdx];
-    next[changedIdx] = bounded;
-    let delta = bounded - prev;
-    if (delta === 0) return next;
-
-    const others = [];
-    for (let i = 0; i < n; i++) if (i !== changedIdx) others.push(i);
-
-    if (delta > 0) {
-      let remaining = delta;
-      while (remaining > 0) {
-        const sumOthers = others.reduce((s, i) => s + next[i], 0);
-        if (sumOthers <= 0) {
-          next[changedIdx] -= remaining;
-          break;
-        }
-        for (const i of others) {
-          if (remaining <= 0) break;
-          if (next[i] <= 0) continue;
-          const share = Math.max(1, Math.round((next[i] / sumOthers) * remaining));
-          const take = Math.min(share, next[i], remaining);
-          next[i] -= take;
-          remaining -= take;
-        }
-      }
-    } else {
-      let give = -delta;
-      for (let k = 0; give > 0; k = (k + 1) % others.length) {
-        next[others[k]] += 1;
-        give--;
-      }
-    }
-
-    const currentSum = next.reduce((a, b) => a + b, 0);
-    if (currentSum !== total) {
-      next[changedIdx] += (total - currentSum);
-    }
-    return next;
+    return displayPercentsFromQuestion(question, answers);
   }
 
   projectAllocationToScalar(question, percents) {
@@ -606,37 +561,61 @@ export class AttractionEngine {
 
   setupAllocationControls(block, question) {
     if (!block || question.type !== 'value_allocation') return;
-    const sliders = Array.from(block.querySelectorAll('.value-allocation-slider'));
-    if (!sliders.length) return;
-    const total = Number(question.allocationTotal) || 100;
+    const memberIds = memberIdsFromQuestion(question);
+    if (!memberIds.length) return;
+
     let state = this.getInitialAllocationPercents(question);
     const sumEl = block.querySelector('.value-allocation-total');
-    const sync = () => {
-      sliders.forEach((slider, i) => {
-        slider.value = String(state[i]);
-        const pctEl = block.querySelector(`#alloc_pct_${question.id}_${i}`);
-        if (pctEl) pctEl.textContent = `${state[i]}%`;
-      });
-      if (sumEl) sumEl.textContent = `${state.reduce((a, b) => a + b, 0)}%`;
+
+    const persist = () => {
       this.allocationResponses[question.id] = state.slice();
       const projected = this.projectAllocationToScalar(question, state);
       if (typeof projected === 'number') this.responses[question.id] = projected;
     };
-    sliders.forEach((slider) => {
-      const idx = Number(slider.dataset.allocIndex);
+
+    block.querySelectorAll('.value-allocation-slider').forEach((slider) => {
       attachRangeTouchGuard(slider);
-      slider.addEventListener('input', () => {
-        state = this.redistributeAllocationPercents(state, idx, slider.value, total);
-        sync();
+    });
+
+    attachAllocationSliders(block, {
+      memberIds,
+      getPercents: () => state.slice(),
+      setPercents: (next) => {
+        state = next.slice();
+        persist();
+      },
+      syncUi: (i, pct) => {
+        const slider = block.querySelector(`#alloc_${question.id}_${i}`);
+        const pctEl = block.querySelector(`#alloc_pct_${question.id}_${i}`);
+        if (slider) {
+          slider.value = String(pct);
+          slider.setAttribute('aria-valuenow', String(pct));
+        }
+        if (pctEl) pctEl.textContent = `${pct}%`;
+        if (sumEl) {
+          const sum = Math.round(sumDisplayPercents(state) * 10) / 10;
+          sumEl.textContent = `${sum}%`;
+        }
+      },
+      onInput: () => {
         if (!this.hintFlags.hasSeenAllocationHint) {
           this.hintFlags.hasSeenAllocationHint = true;
           persistHintFlags(this.hintStorageKey, this.hintFlags);
           const helper = block.querySelector('.value-allocation-helper');
           if (helper) helper.remove();
         }
-      });
+      }
     });
-    sync();
+
+    block.querySelectorAll('.value-allocation-slider').forEach((slider, i) => {
+      const pctEl = block.querySelector(`#alloc_pct_${question.id}_${i}`);
+      if (pctEl) pctEl.textContent = `${state[i]}%`;
+      slider.value = String(state[i]);
+    });
+    if (sumEl) {
+      sumEl.textContent = `${Math.round(sumDisplayPercents(state) * 10) / 10}%`;
+    }
+    persist();
   }
 
   showPreferencesForm() {
@@ -769,7 +748,7 @@ export class AttractionEngine {
                     type="range"
                     min="0"
                     max="${total}"
-                    step="1"
+                    step="0.1"
                     value="${initial[i]}"
                     data-alloc-index="${i}"
                   >
