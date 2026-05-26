@@ -118,11 +118,11 @@ npm run serve:www   # serves www/ on port 3000
 
 ### GitHub Pages (https://beliefmastery.github.io/RedPillSMV/)
 
-Each push to `main` runs [`.github/workflows/pages.yml`](.github/workflows/pages.yml) and publishes `www/` to the **`gh-pages`** branch.
+Each push to `main` runs [`.github/workflows/pages.yml`](.github/workflows/pages.yml), builds `www/`, and deploys via **GitHub Actions** (`upload-pages-artifact` + `deploy-pages`).
 
-**One-time repo setting:** **Settings → Pages → Deploy from a branch** → branch **`gh-pages`** → folder **`/ (root)`** → Save.
+**One-time repo setting:** **Settings → Pages → Source: GitHub Actions** (not “Deploy from a branch / main”). After the workflow succeeds, the live URL serves the built `www/` artifact, not files from the `main` branch root.
 
-Do **not** use **main / (root)** — that serves this repo’s placeholder `index.html`, not the built app. “GitHub Actions” as the Pages source is optional; the `gh-pages` branch deploy is what matters.
+If the site still shows a placeholder, open **Actions → Deploy GitHub Pages** and confirm the latest run is green; re-run with **workflow_dispatch** if needed.
 
 ### Build for Android (optional)
 
