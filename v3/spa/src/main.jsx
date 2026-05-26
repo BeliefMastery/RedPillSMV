@@ -4,6 +4,7 @@ import { HashRouter } from "react-router-dom";
 import App from "./App.jsx";
 import "./styles/tokens.css";
 import "./styles/global.css";
+import "./styles/home.css";
 import "./styles/engine-assessment.css";
 import "./styles/legacy-compat.css";
 

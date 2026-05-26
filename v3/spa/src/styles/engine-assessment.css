@@ -1,8 +1,13 @@
 /* Assessment UI — scoped under .bm-engine-content */
 
 .bm-engine-content {
-  max-width: 52rem;
+  max-width: var(--v3-engine-max);
   margin: 0 auto;
+}
+
+.bm-engine .surface + .surface,
+.bm-engine .stack > .surface {
+  margin-top: 0;
 }
 
 .bm-engine-content .btn,
@@ -47,7 +52,8 @@
 }
 
 .bm-question-stem {
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 2vw + 0.5rem, 1.125rem);
+  line-height: 1.4;
   color: var(--v3-heading);
   margin-bottom: var(--v3-space-3);
 }

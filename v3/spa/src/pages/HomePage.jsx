@@ -44,7 +44,7 @@ export default function HomePage() {
 
   return (
     <section className="stack" aria-labelledby="tools-title">
-      <div className="surface">
+      <div className="surface surface--home">
         <h1 className="v3-hero-title" id="tools-title">
           <span className="home-suite-title-line">🔌 Unplugged Dynamics:</span>
           <br />
@@ -62,6 +62,7 @@ export default function HomePage() {
           ))}
         </div>
 
+        <div className="suite-progress-wrap">
         <h2 className="v3-section-title">Suite progress (this device)</h2>
         <ul className="suite-progress-list" role="list">
           {tools.map(({ route, done, gender, locked, lockHint }) => (
@@ -86,6 +87,7 @@ export default function HomePage() {
             </li>
           ))}
         </ul>
+        </div>
 
         {completion?.mismatch && (
           <p className="suite-mismatch-note">

@@ -50,7 +50,7 @@ export default function TopNav({ theme, themes, onThemeChange }) {
             );
           })}
         </ul>
-        <label style={{ marginLeft: "auto", fontSize: "0.85rem" }}>
+        <label className="nav-theme-select">
           <span className="visually-hidden">Theme</span>
           <select
             value={theme}
