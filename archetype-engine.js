@@ -613,13 +613,13 @@ showGenderSelection() {
     if (!container) return;
 
     SecurityUtils.safeInnerHTML(container, `
-      <div class="question-card"">
-        <h2">Select Your IQ Bracket</h2>
+      <div class="question-card selection-panel">
+        <h2>Select Your IQ Bracket</h2>
         <p>
           Providing your IQ bracket helps us prioritize relevant questions and accelerate the assessment. 
           If you don't know your IQ, estimate based on standardized tests (SAT, ACT, WAIS, etc.) or educational/career patterns.
         </p>
-        <div>
+        <div class="iq-options-grid">
           <button id="selectIQ80_100" class="iq-btn">
             <strong>80-100 IQ</strong> - Routine Guided Thinkers (~34% of population)
           </button>

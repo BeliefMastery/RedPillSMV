@@ -1,0 +1,319 @@
+/**
+ * Engine questionnaire options — themed for V3 tokens (replaces missing style.css slices).
+ * Scoped to engine DOM under .bm-engine-content / #questionContainer.
+ */
+
+.bm-engine-content .question-card,
+#questionContainer .question-card {
+  background: color-mix(in srgb, var(--v3-surface) 92%, transparent);
+  border: 1px solid var(--v3-surface-border);
+  border-radius: var(--v3-radius);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  margin-bottom: var(--v3-space-4);
+}
+
+.bm-engine-content .question-card h2,
+.bm-engine-content .question-card h3,
+#questionContainer .question-card h2,
+#questionContainer .question-card h3 {
+  color: var(--v3-heading);
+  margin: 0 0 var(--v3-space-3);
+  font-size: clamp(1.05rem, 2vw + 0.5rem, 1.2rem);
+  line-height: 1.45;
+}
+
+.bm-engine-content .question-card > p,
+#questionContainer .question-card > p {
+  color: var(--v3-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin: 0 0 var(--v3-space-3);
+}
+
+/* Grids: multi-option questions */
+.bm-engine-content .options-container,
+.bm-engine-content .selection-grid,
+.bm-engine-content .assessment-grid,
+.bm-engine-content .category-grid,
+.bm-engine-content .category-selection,
+#questionContainer .options-container,
+#questionContainer .category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--v3-space-2);
+  width: 100%;
+  margin: var(--v3-space-2) 0 var(--v3-space-3);
+}
+
+/* Stacked lists: IQ brackets, frequency, scenario rows */
+.bm-engine-content .iq-options-grid,
+.bm-engine-content .three-point-options,
+.bm-engine-content .binary-unsure-options,
+.bm-engine-content .frequency-options,
+.bm-engine-content .binary-options,
+.bm-engine-content .scenario-options,
+.bm-engine-content .multiselect-options,
+.bm-engine-content .need-chain-options,
+#questionContainer .iq-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--v3-space-2);
+  margin: var(--v3-space-2) 0 var(--v3-space-3);
+}
+
+.bm-engine-content .gender-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--v3-space-2);
+  justify-content: center;
+  margin-top: var(--v3-space-3);
+}
+
+/* Shared option card pattern */
+.bm-engine-content .option-label,
+.bm-engine-content .likert-option,
+.bm-engine-content .narrative-option,
+.bm-engine-content .three-point-option,
+.bm-engine-content .binary-unsure-option,
+.bm-engine-content .frequency-option,
+.bm-engine-content .binary-option,
+.bm-engine-content .scenario-option,
+.bm-engine-content .multiselect-option,
+.bm-engine-content .need-chain-option,
+.bm-engine-content .category-card,
+.bm-engine-content .iq-btn,
+#questionContainer .option-label,
+#questionContainer .iq-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font: inherit;
+  color: var(--v3-text);
+  background: color-mix(in srgb, var(--v3-surface) 88%, transparent);
+  border: 1px solid var(--v3-surface-border);
+  border-radius: var(--v3-radius);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.bm-engine-content .iq-btn {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.bm-engine-content .iq-btn strong {
+  color: var(--v3-heading);
+  font-weight: 600;
+}
+
+.bm-engine-content .iq-btn-unknown {
+  border-style: dashed;
+  color: var(--v3-muted);
+}
+
+@media (hover: hover) {
+  .bm-engine-content .option-label:hover,
+  .bm-engine-content .likert-option:hover,
+  .bm-engine-content .narrative-option:hover,
+  .bm-engine-content .three-point-option:hover,
+  .bm-engine-content .binary-unsure-option:hover,
+  .bm-engine-content .frequency-option:hover,
+  .bm-engine-content .binary-option:hover,
+  .bm-engine-content .scenario-option:hover,
+  .bm-engine-content .multiselect-option:hover,
+  .bm-engine-content .need-chain-option:hover,
+  .bm-engine-content .category-card:hover,
+  .bm-engine-content .iq-btn:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--v3-accent) 55%, transparent);
+    background: color-mix(in srgb, var(--v3-accent) 8%, var(--v3-surface));
+  }
+}
+
+.bm-engine-content .option-label.selected,
+.bm-engine-content .likert-option.selected,
+.bm-engine-content .narrative-option.selected,
+.bm-engine-content .three-point-option.selected,
+.bm-engine-content .binary-unsure-option.selected,
+.bm-engine-content .frequency-option.selected,
+.bm-engine-content .binary-option.selected,
+.bm-engine-content .scenario-option.selected,
+.bm-engine-content .multiselect-option.selected,
+.bm-engine-content .need-chain-option.selected,
+.bm-engine-content .category-card.selected {
+  border-color: var(--v3-accent);
+  background: color-mix(in srgb, var(--v3-accent) 14%, var(--v3-surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--v3-accent) 35%, transparent);
+}
+
+.bm-engine-content .option-label.locked,
+.bm-engine-content .likert-option.locked,
+.bm-engine-content .narrative-option.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Custom radio / checkbox affordance */
+.bm-engine-content .option-label input[type="radio"],
+.bm-engine-content .likert-option input[type="radio"],
+.bm-engine-content .narrative-option input[type="radio"],
+.bm-engine-content .three-point-option input[type="radio"],
+.bm-engine-content .binary-unsure-option input[type="radio"],
+.bm-engine-content .frequency-option input[type="radio"],
+.bm-engine-content .binary-option input[type="radio"],
+.bm-engine-content .scenario-option input[type="radio"],
+.bm-engine-content .need-chain-option input[type="radio"] {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0.15rem 0 0;
+  accent-color: var(--v3-accent);
+  cursor: pointer;
+}
+
+.bm-engine-content .multiselect-option input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0.15rem 0 0;
+  accent-color: var(--v3-accent);
+}
+
+.bm-engine-content .option-label span,
+.bm-engine-content .option-text,
+.bm-engine-content .likert-option .option-text,
+.bm-engine-content .narrative-option span {
+  flex: 1;
+  line-height: 1.5;
+  color: var(--v3-text);
+}
+
+.bm-engine-content .selected-check {
+  flex-shrink: 0;
+  color: var(--v3-accent);
+  font-weight: 700;
+}
+
+.bm-engine-content .category-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  color: var(--v3-heading);
+}
+
+.bm-engine-content .category-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--v3-muted);
+  line-height: 1.45;
+}
+
+.bm-engine-content .value-allocation-total-line {
+  font-size: 0.95rem;
+  color: var(--v3-muted);
+  margin: 0 0 var(--v3-space-2);
+}
+
+.bm-engine-content .value-allocation-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--v3-space-3);
+}
+
+.bm-engine-content .value-allocation-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--v3-text);
+}
+
+.bm-engine-content .value-allocation-pct {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--v3-accent);
+}
+
+.bm-engine-content input[type="range"].value-allocation-slider {
+  width: 100%;
+  accent-color: var(--v3-accent);
+}
+
+/* Engine action buttons — align with v3-btn */
+.bm-engine-content .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--v3-radius);
+  border: 1px solid var(--v3-surface-border);
+  background: color-mix(in srgb, var(--v3-surface) 90%, transparent);
+  color: var(--v3-heading);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.bm-engine-content .btn-primary {
+  background: linear-gradient(135deg, var(--v3-accent), var(--v3-accent-strong));
+  color: var(--v3-on-accent);
+  border-color: transparent;
+}
+
+.bm-engine-content .btn-secondary,
+.bm-engine-content .btn-outline {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--v3-accent) 45%, transparent);
+  color: var(--v3-accent);
+}
+
+.bm-engine-content .gender-btn {
+  min-width: 7.5rem;
+}
+
+.bm-engine-content .navigation-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--v3-space-2);
+}
+
+.bm-engine-content .abandon-link {
+  margin-top: var(--v3-space-2);
+  width: 100%;
+}
+
+.bm-engine-content .abandon-link .btn {
+  width: 100%;
+  max-width: 16rem;
+}
+
+@media (max-width: 640px) {
+  .bm-engine-content .options-container,
+  .bm-engine-content .category-grid,
+  #questionContainer .options-container {
+    grid-template-columns: 1fr;
+  }
+
+  .bm-engine-content .gender-options {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bm-engine-content .gender-btn {
+    width: 100%;
+  }
+}

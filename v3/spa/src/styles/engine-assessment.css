@@ -99,16 +99,22 @@
 }
 
 .bm-selection-card {
-  padding: var(--v3-space-3);
+  padding: 0.85rem 1rem;
   border: 1px solid var(--v3-surface-border);
   border-radius: var(--v3-radius);
   cursor: pointer;
-  background: var(--v3-surface);
+  background: color-mix(in srgb, var(--v3-surface) 88%, transparent);
+  color: var(--v3-text);
+  text-align: left;
+  font: inherit;
+  line-height: 1.5;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .bm-selection-card--selected {
   border-color: var(--v3-accent);
-  box-shadow: 0 0 0 1px var(--v3-accent);
+  background: color-mix(in srgb, var(--v3-accent) 14%, var(--v3-surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--v3-accent) 35%, transparent);
 }
 
 .bm-results-bridge {

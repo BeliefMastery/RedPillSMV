@@ -6,6 +6,7 @@ import "./styles/tokens.css";
 import "./styles/global.css";
 import "./styles/home.css";
 import "./styles/engine-assessment.css";
+import "./styles/engine-options.css";
 import "./styles/legacy-compat.css";
 
 createRoot(document.getElementById("root")).render(
