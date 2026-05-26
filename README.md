@@ -116,6 +116,14 @@ npm run v3:build
 npm run serve:www   # serves www/ on port 3000
 ```
 
+### GitHub Pages (https://beliefmastery.github.io/RedPillSMV/)
+
+Each push to `main` runs [`.github/workflows/pages.yml`](.github/workflows/pages.yml) and publishes `www/` to the **`gh-pages`** branch.
+
+**One-time repo setting:** **Settings → Pages → Deploy from a branch** → branch **`gh-pages`** → folder **`/ (root)`** → Save.
+
+Do **not** use **main / (root)** — that serves this repo’s placeholder `index.html`, not the built app. “GitHub Actions” as the Pages source is optional; the `gh-pages` branch deploy is what matters.
+
 ### Build for Android (optional)
 
 See **[ANDROID-BUILD.md](ANDROID-BUILD.md)** and **[docs/ANDROID_IAP.md](docs/ANDROID_IAP.md)** for Play Console product id, testers, and policy notes.
