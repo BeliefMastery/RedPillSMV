@@ -74,6 +74,16 @@ export const PHASE_6_DETERMINATIVE_QUESTIONS = {
         { text: 'Withdrawal, passivity, and shutdown', archetypes: ['omega'], weight: 2 },
         { text: 'Destructive collapse that harms self/others', archetypes: ['dark_omega'], weight: 2 }
       ]
+    },
+    {
+      id: 'p6_omega_2',
+      type: 'forced_choice',
+      question: 'When householding effort feels unrewarded, you most often:',
+      options: [
+        { text: 'Stop investing surplus and retreat to hedonic minimum', archetypes: ['omega', 'gamma'], weight: 2 },
+        { text: 'Double down on duty and structure anyway', archetypes: ['beta_nu', 'delta'], weight: 2 },
+        { text: 'Pivot to short-term access or attention leverage', archetypes: ['gamma', 'dark_gamma'], weight: 2 }
+      ]
     }
   ],
   phi: []

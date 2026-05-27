@@ -20,7 +20,7 @@ export default function ArchetypeEngineView() {
     <QuestionnaireEngineView
       engineId="archetype"
       label="Modern Archetype Identification"
-      lead="Behavioral role patterning across seven core archetype groups."
+      lead="Social-role taxonomy within a regulated sexual contract—identity patterns that interact with householding vs transactional market structure."
       intro={intro}
       resultsId="resultsContainer"
     />

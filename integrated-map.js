@@ -8,7 +8,8 @@ import {
   buildPolarityLayer,
   buildAttractionLayer,
   buildCurrentPatternSummary,
-  buildNextMoveCandidates
+  buildNextMoveCandidates,
+  buildSexualContractIntegratedExcerpt
 } from './shared/integrated-map-excerpts.js';
 
 function esc(s) {
@@ -149,6 +150,10 @@ function renderContent(snapshots) {
   const summary = buildCurrentPatternSummary(a, t, r);
   const layerBundle = { archL, polL, attL };
   const nextMoves = buildNextMoveCandidates(a, t, r, { layers: layerBundle });
+  const sciBlock = buildSexualContractIntegratedExcerpt();
+  const sciHtml = sciBlock
+    ? `<section class="integrated-map-sci" style="margin-top:1.5rem;"><h2 class="integrated-map-frame-heading">${esc(sciBlock.title)}</h2><ul>${sciBlock.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul><p style="margin-top:0.5rem;font-size:0.9rem;color:var(--muted);"><a href="#/learn/sexual-contract">Sexual contract module</a> · optional inventory enriches this read.</p></section>`
+    : '';
 
   const layers = `
     <div class="integrated-map-layers">
@@ -161,6 +166,7 @@ function renderContent(snapshots) {
     <h1 class="section-title-btn" style="text-align:center;margin-bottom:0.5rem;">Integrated map</h1>
     ${renderCurrentPatternSummary(summary)}
     ${layers}
+    ${sciHtml}
     ${renderNextMove(nextMoves)}
     <p style="text-align:center;margin-top:1.5rem;color:var(--muted);font-size:0.9rem;"><a href="index.html">Home</a> · <a href="relationship.html">Relationships</a> (separate lens)</p>`;
 }

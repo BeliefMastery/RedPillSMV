@@ -47,8 +47,10 @@ export const TEMPERAMENT_SCORING = {
     status_and_rank: 1.0,               // hold
     selection_criteria: 1.1,            // hold — gender-swap logic already handles this
     attraction_signals: 1.0,            // hold
-    hypergamy_and_choice: 1.0,          // hold
-    responsiveness_patterns: 1.1        // lowered from 1.2
+    hypergamy_and_choice: 1.0,
+    consequence_insulation: 0.9,
+    polarity_collapse_context: 0.85,
+    responsiveness_patterns: 1.1
   },
   
   // Variation indicators - dimensions where variation is expected and common

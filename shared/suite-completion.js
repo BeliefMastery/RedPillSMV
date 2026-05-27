@@ -18,7 +18,8 @@ function shouldInvalidateStorageKey(key) {
     key === 'archetype-assessment:progress' ||
     key === ATTRACTION_RESULTS_KEY ||
     key === 'temperament-assessment:progress' ||
-    key === 'redpill_unlock_polarity_attraction_v1'
+    key === 'redpill_unlock_polarity_attraction_v1' ||
+    key === 'sexual-contract-inventory:v1'
   );
 }
 

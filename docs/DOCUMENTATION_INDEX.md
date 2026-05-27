@@ -24,6 +24,7 @@ Central map of Markdown in this repository (excluding `node_modules/` and genera
 | [TEMPERAMENT_GLOSSARY.md](TEMPERAMENT_GLOSSARY.md) | Temperament terminology |
 | [TEMPERAMENT_LANGUAGE_DECISION_LOG.md](TEMPERAMENT_LANGUAGE_DECISION_LOG.md) | Copy/language decisions |
 | [SMV_WEIGHTING_NOTE.md](SMV_WEIGHTING_NOTE.md) | Attraction/SMV weighting note |
+| [COLLAPSE_SEXUAL_CONTRACT_FRAMEWORK.md](COLLAPSE_SEXUAL_CONTRACT_FRAMEWORK.md) | SCI/PCS sexual contract + Mouse Utopia framework |
 | [WEIGHTING_CALIBRATION_NOTE.md](../WEIGHTING_CALIBRATION_NOTE.md) | Relationship Stage-1 weighting calibration |
 | [archetype-data/PROPOSAL-RESPECT-CONTEXT.md](../archetype-data/PROPOSAL-RESPECT-CONTEXT.md) | Archetype data proposal (respect context) |
 

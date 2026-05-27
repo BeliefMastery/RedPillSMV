@@ -15,6 +15,7 @@ import {
 import { ensurePeriod } from './archetype-narrative-utils.js';
 import { quotedMemeticSummary } from './archetype-memetic-format.js';
 import { getMemeticLinesForId } from './archetype-memetic-lines.js';
+import { computeSexualContractIndex, buildSexualContractInputFromSuite } from './sexual-contract-index.mjs';
 
 function takeSentences(text, maxCount) {
   if (!text) return '';
@@ -1097,4 +1098,29 @@ export function buildCrossIntegrationBullets(archetypeLayer, polarityLayer, attr
     );
   }
   return out;
+}
+
+/** Optional fourth block when inventory + suite snapshots present. */
+export function buildSexualContractIntegratedExcerpt() {
+  const sci = computeSexualContractIndex(buildSexualContractInputFromSuite());
+  if (!sci || (sci.contractFragility == null && sci.polarityCollapse == null)) return null;
+  const parts = [];
+  if (sci.contractFragility >= 0.38) {
+    parts.push(
+      `Contract fragility reads ${sci.contractFragilityLabel?.toLowerCase() || 'elevated'}—householding ROI may be structurally strained versus transactional access.`
+    );
+  }
+  if (sci.convergence?.showCollapseFraming) {
+    parts.push(
+      'Polarity collapse context: initiation or direction may compensate for abdicated lead or utopian insulation—not preference alone.'
+    );
+  }
+  if (sci.convergence?.behavioralSinkPattern) {
+    parts.push('Behavioral sink risk: short-term optimization without durable family or legacy binds.');
+  }
+  if (!parts.length) return null;
+  return {
+    title: 'Sexual contract & collapse context',
+    bullets: parts
+  };
 }

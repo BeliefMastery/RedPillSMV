@@ -184,6 +184,96 @@ export const ATTRACTION_RESPONSIVENESS = {
         masculineWeight: 0.2,
         feminineWeight: 0.8,
         poleLabels: { low: 'Matters less', high: 'Very important' }
+      },
+      {
+        id: 'attr_hyp_6',
+        question: 'When evaluating partners, how often do you prioritize being their clear "best option" over deep compatibility regardless of comparison?',
+        masculineWeight: 0.5,
+        feminineWeight: 0.85,
+        poleLabels: { low: 'Compatibility regardless', high: 'Being their best option' }
+      }
+    ]
+  },
+
+  consequence_insulation: {
+    name: 'Consequence Insulation',
+    spectrumLabel: 'Partner-anchored security vs Institutional / risk-decoupled security',
+    description: 'How much long-term security is tied to a householder partner versus insulated by institutions or decoupled reproductive risk',
+    masculinePoleLabel: 'oriented to self-reliance and partner-anchored commitment planning',
+    femininePoleLabel: 'oriented to institutional or risk-decoupled security',
+    questions: [
+      {
+        id: 'ci_1',
+        question: 'Long-term economic security feels more secure when anchored in a committed partner who provides and protects, rather than programs or collective safety nets.',
+        masculineWeight: 1.0,
+        feminineWeight: -0.7,
+        poleLabels: { low: 'Programs / collective nets', high: 'Committed partner anchor' }
+      },
+      {
+        id: 'ci_2',
+        question: 'Reproductive or commitment consequences feel manageable without requiring a dedicated householder contract first.',
+        masculineWeight: -0.6,
+        feminineWeight: 0.8,
+        poleLabels: { low: 'Need householder first', high: 'Manageable without householder' }
+      },
+      {
+        id: 'ci_3',
+        question: 'I plan major life decisions assuming external support (state, family, community) can absorb personal risk if a relationship fails.',
+        masculineWeight: -0.5,
+        feminineWeight: 0.7,
+        poleLabels: { low: 'Plan around partner contract', high: 'External support absorbs risk' }
+      }
+    ]
+  },
+
+  polarity_collapse_context: {
+    name: 'Polarity Collapse Context',
+    spectrumLabel: 'Authentic preference vs Compensatory direction',
+    description: 'Whether initiation and direction reflect authentic pole preference or structural compensation under abdicated lead',
+    masculinePoleLabel: 'oriented to approach, proposal, and direction under own initiative',
+    femininePoleLabel: 'oriented to compensatory direction when lead is absent',
+    questions: [
+      {
+        id: 'pcs_mpa_1',
+        question: 'Even when attracted, I avoid approach or stating where a connection is going.',
+        masculineWeight: -1.0,
+        feminineWeight: 0.2,
+        poleLabels: { low: 'I approach and propose', high: 'I avoid approach / direction' }
+      },
+      {
+        id: 'pcs_mpa_2',
+        question: 'I invest heavily in how I look or present myself but rarely take social risk to initiate with people I want.',
+        masculineWeight: -0.9,
+        feminineWeight: 0.1,
+        poleLabels: { low: 'Presentation plus approach', high: 'Presentation without approach' }
+      },
+      {
+        id: 'pcs_dir_1',
+        question: 'I initiate or direct dating primarily because waiting for masculine lead feels like stagnation—not because I prefer leading.',
+        masculineWeight: 0.2,
+        feminineWeight: 0.9,
+        poleLabels: { low: 'Prefer to be led', high: 'Initiate from stagnation fear' }
+      },
+      {
+        id: 'pcs_dir_2',
+        question: 'Future relationship direction feels secure when my partner leads; when they will not, I must set direction to feel safe.',
+        masculineWeight: -0.4,
+        feminineWeight: 0.85,
+        poleLabels: { low: 'Secure when partner leads', high: 'I must set direction' }
+      },
+      {
+        id: 'pcs_dir_3',
+        question: 'I make the first move mainly to escape uncertainty about whether anything will happen—not from preference to lead.',
+        masculineWeight: 0.1,
+        feminineWeight: 0.8,
+        poleLabels: { low: 'First move by preference', high: 'First move from uncertainty' }
+      },
+      {
+        id: 'pcs_bo_1',
+        question: 'Optimizing appearance or personal brand feels more rewarding than taking leadership or coalition risks in social hierarchies.',
+        masculineWeight: -0.8,
+        feminineWeight: 0.2,
+        poleLabels: { low: 'Leadership / coalition risk', high: 'Self-optimization focus' }
       }
     ]
   },

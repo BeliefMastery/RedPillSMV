@@ -19,6 +19,8 @@ import { showConfirm, showAlert } from './shared/confirm-modal.js';
 import { EXPECTED_GENDER_TRENDS, formatCompositePositionDescription } from './shared/temperament-composite-meta.js';
 import { getStageGateState, getSuiteSnapshots, getArchetypeGenderForSuite } from './shared/suite-completion.js';
 import { applyArchetypePolarityCalibration } from './shared/archetype-polarity-calibration.mjs';
+import { computeSexualContractIndex, buildSexualContractInputFromSuite } from './shared/sexual-contract-index.mjs';
+import { getPolarityCollapseCopy } from './shared/sexual-contract-report-copy.mjs';
 import {
   applyAndroidPolarityAttractionPremiumUI,
   assertPolarityAttractionPremiumOrAlert,
@@ -1303,6 +1305,14 @@ export class TemperamentEngine {
     // Analyze variation
     this.analyzeVariation();
 
+    const sciInput = buildSexualContractInputFromSuite();
+    sciInput.gender = reportedGender === 'woman' ? 'female' : reportedGender === 'man' ? 'male' : null;
+    sciInput.dimensionScores = this.analysisData.dimensionScores;
+    sciInput.polarityAnswers = { ...this.answers };
+    const suiteSnaps = getSuiteSnapshots();
+    sciInput.primaryArchetype = suiteSnaps.archetype?.analysisData?.primaryArchetype || {};
+    this.analysisData.sexualContract = computeSexualContractIndex(sciInput);
+
     // Include all raw answers
     this.analysisData.allAnswers = { ...this.answers };
     this.analysisData.questionSequence = this.questionSequence.map(q => {
@@ -1936,6 +1946,15 @@ export class TemperamentEngine {
     html += '</div>';
     html += polarityFailureAlertHtml;
     html += polarityStrongAlignmentAlertHtml;
+    const pcsCopy = getPolarityCollapseCopy(this.analysisData.sexualContract);
+    if (pcsCopy) {
+      html += `
+        <div class="panel-brand-left polarity-collapse-context" style="margin-top:1rem;padding:1.25rem;border-left:4px solid var(--accent);">
+          <h3 style="margin-top:0;">${SecurityUtils.sanitizeHTML(pcsCopy.title)}</h3>
+          <p style="margin:0;line-height:1.55;">${SecurityUtils.sanitizeHTML(pcsCopy.detail)}</p>
+          <p style="margin:0.75rem 0 0;font-size:0.9rem;color:var(--muted);">Preference scores above measure authentic pole expression; this block flags when collapse-context items suggest structural compensation (utopian insulation or abdicated lead) rather than preference alone.</p>
+        </div>`;
+    }
     html += synthesisSectionHtml;
 
     html += `

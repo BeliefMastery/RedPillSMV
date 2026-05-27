@@ -307,6 +307,68 @@ export const MALE_CLUSTERS = {
       humour: { label: 'Humour / mind / companionship', desc: 'Wit, intelligence signal, and enjoyable companionship—not only jokes.' }
     },
     questions: MALE_AXIS_QUESTIONS
+  },
+  sexualContractContext: {
+    id: 'sexualContractContext',
+    sciOnly: true,
+    title: 'Sexual Contract Context',
+    subtitle: 'Market structure attitudes (does not change headline SMV)',
+    description:
+      'These items inform contract fragility and polarity-collapse reads in your report. They do not reweight core cluster scores.',
+    subcategories: {
+      osr: { label: 'Operational sex ratio', desc: 'Perceived mating-market distortion.' },
+      contract: { label: 'Contract orientation', desc: 'Householding vs transactional framing.' }
+    },
+    questions: [
+      {
+        id: 'sci_osr_1',
+        subcategory: 'osr',
+        text: 'In your local dating environment, men (or you, if male) competing for scarce reciprocal commitment feels more intense than finding casual attention.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      },
+      {
+        id: 'sci_tx_1',
+        subcategory: 'contract',
+        text: 'Short-term or ambiguous intimacy often outperforms clear long-term household contracts in outcomes you observe or experience.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      },
+      {
+        id: 'sci_hh_1',
+        subcategory: 'contract',
+        text: 'Trading sustained labor, protection, or exclusivity for a stable multi-year household still feels like a rational exchange.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      },
+      {
+        id: 'sci_roi_1',
+        subcategory: 'contract',
+        text: 'I often work at hedonic minimum—enough to survive and access short-term reward, not to build legacy.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      },
+      {
+        id: 'sci_roi_2',
+        subcategory: 'contract',
+        text: 'Even with weak pair-bond prospects, I would still invest surplus effort in durable wealth or community.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      },
+      {
+        id: 'sci_ins_1',
+        subcategory: 'contract',
+        text: 'I rely on institutions or collective safety nets more than a dedicated partner for long-term security.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      }
+    ]
   }
 };
 
@@ -348,6 +410,52 @@ export const FEMALE_CLUSTERS = {
       factorsHidden: { label: 'Factors Hidden', desc: 'Secrets or undisclosed elements that affect trust.' }
     },
     questions: FEMALE_AXIS_QUESTIONS
+  },
+  sexualContractContext: {
+    id: 'sexualContractContext',
+    sciOnly: true,
+    title: 'Sexual Contract Context',
+    subtitle: 'Market structure attitudes (does not change headline SMV)',
+    description:
+      'These items inform contract fragility and polarity-collapse reads in your report. They do not reweight core cluster scores.',
+    subcategories: {
+      osr: { label: 'Operational sex ratio', desc: 'Perceived mating-market distortion.' },
+      contract: { label: 'Contract orientation', desc: 'Householding vs transactional framing.' }
+    },
+    questions: [
+      {
+        id: 'sci_osr_1',
+        subcategory: 'osr',
+        text: 'In your local dating environment, competition for top-tier men feels more intense than finding stable reciprocal commitment.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      },
+      {
+        id: 'sci_tx_1',
+        subcategory: 'contract',
+        text: 'Attention leverage or ambiguous situationships often outperform clear long-term household contracts in outcomes you observe or experience.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      },
+      {
+        id: 'sci_hh_1',
+        subcategory: 'contract',
+        text: 'Trading selectivity and long-term pair-bond for a stable household still feels like a rational exchange.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      },
+      {
+        id: 'sci_ins_1',
+        subcategory: 'contract',
+        text: 'I rely on institutions or collective safety nets more than a dedicated partner for long-term security.',
+        weight: 1,
+        options: OPTS,
+        optionLabels: ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']
+      }
+    ]
   }
 };
 

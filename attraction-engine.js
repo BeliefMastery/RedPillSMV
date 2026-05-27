@@ -46,6 +46,18 @@ import { maleAgeGapContext } from './shared/male-age-gap.js';
 import { getStageGateState, getSuiteSnapshots, getArchetypeGenderForSuite } from './shared/suite-completion.js';
 import { applyAttractionSuiteCalibration } from './shared/attraction-suite-calibration.mjs';
 import {
+  computeSexualContractIndex,
+  buildSexualContractInputFromSuite,
+  applySciDelusionBoost,
+  clusterDeltasFromSci
+} from './shared/sexual-contract-index.mjs';
+import { SEXUAL_CONTRACT_CLUSTER_DELTA_CAP } from './shared/sexual-contract-config.mjs';
+import {
+  getContractRead,
+  getContractFragilityCopy,
+  getGridHouseholdingNote
+} from './shared/sexual-contract-report-copy.mjs';
+import {
   applyAndroidPolarityAttractionPremiumUI,
   assertPolarityAttractionPremiumOrAlert,
   premiumBlocksPolarityAttractionActions,
@@ -369,6 +381,30 @@ export class AttractionEngine {
 
   getClusterWeights() {
     return this.currentGender === 'male' ? MALE_CLUSTER_WEIGHTS : FEMALE_CLUSTER_WEIGHTS;
+  }
+
+  /** Clusters that contribute to headline SMV (excludes sciOnly context phase). */
+  getSmvClusterIds() {
+    return Object.keys(this.getClusters()).filter((id) => !this.getClusters()[id]?.sciOnly);
+  }
+
+  applySexualContractToSmv(smv) {
+    const sciInput = buildSexualContractInputFromSuite();
+    sciInput.gender = this.currentGender;
+    sciInput.attractionResponses = { ...sciInput.attractionResponses, ...this.responses };
+    sciInput.smv = smv;
+    const sci = computeSexualContractIndex(sciInput);
+    smv.sexualContract = sci;
+    const deltas = clusterDeltasFromSci(sci, SEXUAL_CONTRACT_CLUSTER_DELTA_CAP);
+    ['coalitionRank', 'reproductiveConfidence', 'axisOfAttraction'].forEach((k) => {
+      if (typeof smv.clusters[k] === 'number') {
+        smv.clusters[k] = Math.max(0, Math.min(100, smv.clusters[k] + (deltas[k] || 0)));
+      }
+    });
+    const weights = this.getClusterWeights();
+    smv.overall = computeOverallSmv(smv.clusters, weights);
+    smv.contractRead = getContractRead(smv, sci, this.currentGender);
+    return sci;
   }
 
   async startAssessment() {
@@ -941,6 +977,7 @@ export class AttractionEngine {
       this.currentGender,
       this.getClusterWeights()
     );
+    this.applySexualContractToSmv(this.smv);
     this.finalizeSmvDerivatives(this.smv);
     this.persistResultsToStorage();
     this.clearInProgress();
@@ -962,11 +999,15 @@ export class AttractionEngine {
 
   calculateSMV() {
     const clusters = this.getClusters();
+    const smvClusters = {};
+    this.getSmvClusterIds().forEach((id) => {
+      smvClusters[id] = clusters[id];
+    });
     const weights = this.getClusterWeights();
     const partial = computeSmvClustersAndSubs({
       gender: this.currentGender,
       responses: this.responses,
-      clusters,
+      clusters: smvClusters,
       axisSubWeights: AXIS_SUBCATEGORY_WEIGHTS,
       radModifier: RAD_ACTIVITY_TYPE_MODIFIER
     });
@@ -997,6 +1038,9 @@ export class AttractionEngine {
     smv.weakestSubcategories = this.identifyWeakestSubcategories(smv);
     smv.levelClassification = this.classifyDevelopmentalLevel(smv);
     smv.delusionIndex = this.calculateDelusionIndex(smv);
+    if (smv.sexualContract) {
+      smv.delusionIndex = applySciDelusionBoost(smv.delusionIndex, smv.sexualContract);
+    }
     smv.delusionBand = this.calculateDelusionBand(smv.delusionIndex);
     smv.targetMarket = this.analyzeTargetMarket(smv);
     smv.recommendation = this.generateRecommendation(smv);
@@ -1265,6 +1309,10 @@ export class AttractionEngine {
       let detailBlock = `<p class="attraction-classification-detail">${SecurityUtils.sanitizeHTML(combinedCardDetail)}</p>`;
       if (this.currentGender === 'male' && gridExpl) {
         detailBlock += `<p class="attraction-classification-qualifier"><em>${SecurityUtils.sanitizeHTML(gridExpl)}</em></p>`;
+        const hhNote = getGridHouseholdingNote(s.badBoyGoodGuy?.label || '');
+        if (hhNote) {
+          detailBlock += `<p class="attraction-classification-qualifier" style="margin-top:0.35rem;"><em>${SecurityUtils.sanitizeHTML(hhNote)}</em></p>`;
+        }
       }
       classificationFollowupParts.push(detailBlock);
     }
@@ -1394,8 +1442,13 @@ export class AttractionEngine {
               : '';
           const standardsBlock =
             this.currentGender === 'male' ? this.getMaleStandardsContextNote(s) : this.getFemaleStandardsContextNote(s);
-          if (!delusionBlock && !standardsBlock) return '';
-          return `<section class="report-section attraction-standards-calibration">${delusionBlock}${standardsBlock}</section>`;
+          const sci = s.sexualContract;
+          const contractBlock =
+            sci?.contractFragility != null
+              ? `<div class="panel-brand-left" style="margin-top:1rem;padding:1rem;border-left:4px solid var(--accent);"><h3 style="margin-top:0;">Sexual contract read</h3><p>${SecurityUtils.sanitizeHTML(getContractFragilityCopy(sci.contractFragilityBand))}</p>${s.contractRead?.detail ? `<p style="margin-top:0.5rem;font-style:italic;">${SecurityUtils.sanitizeHTML(s.contractRead.detail)}</p>` : ''}</div>`
+              : '';
+          if (!delusionBlock && !standardsBlock && !contractBlock) return '';
+          return `<section class="report-section attraction-standards-calibration">${delusionBlock}${standardsBlock}${contractBlock}</section>`;
         })()}
 
         <section class="report-section"><h2 class="report-section-title">Strategic Recommendations</h2>
@@ -1427,7 +1480,8 @@ export class AttractionEngine {
     const map = {
       coalitionRank: 'Peer Rank',
       reproductiveConfidence: 'Reproductive Confidence',
-      axisOfAttraction: 'Attraction Opportunity'
+      axisOfAttraction: 'Attraction Opportunity',
+      sexualContractContext: 'Sexual Contract Context'
     };
     return map[id] || this.formatClusterName(id);
   }

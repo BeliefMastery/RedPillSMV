@@ -66,4 +66,9 @@ export const pageMeta = {
     title: "Archetype spread table | Red-Pill Relational Suite",
     description: "Full archetype taxonomy reference table.",
   },
+  "/learn/sexual-contract": {
+    title: "Sexual contract framework | Red-Pill Relational Suite",
+    description:
+      "Evolutionary mating-market framework, Mouse Utopia metaphor, and optional context inventory for SCI/PCS reads.",
+  },
 };

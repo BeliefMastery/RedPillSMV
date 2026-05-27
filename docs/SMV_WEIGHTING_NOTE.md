@@ -41,6 +41,10 @@ When **Archetype** and **Polarity** are already complete on the device, [`shared
 
 See also [`docs/SUITE_CALIBRATION.md`](./SUITE_CALIBRATION.md). Delusion and preference layers still use the **calibrated** overall/clusters after this step.
 
+## Sexual contract layer (SCI)
+
+After suite calibration, [`shared/sexual-contract-index.mjs`](../shared/sexual-contract-index.mjs) may apply a **capped** cluster nudge (≤±2 points) and delusion boost (≤+15) from inventory + `sexualContractContext` phase items. Headline comparability policy unchanged for core questionnaire clusters; see [`docs/COLLAPSE_SEXUAL_CONTRACT_FRAMEWORK.md`](./COLLAPSE_SEXUAL_CONTRACT_FRAMEWORK.md).
+
 ## Cluster weights (overall SMV)
 
 |        | coalitionRank | reproductiveConfidence | axisOfAttraction |

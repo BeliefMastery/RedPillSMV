@@ -46,6 +46,7 @@ export function computeSmvClustersAndSubs(options) {
 
   Object.keys(clusters).forEach(clusterId => {
     const cluster = clusters[clusterId];
+    if (cluster.sciOnly) return;
     rawScores.clusters[clusterId] = [];
     rawScores.subcategories[clusterId] = {};
     (cluster.questions || []).forEach(q => {

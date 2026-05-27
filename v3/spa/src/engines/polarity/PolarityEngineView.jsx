@@ -17,7 +17,7 @@ export default function PolarityEngineView() {
     <QuestionnaireEngineView
       engineId="polarity"
       label="Polarity Position Mapping"
-      lead="Masculine–feminine polarity calibration."
+      lead="Masculine–feminine polarity calibration. Hypergamy reads as a selection filter; consequence insulation and collapse-context items distinguish authentic preference from compensatory direction under abdicated lead."
       intro={intro}
       resultsId="resultsSection"
       showSuiteGate

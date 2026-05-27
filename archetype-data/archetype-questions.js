@@ -684,6 +684,18 @@ export const PHASE_3_QUESTIONS = [
     ]
   },
   {
+    id: 'p3_contract_roi',
+    question: 'When I imagine my effort over the next decade, I would most allocate toward:',
+    type: 'value_allocation',
+    allocationTotal: 100,
+    options: [
+      { text: 'Building a household, family, or legacy worth defending', archetypes: ['beta_nu', 'beta', 'delta'], weight: 2 },
+      { text: 'Maximizing present experience and short-term access', archetypes: ['gamma', 'alpha'], weight: 2 },
+      { text: 'Withdrawing to self-optimization without social risk', archetypes: ['omega', 'sigma'], weight: 2 },
+      { text: 'Extracting or destabilizing without long-term bind', archetypes: ['dark_omega', 'dark_gamma', 'dark_alpha'], weight: 2 }
+    ]
+  },
+  {
     id: 'p3_q3',
     question: 'When I feel I\'m not getting what I need, I:',
     type: 'value_allocation',

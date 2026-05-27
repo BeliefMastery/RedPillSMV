@@ -124,6 +124,12 @@ export default function HomePage() {
             </p>
           </div>
         )}
+
+        <div className="v3-hero-actions" style={{ marginTop: "1rem" }}>
+          <Link to="/learn/sexual-contract" className="v3-btn v3-btn--ghost">
+            Sexual contract framework (optional)
+          </Link>
+        </div>
       </div>
     </section>
   );

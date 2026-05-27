@@ -17,7 +17,7 @@ export default function RelationshipEngineView() {
     <QuestionnaireEngineView
       engineId="relationship"
       label="Relationship Viability"
-      lead="Relationship optimization and viability read."
+      lead="Viability under contract asymmetry—householding labor vs hedonic extraction and direction strain."
       intro={intro}
       resultsId="resultsSection"
     />

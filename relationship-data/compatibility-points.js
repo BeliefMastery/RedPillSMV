@@ -162,7 +162,8 @@ export const COMPATIBILITY_POINTS = {
     id: 'transactional-compatibility',
     name: 'Transactional Compatibility (Give and Take)',
     impactTier: 'high',
-    description: 'Transactional compatibility refers to how the partners balance the effort and emotional investment they give to the relationship. This includes sharing responsibilities and emotional labor without falling into overfunctioner/underfunctioner dynamics.',
+    description:
+      'Transactional compatibility is the householding labor vs hedonic extraction balance—whether effort, protection, and emotional investment flow reciprocally toward a long-term contract or skew toward short-term optimization and one-sided extraction.',
     impact: 'An imbalance in effort can lead to feelings of resentment and emotional depletion, as one partner may feel like they are carrying more of the weight or the relationship direction.',
     needs: ['Mutuality', 'Support', 'Trust', 'Respect', 'Nurturing', 'Compassion', 'Cooperation', 'Stability'],
     negativeExpressions: ['Frustration', 'Resentment', 'Bitterness', 'Anger', 'Exhaustion'],
