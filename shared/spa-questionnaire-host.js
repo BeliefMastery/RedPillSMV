@@ -7,6 +7,10 @@ import {
   allocationAnswerFromWeights,
   valueAllocationFromAnswer,
 } from "./questionnaire-allocation.mjs";
+import {
+  bindOptionSelectionUI,
+  syncOptionSelectionIn,
+} from "./engine-option-selection.mjs";
 
 export function attachDomQuestionSpaApi(engine) {
   engine.getPhase = () => resolveEnginePhase(engine);
@@ -84,7 +88,9 @@ export function attachDomQuestionSpaApi(engine) {
           ) {
             mount.appendChild(container);
           }
+          bindOptionSelectionUI(container);
           origRender();
+          syncOptionSelectionIn(container);
         }
         notifyEngine(this, "question");
         return;
