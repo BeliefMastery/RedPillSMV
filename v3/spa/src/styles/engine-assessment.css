@@ -5,21 +5,86 @@
   margin: 0 auto;
 }
 
-/* Unified questionnaire panel — progress, question, nav share one surface */
+/* Phase-aware hero chrome */
+.bm-engine--assessment .bm-engine-hero {
+  display: none;
+}
+
+.bm-engine--idle .bm-engine-hero-lead,
+.bm-engine--idle .bm-engine-hero-disclaimer,
+.bm-engine--results .bm-engine-hero-lead,
+.bm-engine--results .bm-engine-hero-disclaimer {
+  display: none;
+}
+
+/* Questionnaire — one opaque panel (progress + question + nav); page chrome stays translucent */
 .bm-engine-content .questionnaire-section:not(.hidden) {
   margin-top: var(--v3-space-4);
   padding: clamp(1rem, 2.5vw, 1.5rem);
   border: 1px solid var(--v3-surface-border);
   border-radius: var(--v3-radius);
-  background: color-mix(in srgb, var(--v3-surface) 94%, transparent);
-  box-shadow: var(--shadow-sm);
-  -webkit-backdrop-filter: var(--v3-surface-blur);
-  backdrop-filter: var(--v3-surface-blur);
+  background: var(--v3-panel-solid);
+  box-shadow: var(--shadow-md);
 }
 
 .bm-engine-content #questionContainer {
   margin: var(--v3-space-3) 0;
   min-height: 3rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.bm-engine-content .bm-questionnaire-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--v3-space-2);
+  margin-top: var(--v3-space-3);
+  padding-top: var(--v3-space-3);
+  border-top: 1px solid var(--v3-surface-border);
+}
+
+.bm-engine-content .bm-questionnaire-nav .navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--v3-space-2);
+  margin-top: 0;
+  flex-wrap: nowrap;
+}
+
+.bm-engine-content .bm-questionnaire-nav .navigation-buttons .btn {
+  flex: 1 1 auto;
+  max-width: 12rem;
+}
+
+.bm-engine-content .bm-questionnaire-nav .navigation-buttons #prevQuestion {
+  margin-right: auto;
+}
+
+.bm-engine-content .bm-questionnaire-nav .navigation-buttons #nextQuestion {
+  margin-left: auto;
+}
+
+.bm-engine-content .bm-abandon-link {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.35rem 0;
+  border: none;
+  background: none;
+  color: var(--v3-muted);
+  font: inherit;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+  text-align: center;
+}
+
+.bm-engine-content .bm-abandon-link:hover {
+  color: var(--v3-heading);
 }
 
 .bm-engine-content .content-section:not(.hidden) {
@@ -79,8 +144,7 @@
   margin-bottom: var(--v3-space-3);
 }
 
-.bm-question-nav,
-.bm-engine-content .navigation-buttons {
+.bm-question-nav {
   display: flex;
   gap: var(--v3-space-2);
   margin-top: var(--v3-space-4);

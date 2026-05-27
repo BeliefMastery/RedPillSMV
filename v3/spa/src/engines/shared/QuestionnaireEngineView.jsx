@@ -26,14 +26,14 @@ export default function QuestionnaireEngineView({
 
   if (error) {
     return (
-      <EngineLayout label={label} lead={lead}>
+      <EngineLayout label={label} lead={lead} phase="idle">
         <p role="alert">Failed to load assessment: {error.message}</p>
       </EngineLayout>
     );
   }
 
   return (
-    <EngineLayout label={label} lead={lead}>
+    <EngineLayout label={label} lead={lead} phase={phase}>
       <EngineDomShell
         engineId={engineId}
         resultsId={resultsId}

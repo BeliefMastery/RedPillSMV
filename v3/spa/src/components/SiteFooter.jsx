@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export default function SiteFooter({ theme, themes, onThemeChange }) {
+export default function SiteFooter() {
   return (
     <footer>
       <details className="home-info-dropdown">
@@ -27,17 +27,6 @@ export default function SiteFooter({ theme, themes, onThemeChange }) {
       </details>
       <p className="footer-controls">
         <label>
-          Theme{" "}
-          <select value={theme} onChange={(e) => onThemeChange(e.target.value)} aria-label="Theme">
-            {themes.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </label>
-        {" · "}
-        <label>
           Font scale{" "}
           <select
             id="font-scale-select"
@@ -46,6 +35,7 @@ export default function SiteFooter({ theme, themes, onThemeChange }) {
               localStorage.setItem("redpill-font-scale", e.target.value);
               document.documentElement.style.setProperty("--font-scale", e.target.value);
             }}
+            aria-label="Font scale"
           >
             <option value="0.9">Small</option>
             <option value="1">Default</option>

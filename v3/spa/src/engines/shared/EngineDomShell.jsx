@@ -103,17 +103,17 @@ export default function EngineDomShell({
           <span id="questionCounter" />
         </div>
         <div id="questionContainer" />
-        <div className="navigation-buttons">
-          <button type="button" className="btn btn-secondary" id="prevQuestion">
-            Previous
-          </button>
-          <button type="button" className="btn btn-primary" id="nextQuestion">
-            Next
-          </button>
-        </div>
-        <div className="abandon-link">
-          <button type="button" className="btn btn-secondary" id="abandonAssessment">
-            Abandon Assessment
+        <div className="bm-questionnaire-nav">
+          <div className="navigation-buttons">
+            <button type="button" className="btn btn-secondary" id="prevQuestion">
+              Previous
+            </button>
+            <button type="button" className="btn btn-primary" id="nextQuestion">
+              Next
+            </button>
+          </div>
+          <button type="button" className="bm-abandon-link" id="abandonAssessment">
+            Abandon assessment
           </button>
         </div>
       </section>

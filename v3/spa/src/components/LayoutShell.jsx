@@ -49,7 +49,7 @@ export default function LayoutShell() {
         <Outlet />
       </main>
       <BottomNav />
-      <SiteFooter theme={theme} themes={getThemes()} onThemeChange={onThemeChange} />
+      {location.pathname === "/" && <SiteFooter />}
     </div>
   );
 }
