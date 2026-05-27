@@ -9,7 +9,11 @@ export default function ResultsHtmlBridge({ engine, resultsId = "resultsContaine
     const section = document.getElementById(resultsId);
     if (section && ref.current) {
       section.classList.remove("hidden");
-      if (!ref.current.contains(section)) {
+      if (
+        ref.current !== section &&
+        !ref.current.contains(section) &&
+        !section.contains(ref.current)
+      ) {
         ref.current.appendChild(section);
       }
     }

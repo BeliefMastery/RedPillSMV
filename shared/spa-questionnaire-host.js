@@ -75,7 +75,13 @@ export function attachDomQuestionSpaApi(engine) {
         const mount = this._externalQuestionMount;
         const container = document.getElementById("questionContainer");
         if (container && this.usesDomQuestions()) {
-          if (mount && !mount.contains(container)) {
+          // Guard both directions to avoid cyclical appendChild errors.
+          if (
+            mount &&
+            mount !== container &&
+            !mount.contains(container) &&
+            !container.contains(mount)
+          ) {
             mount.appendChild(container);
           }
           origRender();
