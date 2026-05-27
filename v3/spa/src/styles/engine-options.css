@@ -1,45 +1,74 @@
 /**
- * Engine questionnaire options — themed for V3 tokens (replaces missing style.css slices).
- * Scoped to engine DOM under .bm-engine-content / #questionContainer.
+ * Engine questionnaire options — V3 tokens, legacy selection affordances.
+ * Scoped to #questionContainer (always) and .bm-engine-content (nav/buttons).
  */
 
-.bm-engine-content .question-card,
-#questionContainer .question-card {
-  background: color-mix(in srgb, var(--v3-surface) 88%, transparent);
+#questionContainer {
+  --bm-q-panel-bg: color-mix(in srgb, var(--v3-surface) 94%, transparent);
+  --bm-q-option-bg: color-mix(in srgb, var(--v3-surface) 82%, transparent);
+  --bm-q-option-selected: color-mix(in srgb, var(--v3-accent) 38%, var(--v3-surface));
+  --bm-q-option-hover: color-mix(in srgb, var(--v3-accent) 12%, var(--v3-surface));
+}
+
+/* Question stem panel */
+#questionContainer .question-card,
+#questionContainer .question-block,
+.bm-engine-content .question-card {
+  background: var(--bm-q-panel-bg);
   border: 1px solid var(--v3-surface-border);
   border-radius: var(--v3-radius);
-  padding: clamp(1rem, 2.5vw, 1.5rem);
+  padding: clamp(1.1rem, 2.5vw, 1.65rem);
   margin-bottom: var(--v3-space-4);
+  box-shadow: var(--shadow-sm);
   -webkit-backdrop-filter: var(--v3-surface-blur);
   backdrop-filter: var(--v3-surface-blur);
 }
 
-.bm-engine-content .question-card h2,
-.bm-engine-content .question-card h3,
+#questionContainer .question-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  margin-bottom: var(--v3-space-2);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--v3-muted);
+}
+
+#questionContainer .question-number {
+  font-weight: 700;
+  color: var(--v3-accent);
+}
+
 #questionContainer .question-card h2,
-#questionContainer .question-card h3 {
+#questionContainer .question-card h3,
+#questionContainer .question-block h2,
+#questionContainer .question-block h3,
+#questionContainer .question-text {
   color: var(--v3-heading);
   margin: 0 0 var(--v3-space-3);
   font-size: clamp(1.05rem, 2vw + 0.5rem, 1.2rem);
   line-height: 1.45;
 }
 
-.bm-engine-content .question-card > p,
-#questionContainer .question-card > p {
+#questionContainer .question-card > p,
+#questionContainer .question-block > p,
+#questionContainer .question-help,
+#questionContainer .form-help {
   color: var(--v3-muted);
   font-size: 0.95rem;
   line-height: 1.55;
   margin: 0 0 var(--v3-space-3);
 }
 
-/* Grids: multi-option questions */
-.bm-engine-content .options-container,
-.bm-engine-content .selection-grid,
-.bm-engine-content .assessment-grid,
-.bm-engine-content .category-grid,
-.bm-engine-content .category-selection,
+/* Option groups */
 #questionContainer .options-container,
-#questionContainer .category-grid {
+#questionContainer .selection-grid,
+#questionContainer .assessment-grid,
+#questionContainer .category-grid,
+#questionContainer .category-selection,
+#questionContainer .likert-scale {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: var(--v3-space-2);
@@ -47,23 +76,22 @@
   margin: var(--v3-space-2) 0 var(--v3-space-3);
 }
 
-/* Stacked lists: IQ brackets, frequency, scenario rows */
-.bm-engine-content .iq-options-grid,
-.bm-engine-content .three-point-options,
-.bm-engine-content .binary-unsure-options,
-.bm-engine-content .frequency-options,
-.bm-engine-content .binary-options,
-.bm-engine-content .scenario-options,
-.bm-engine-content .multiselect-options,
-.bm-engine-content .need-chain-options,
-#questionContainer .iq-options-grid {
+#questionContainer .iq-options-grid,
+#questionContainer .three-point-options,
+#questionContainer .binary-unsure-options,
+#questionContainer .frequency-options,
+#questionContainer .binary-options,
+#questionContainer .scenario-options,
+#questionContainer .multiselect-options,
+#questionContainer .need-chain-options {
   display: flex;
   flex-direction: column;
   gap: var(--v3-space-2);
   margin: var(--v3-space-2) 0 var(--v3-space-3);
 }
 
-.bm-engine-content .gender-options {
+#questionContainer .gender-options,
+#questionContainer .gender-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: var(--v3-space-2);
@@ -71,21 +99,21 @@
   margin-top: var(--v3-space-3);
 }
 
-/* Shared option card pattern */
-.bm-engine-content .option-label,
-.bm-engine-content .likert-option,
-.bm-engine-content .narrative-option,
-.bm-engine-content .three-point-option,
-.bm-engine-content .binary-unsure-option,
-.bm-engine-content .frequency-option,
-.bm-engine-content .binary-option,
-.bm-engine-content .scenario-option,
-.bm-engine-content .multiselect-option,
-.bm-engine-content .need-chain-option,
-.bm-engine-content .category-card,
-.bm-engine-content .iq-btn,
-#questionContainer .option-label,
-#questionContainer .iq-btn {
+/* Option cards */
+#questionContainer :is(
+    .option-label,
+    .likert-option,
+    .narrative-option,
+    .three-point-option,
+    .binary-unsure-option,
+    .frequency-option,
+    .binary-option,
+    .scenario-option,
+    .multiselect-option,
+    .need-chain-option,
+    .category-card,
+    .iq-btn
+  ) {
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
@@ -95,8 +123,8 @@
   text-align: left;
   font: inherit;
   color: var(--v3-text);
-  background: color-mix(in srgb, var(--v3-surface) 88%, transparent);
-  border: 1px solid var(--v3-surface-border);
+  background: var(--bm-q-option-bg);
+  border: 2px solid color-mix(in srgb, var(--v3-surface-border) 85%, transparent);
   border-radius: var(--v3-radius);
   cursor: pointer;
   transition:
@@ -106,7 +134,20 @@
   box-sizing: border-box;
 }
 
-.bm-engine-content .iq-btn {
+#questionContainer .likert-option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: min(100%, 8rem);
+}
+
+#questionContainer .likert-label {
+  font-size: 0.8rem;
+  color: var(--v3-muted);
+  margin-top: 0.35rem;
+}
+
+#questionContainer .iq-btn {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.25rem;
@@ -114,150 +155,126 @@
   line-height: 1.45;
 }
 
-.bm-engine-content .iq-btn strong {
+#questionContainer .iq-btn strong {
   color: var(--v3-heading);
   font-weight: 600;
 }
 
-.bm-engine-content .iq-btn-unknown {
+#questionContainer .iq-btn-unknown {
   border-style: dashed;
   color: var(--v3-muted);
 }
 
 @media (hover: hover) {
-  .bm-engine-content .option-label:hover,
-  .bm-engine-content .likert-option:hover,
-  .bm-engine-content .narrative-option:hover,
-  .bm-engine-content .three-point-option:hover,
-  .bm-engine-content .binary-unsure-option:hover,
-  .bm-engine-content .frequency-option:hover,
-  .bm-engine-content .binary-option:hover,
-  .bm-engine-content .scenario-option:hover,
-  .bm-engine-content .multiselect-option:hover,
-  .bm-engine-content .need-chain-option:hover,
-  .bm-engine-content .category-card:hover,
-  .bm-engine-content .iq-btn:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--v3-accent) 55%, transparent);
-    background: color-mix(in srgb, var(--v3-accent) 8%, var(--v3-surface));
+  #questionContainer :is(
+      .option-label,
+      .likert-option,
+      .narrative-option,
+      .three-point-option,
+      .binary-unsure-option,
+      .frequency-option,
+      .binary-option,
+      .scenario-option,
+      .multiselect-option,
+      .need-chain-option,
+      .category-card,
+      .iq-btn
+    ):hover:not(.locked) {
+    border-color: color-mix(in srgb, var(--v3-accent) 65%, transparent);
+    background: var(--bm-q-option-hover);
   }
 }
 
-/* Selected — class from JS and/or :has(:checked) (archive style.css parity) */
-.bm-engine-content .option-label.selected,
-.bm-engine-content .likert-option.selected,
-.bm-engine-content .narrative-option.selected,
-.bm-engine-content .three-point-option.selected,
-.bm-engine-content .binary-unsure-option.selected,
-.bm-engine-content .frequency-option.selected,
-.bm-engine-content .binary-option.selected,
-.bm-engine-content .scenario-option.selected,
-.bm-engine-content .multiselect-option.selected,
-.bm-engine-content .need-chain-option.selected,
-.bm-engine-content .category-card.selected,
-.bm-engine-content .iq-btn.selected,
-.bm-engine-content .gender-btn.selected,
-.bm-engine-content .frequency-grid-option.selected,
-.bm-engine-content .option-label:has(input[type="radio"]:checked),
-.bm-engine-content .option-label:has(input[type="checkbox"]:checked),
-.bm-engine-content .likert-option:has(input[type="radio"]:checked),
-.bm-engine-content .narrative-option:has(input[type="radio"]:checked),
-.bm-engine-content .three-point-option:has(input[type="radio"]:checked),
-.bm-engine-content .binary-unsure-option:has(input[type="radio"]:checked),
-.bm-engine-content .frequency-option:has(input[type="radio"]:checked),
-.bm-engine-content .binary-option:has(input[type="radio"]:checked),
-.bm-engine-content .scenario-option:has(input[type="radio"]:checked),
-.bm-engine-content .multiselect-option:has(input[type="checkbox"]:checked),
-.bm-engine-content .need-chain-option:has(input[type="radio"]:checked),
-.bm-engine-content .category-card:has(input[type="radio"]:checked),
-.bm-engine-content .category-card:has(input[type="checkbox"]:checked),
-.bm-engine-content .iq-btn:has(input[type="radio"]:checked),
-.bm-engine-content .gender-btn:has(input[type="radio"]:checked),
-.bm-engine-content .frequency-grid-option:has(input[type="radio"]:checked),
-#questionContainer .option-label.selected,
-#questionContainer .option-label:has(input[type="radio"]:checked),
-#questionContainer .option-label:has(input[type="checkbox"]:checked) {
+/* Selected — class + :has(:checked), legacy parity */
+#questionContainer :is(
+    .option-label.selected,
+    .likert-option.selected,
+    .narrative-option.selected,
+    .three-point-option.selected,
+    .binary-unsure-option.selected,
+    .frequency-option.selected,
+    .binary-option.selected,
+    .scenario-option.selected,
+    .multiselect-option.selected,
+    .need-chain-option.selected,
+    .category-card.selected,
+    .iq-btn.selected,
+    .gender-btn.selected,
+    .frequency-grid-option.selected,
+    .option-label:has(input[type="radio"]:checked),
+    .option-label:has(input[type="checkbox"]:checked),
+    .likert-option:has(input[type="radio"]:checked),
+    .narrative-option:has(input[type="radio"]:checked),
+    .three-point-option:has(input[type="radio"]:checked),
+    .binary-unsure-option:has(input[type="radio"]:checked),
+    .frequency-option:has(input[type="radio"]:checked),
+    .binary-option:has(input[type="radio"]:checked),
+    .scenario-option:has(input[type="radio"]:checked),
+    .multiselect-option:has(input[type="checkbox"]:checked),
+    .need-chain-option:has(input[type="radio"]:checked),
+    .category-card:has(input[type="radio"]:checked),
+    .category-card:has(input[type="checkbox"]:checked),
+    .iq-btn:has(input[type="radio"]:checked),
+    .frequency-grid-option:has(input[type="radio"]:checked)
+  ) {
   border-color: var(--v3-accent);
-  border-width: 2px;
-  background: color-mix(in srgb, var(--v3-accent) 22%, var(--v3-surface));
+  background: var(--bm-q-option-selected);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--v3-accent) 45%, transparent),
-    inset 0 0 18px color-mix(in srgb, var(--v3-accent) 12%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--v3-accent) 55%, transparent),
+    inset 0 0 20px color-mix(in srgb, var(--v3-accent) 18%, transparent);
 }
 
-.bm-engine-content .likert-option.locked.selected,
-.bm-engine-content .narrative-option.locked.selected,
-.bm-engine-content .option-label.locked:has(input:checked) {
+#questionContainer .gender-btn.selected,
+#questionContainer .gender-btn[aria-pressed="true"] {
+  border-color: var(--v3-accent);
+  background: var(--bm-q-option-selected);
+  color: var(--v3-heading);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--v3-accent) 50%, transparent);
+}
+
+#questionContainer :is(.likert-option.locked.selected, .narrative-option.locked.selected, .option-label.locked:has(input:checked)) {
   border-width: 3px;
-  background: color-mix(in srgb, var(--v3-accent) 28%, var(--v3-surface));
+  background: color-mix(in srgb, var(--v3-accent) 42%, var(--v3-surface));
 }
 
-.bm-engine-content .option-label.selected .option-text,
-.bm-engine-content .option-label:has(input:checked) .option-text,
-.bm-engine-content .likert-option.selected .option-text,
-.bm-engine-content .likert-option:has(input:checked) .option-text {
+#questionContainer :is(.option-label.selected, .option-label:has(input:checked)) .option-text,
+#questionContainer :is(.likert-option.selected, .likert-option:has(input:checked)) .option-text {
   color: var(--v3-heading);
   font-weight: 600;
 }
 
-.bm-engine-content .option-label.locked,
-.bm-engine-content .likert-option.locked,
-.bm-engine-content .narrative-option.locked {
+#questionContainer :is(.option-label.locked, .likert-option.locked, .narrative-option.locked) {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-/* Custom radio / checkbox affordance */
-.bm-engine-content .option-label input[type="radio"],
-.bm-engine-content .likert-option input[type="radio"],
-.bm-engine-content .narrative-option input[type="radio"],
-.bm-engine-content .three-point-option input[type="radio"],
-.bm-engine-content .binary-unsure-option input[type="radio"],
-.bm-engine-content .frequency-option input[type="radio"],
-.bm-engine-content .binary-option input[type="radio"],
-.bm-engine-content .scenario-option input[type="radio"],
-.bm-engine-content .need-chain-option input[type="radio"] {
+#questionContainer :is(.option-label, .likert-option, .narrative-option, .three-point-option, .binary-unsure-option, .frequency-option, .binary-option, .scenario-option, .need-chain-option) input[type="radio"],
+#questionContainer .multiselect-option input[type="checkbox"] {
   flex-shrink: 0;
-  width: 1.1rem;
-  height: 1.1rem;
-  margin: 0.15rem 0 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.12rem 0 0;
   accent-color: var(--v3-accent);
   cursor: pointer;
 }
 
-.bm-engine-content .multiselect-option input[type="checkbox"] {
-  flex-shrink: 0;
-  width: 1.1rem;
-  height: 1.1rem;
-  margin: 0.15rem 0 0;
-  accent-color: var(--v3-accent);
-}
-
-.bm-engine-content .option-label span,
-.bm-engine-content .option-text,
-.bm-engine-content .likert-option .option-text,
-.bm-engine-content .narrative-option span {
+#questionContainer :is(.option-text, .option-label span, .narrative-option span) {
   flex: 1;
   line-height: 1.5;
   color: var(--v3-text);
 }
 
-.bm-engine-content .selected-check {
+#questionContainer .selected-check {
   flex-shrink: 0;
   margin-left: auto;
   padding-left: 0.35rem;
   color: var(--v3-accent);
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   line-height: 1;
 }
 
-/* Custom radio ring (archive three-point-option pattern) */
-.bm-engine-content .three-point-option::before,
-.bm-engine-content .binary-unsure-option::before,
-.bm-engine-content .frequency-option::before,
-.bm-engine-content .binary-option::before,
-.bm-engine-content .scenario-option::before,
-.bm-engine-content .need-chain-option::before {
+#questionContainer :is(.three-point-option, .binary-unsure-option, .frequency-option, .binary-option, .scenario-option, .need-chain-option)::before {
   content: "";
   width: 1.125rem;
   height: 1.125rem;
@@ -268,38 +285,40 @@
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
-.bm-engine-content .three-point-option.selected::before,
-.bm-engine-content .three-point-option:has(input:checked)::before,
-.bm-engine-content .binary-unsure-option.selected::before,
-.bm-engine-content .binary-unsure-option:has(input:checked)::before,
-.bm-engine-content .frequency-option.selected::before,
-.bm-engine-content .frequency-option:has(input:checked)::before,
-.bm-engine-content .binary-option.selected::before,
-.bm-engine-content .binary-option:has(input:checked)::before,
-.bm-engine-content .scenario-option.selected::before,
-.bm-engine-content .scenario-option:has(input:checked)::before,
-.bm-engine-content .need-chain-option.selected::before,
-.bm-engine-content .need-chain-option:has(input:checked)::before {
+#questionContainer :is(
+    .three-point-option.selected,
+    .three-point-option:has(input:checked),
+    .binary-unsure-option.selected,
+    .binary-unsure-option:has(input:checked),
+    .frequency-option.selected,
+    .frequency-option:has(input:checked),
+    .binary-option.selected,
+    .binary-option:has(input:checked),
+    .scenario-option.selected,
+    .scenario-option:has(input:checked),
+    .need-chain-option.selected,
+    .need-chain-option:has(input:checked)
+  )::before {
   border-color: var(--v3-accent);
   background: var(--v3-accent);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--v3-accent) 55%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--v3-accent) 60%, transparent);
 }
 
-.bm-engine-content .frequency-grid-option {
+#questionContainer .frequency-grid-option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 2.75rem;
   padding: 0.65rem 0.75rem;
   margin: 0.15rem;
-  background: color-mix(in srgb, var(--v3-surface) 88%, transparent);
+  background: var(--bm-q-option-bg);
   border: 2px solid transparent;
   border-radius: var(--v3-radius);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.bm-engine-content .frequency-grid-option input[type="radio"] {
+#questionContainer .frequency-grid-option input[type="radio"] {
   position: absolute;
   opacity: 0;
   width: 1px;
@@ -307,47 +326,32 @@
   pointer-events: none;
 }
 
-.bm-engine-content .question-block {
-  background: color-mix(in srgb, var(--v3-surface) 88%, transparent);
-  border: 1px solid var(--v3-surface-border);
-  border-radius: var(--v3-radius);
-  padding: clamp(1rem, 2.5vw, 1.5rem);
-  margin-bottom: var(--v3-space-4);
-}
-
-.bm-engine-content .question-block .question-text {
-  color: var(--v3-heading);
-  font-size: 1.05rem;
-  line-height: 1.5;
-  margin: 0 0 var(--v3-space-3);
-}
-
-.bm-engine-content .category-card h3 {
+#questionContainer .category-card h3 {
   margin: 0 0 0.35rem;
   font-size: 1rem;
   color: var(--v3-heading);
 }
 
-.bm-engine-content .category-card p {
+#questionContainer .category-card p {
   margin: 0;
   font-size: 0.9rem;
   color: var(--v3-muted);
   line-height: 1.45;
 }
 
-.bm-engine-content .value-allocation-total-line {
+#questionContainer .value-allocation-total-line {
   font-size: 0.95rem;
   color: var(--v3-muted);
   margin: 0 0 var(--v3-space-2);
 }
 
-.bm-engine-content .value-allocation-list {
+#questionContainer .value-allocation-list {
   display: flex;
   flex-direction: column;
   gap: var(--v3-space-3);
 }
 
-.bm-engine-content .value-allocation-label {
+#questionContainer .value-allocation-label {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -356,18 +360,18 @@
   color: var(--v3-text);
 }
 
-.bm-engine-content .value-allocation-pct {
+#questionContainer .value-allocation-pct {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--v3-accent);
 }
 
-.bm-engine-content input[type="range"].value-allocation-slider {
+#questionContainer input[type="range"].value-allocation-slider {
   width: 100%;
   accent-color: var(--v3-accent);
 }
 
-/* Engine action buttons — align with v3-btn */
+/* Shell controls (outside #questionContainer) */
 .bm-engine-content .btn {
   display: inline-flex;
   align-items: center;
@@ -420,13 +424,14 @@
 }
 
 @media (max-width: 640px) {
-  .bm-engine-content .options-container,
-  .bm-engine-content .category-grid,
-  #questionContainer .options-container {
+  #questionContainer .options-container,
+  #questionContainer .category-grid,
+  #questionContainer .likert-scale {
     grid-template-columns: 1fr;
   }
 
-  .bm-engine-content .gender-options {
+  #questionContainer .gender-options,
+  #questionContainer .gender-buttons {
     flex-direction: column;
     align-items: stretch;
   }

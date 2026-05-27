@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import EngineLayout from "./EngineLayout.jsx";
 import EngineDomShell from "./EngineDomShell.jsx";
 import QuestionFlow from "./QuestionFlow.jsx";
-import QuestionHtmlBridge from "./QuestionHtmlBridge.jsx";
 import ResultsHtmlBridge from "./ResultsHtmlBridge.jsx";
 import { useEngineHost } from "./useEngineHost.js";
 
@@ -40,6 +39,8 @@ export default function QuestionnaireEngineView({
         resultsId={resultsId}
         showSuiteGate={showSuiteGate}
         intro={intro}
+        engine={phase === "assessment" ? engine : null}
+        questionTick={tick}
       />
 
       {phase === "assessment" && !usesDom && snapshot && !snapshot.domOnly && (
@@ -49,10 +50,6 @@ export default function QuestionnaireEngineView({
           snapshot={snapshot}
           onAdvance={() => bump()}
         />
-      )}
-
-      {phase === "assessment" && (usesDom || snapshot?.domOnly) && (
-        <QuestionHtmlBridge engine={engine} tick={tick} />
       )}
 
       {phase === "results" && <ResultsHtmlBridge engine={engine} resultsId={resultsId} />}

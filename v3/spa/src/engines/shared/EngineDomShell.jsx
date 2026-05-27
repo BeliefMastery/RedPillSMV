@@ -8,6 +8,8 @@ export default function EngineDomShell({
   resultsId = "resultsContainer",
   showSuiteGate = false,
   engineId,
+  engine = null,
+  questionTick = 0,
 }) {
   useEffect(() => {
     let cancelled = false;
@@ -26,6 +28,19 @@ export default function EngineDomShell({
       window.removeEventListener("redpill-premium-changed", refresh);
     };
   }, [showSuiteGate, engineId]);
+
+  useEffect(() => {
+    if (!engine) return;
+    const container = document.getElementById("questionContainer");
+    if (!container) return;
+    engine.setExternalQuestionMount?.(container);
+    if (typeof engine.renderCurrentQuestion === "function") {
+      engine.renderCurrentQuestion();
+    }
+    return () => {
+      engine.setExternalQuestionMount?.(null);
+    };
+  }, [engine, questionTick]);
 
   const gateTitle =
     engineId === "polarity"

@@ -88,6 +88,17 @@ function onSelectionChange(event) {
 /**
  * @param {ParentNode} root
  */
+function syncGenderButtonsIn(root) {
+  root.querySelectorAll(".gender-options, .gender-buttons").forEach((group) => {
+    const active = group.querySelector(".gender-btn.selected, .gender-btn[aria-pressed='true']");
+    group.querySelectorAll(".gender-btn").forEach((btn) => {
+      const on = btn === active;
+      btn.classList.toggle("selected", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  });
+}
+
 export function bindOptionSelectionUI(root = document) {
   const container =
     root instanceof Element
@@ -97,6 +108,17 @@ export function bindOptionSelectionUI(root = document) {
   container.dataset.bmOptionSelectionBound = "1";
   container.addEventListener("change", onSelectionChange);
   container.addEventListener("click", (e) => {
+    const genderBtn = e.target.closest(".gender-btn");
+    if (genderBtn) {
+      const group = genderBtn.closest(".gender-options, .gender-buttons");
+      if (group) {
+        group.querySelectorAll(".gender-btn").forEach((btn) => {
+          const on = btn === genderBtn;
+          btn.classList.toggle("selected", on);
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+      }
+    }
     const label = e.target.closest(OPTION_SELECTOR);
     if (!label) return;
     const input = label.querySelector('input[type="radio"], input[type="checkbox"]');
@@ -105,4 +127,15 @@ export function bindOptionSelectionUI(root = document) {
     }
   });
   syncOptionSelectionIn(container);
+  syncGenderButtonsIn(container);
+}
+
+export function refreshOptionSelectionUI(root = document) {
+  const container =
+    root instanceof Element
+      ? root.querySelector("#questionContainer") || root
+      : document.getElementById("questionContainer");
+  if (!container) return;
+  syncOptionSelectionIn(container);
+  syncGenderButtonsIn(container);
 }
