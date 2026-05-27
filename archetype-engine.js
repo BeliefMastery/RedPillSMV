@@ -66,6 +66,7 @@ export class ArchetypeEngine {
   constructor(options = {}) {
     this.externalUI = Boolean(options.externalUI);
     this.onNotify = typeof options.onNotify === 'function' ? options.onNotify : () => {};
+    this._spaLoadGeneration = 0;
     this.currentPhase = 0; // 0 = gender selection, 0.5 = IQ bracket, 1-4 = assessment phases
     this.currentQuestionIndex = 0;
     this.gender = null; // 'male' or 'female'
@@ -532,16 +533,27 @@ init() {
 
 startAssessment() {
   console.log('startAssessment called');
-  
+
+  this._spaLoadGeneration += 1;
+
   // 1. Reset Internal State
-  this.currentPhase = 0; 
+  this.currentPhase = 0;
   this.currentQuestionIndex = 0;
   this.gender = null;
+  this.iqBracket = null;
   this.answers = {};
-  
+  this.aspirationAnswers = {};
+  this.respectContextAnswers = {};
+  this.questionSequence = [];
+  this.analysisData.primaryArchetype = null;
+  this.analysisData.secondaryArchetype = null;
+  this.analysisData.tertiaryArchetype = null;
+  this.analysisData.profileDecisiveness = null;
+  this.analysisData.archetypeLayering = null;
+
   // 2. Clear stale data from local storage so Phase 2 doesn't "ghost" in
   if (this.dataStore) {
-    this.dataStore.clear(); 
+    this.dataStore.clear();
   }
 
   this.initializeScores();
@@ -3707,9 +3719,13 @@ showGenderSelection() {
   }
 
   async loadStoredData() {
+    const loadGen = this._spaLoadGeneration;
+    const stale = () => loadGen !== this._spaLoadGeneration;
+
     try {
       const progress = this.dataStore.load('progress');
       if (!progress) return;
+      if (stale()) return;
 
       const hasProgress = (progress.currentPhase && progress.currentPhase > 0)
         || progress.gender
@@ -3741,10 +3757,13 @@ showGenderSelection() {
       this.analysisData.tertiaryArchetype = normalizeSavedEntry(this.analysisData.tertiaryArchetype);
 
       // PRIORITY: If we have completed results, show report immediately on revisit
-      if (this.analysisData.primaryArchetype) {
+      const completedPrimary = this.analysisData.primaryArchetype;
+      if (completedPrimary?.id) {
+        if (stale()) return;
         // We still must load the archetype data modules before rendering results.
         // Stored progress can contain phase3/4 results, but ARCHETYPES/BRUTAL_TRUTHS are lazy-loaded.
         await this.loadArchetypeData();
+        if (stale()) return;
         // Saves from before profileDecisiveness existed omit this field; recompute from stored scores.
         if (
           !this.analysisData.profileDecisiveness &&
@@ -3778,12 +3797,16 @@ showGenderSelection() {
           this.saveProgress();
         }
         this.renderResults();
+        if (stale()) return;
         this.showResultsContainer();
         return;
       }
-      
+
+      if (stale()) return;
+
       // If gender not selected, show gender selection
       if (!this.gender || this.currentPhase === 0) {
+        this.ui.transition('idle');
         this.showGenderSelection();
         return;
       }
@@ -3826,6 +3849,8 @@ showGenderSelection() {
   }
 
   resetAssessment() {
+    this._spaLoadGeneration += 1;
+
     // Clear all stored data
     if (this.dataStore) {
       this.dataStore.clear();

@@ -96,12 +96,14 @@ function wrapPhaseNotify(engine) {
   if (!engine.ui || engine._phaseWrapped) return;
   const orig = engine.ui.transition.bind(engine.ui);
   engine.ui.transition = (state) => {
+    engine._spaUiPhase = state;
     orig(state);
     if (engine.externalUI) {
       notifyEngine(engine, "phase", { phase: state });
     }
   };
   engine._phaseWrapped = true;
+  engine._spaUiPhase = "idle";
 }
 
 export function applyAllocationToEngineAnswers(engine, question, answer) {

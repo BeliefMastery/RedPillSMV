@@ -24,6 +24,12 @@ export function resolveEnginePhase(engine) {
   if (engine.currentStage === "results" || engine.currentPhase === "results") {
     return "results";
   }
+
+  // SPA: trust last EngineUIController transition (DOM visibility alone is unreliable).
+  if (engine.externalUI && engine._spaUiPhase) {
+    return engine._spaUiPhase;
+  }
+
   const phase = engine.currentPhase;
   if (phase === "idle" || phase === 0 || phase === "0") return "idle";
   if (
@@ -33,13 +39,6 @@ export function resolveEnginePhase(engine) {
     !engine.questionSequence?.length
   ) {
     return "idle";
-  }
-  if (engine.ui?.config?.results?.show) {
-    const resultsSel = engine.ui.config.results.show[0];
-    if (resultsSel) {
-      const el = document.querySelector(resultsSel);
-      if (el && !el.classList.contains("hidden")) return "results";
-    }
   }
   if (engine.questionSequence?.length > 0 || phase === "assessment") {
     return "assessment";

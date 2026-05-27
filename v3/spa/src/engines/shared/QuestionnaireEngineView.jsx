@@ -13,7 +13,7 @@ export default function QuestionnaireEngineView({
   resultsId,
   showSuiteGate,
 }) {
-  const { engine, phase, tick, ready, error, bump } = useEngineHost(engineId);
+  const { engine, phase, tick, ready, error, bump, setPhase } = useEngineHost(engineId);
   const snapshot =
     ready && engine?.getQuestionSnapshot ? engine.getQuestionSnapshot() : null;
   const usesDom = engine?.usesDomQuestions?.() ?? true;
@@ -23,6 +23,11 @@ export default function QuestionnaireEngineView({
     const t = setTimeout(() => bump(), 100);
     return () => clearTimeout(t);
   }, [ready, engine]);
+
+  useEffect(() => {
+    if (!ready || !engine?.getPhase) return;
+    setPhase(engine.getPhase());
+  }, [ready, engine, tick, setPhase]);
 
   if (error) {
     return (

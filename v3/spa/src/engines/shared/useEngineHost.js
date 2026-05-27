@@ -56,9 +56,17 @@ export function useEngineHost(engineId) {
 
         engineRef.current = instance;
         window[`${engineId}Engine`] = instance;
-        setPhase(instance.getPhase?.() || "idle");
+        const syncPhase = () => {
+          const next = instance.getPhase?.() || "idle";
+          setPhase(next);
+        };
+        syncPhase();
         setReady(true);
         bump();
+        // Archetype (and others) finish loadStoredData after construct — re-sync once idle.
+        setTimeout(() => {
+          if (!cancelled && engineRef.current === instance) syncPhase();
+        }, 0);
       } catch (e) {
         if (!cancelled) setError(e);
       }
