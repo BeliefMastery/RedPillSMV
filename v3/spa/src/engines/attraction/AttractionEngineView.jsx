@@ -17,7 +17,7 @@ export default function AttractionEngineView() {
     <QuestionnaireEngineView
       engineId="attraction"
       label="Attraction, Status and Selection"
-      lead="SMV as positional leverage under operational sex ratio distortion—not moral rank. Final phase adds contract-context items; optional inventory enriches sexual contract reads."
+      lead="SMV as positional leverage under operational sex ratio distortion—not moral rank. Final phase adds contract-context items for market-position reads."
       intro={intro}
       resultsId="resultsSection"
       showSuiteGate

@@ -52,9 +52,6 @@ export default function HomePage() {
           <br />
           <span className="home-suite-title-line">💊 Red-Pill Relational Suite ♂ ♀</span>
         </h1>
-        <p className="v3-lead">
-          Four assessments for modern dating and relationship reality—offline on your device.
-        </p>
 
         <div className="home-image-grid" role="navigation" aria-label="Assessment tools">
           {engineRoutes.map((r) => {
@@ -124,12 +121,6 @@ export default function HomePage() {
             </p>
           </div>
         )}
-
-        <div className="v3-hero-actions" style={{ marginTop: "1rem" }}>
-          <Link to="/learn/sexual-contract" className="v3-btn v3-btn--ghost">
-            Sexual contract framework (optional)
-          </Link>
-        </div>
       </div>
     </section>
   );

@@ -152,7 +152,7 @@ function renderContent(snapshots) {
   const nextMoves = buildNextMoveCandidates(a, t, r, { layers: layerBundle });
   const sciBlock = buildSexualContractIntegratedExcerpt();
   const sciHtml = sciBlock
-    ? `<section class="integrated-map-sci" style="margin-top:1.5rem;"><h2 class="integrated-map-frame-heading">${esc(sciBlock.title)}</h2><ul>${sciBlock.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul><p style="margin-top:0.5rem;font-size:0.9rem;color:var(--muted);"><a href="#/learn/sexual-contract">Sexual contract module</a> · optional inventory enriches this read.</p></section>`
+    ? `<section class="integrated-map-sci" style="margin-top:1.5rem;"><h2 class="integrated-map-frame-heading">${esc(sciBlock.title)}</h2><ul>${sciBlock.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul><p style="margin-top:0.5rem;font-size:0.9rem;color:var(--muted);"><a href="#/learn/sexual-contract">Optional context inventory</a> can enrich this read.</p></section>`
     : '';
 
   const layers = `
