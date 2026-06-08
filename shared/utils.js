@@ -3,6 +3,20 @@
  * Provides common functionality for error handling, state management, and security
  */
 
+import {
+  initPageErrorReporter,
+  reportPageError,
+  withoutErrorReporting,
+} from './page-error-reporter.js';
+
+let errorReporterBooted = false;
+
+function ensureErrorReporter() {
+  if (errorReporterBooted || typeof window === 'undefined') return;
+  errorReporterBooted = true;
+  initPageErrorReporter();
+}
+
 /**
  * Security utilities for input sanitization
  */
@@ -336,14 +350,29 @@ export const ErrorHandler = {
    * @param {string} context - Context where error occurred
    */
   logError(error, context = '') {
+    ensureErrorReporter();
+    const message =
+      (error && (error.message || error.name)) || String(error || 'Unknown error');
     const errorEntry = {
       timestamp: new Date(),
-      message: error.message,
-      stack: error.stack,
+      message,
+      stack: error?.stack,
       context: context
     };
     this.errors.push(errorEntry);
-    console.error(`[${context}] Assessment Error:`, error);
+    while (this.errors.length > 50) this.errors.shift();
+
+    withoutErrorReporting(() => {
+      console.error(`[${context}] Assessment Error:`, error);
+    });
+
+    reportPageError({
+      severity: 'error',
+      message: context ? `${context}: ${message}` : message,
+      detail: error?.stack,
+      context: context || 'assessment',
+      source: 'engine',
+    });
   },
 
   /**
@@ -351,32 +380,63 @@ export const ErrorHandler = {
    * @param {string} message - Error message to display
    * @param {HTMLElement} container - Container to show error in
    */
-  showUserError(message, container = null) {
-    // Remove any existing error
+  showUserError(message, container = null, options = {}) {
+    ensureErrorReporter();
+    const text = String(message || 'Something went wrong');
+    const severity = options.severity === 'warn' ? 'warn' : 'error';
+
+    reportPageError({
+      severity,
+      message: text,
+      detail: options.detail,
+      context: options.context || 'user',
+      source: 'engine',
+    });
+
     const existing = document.querySelector('.user-error');
     if (existing) existing.remove();
-    
+
     const errorDiv = document.createElement('div');
-    errorDiv.className = 'user-error';
+    errorDiv.className = `user-error user-error--${severity}`;
     errorDiv.setAttribute('role', 'alert');
     errorDiv.setAttribute('aria-live', 'assertive');
-    errorDiv.innerHTML = `
-      <span>⚠️ ${SecurityUtils.sanitizeHTML(message)}</span>
-      <button onclick="this.parentElement.remove()" aria-label="Dismiss error message">×</button>
-    `;
-    
-    const targetContainer = container || document.querySelector('.assessment-container') || document.body;
+    errorDiv.tabIndex = -1;
+
+    const span = document.createElement('span');
+    span.textContent = text;
+
+    const dismiss = document.createElement('button');
+    dismiss.type = 'button';
+    dismiss.setAttribute('aria-label', 'Dismiss error message');
+    dismiss.textContent = '×';
+    dismiss.addEventListener('click', () => errorDiv.remove());
+
+    errorDiv.append(span, dismiss);
+
+    const targetContainer =
+      container ||
+      document.querySelector('.bm-engine-content') ||
+      document.querySelector('.assessment-container') ||
+      document.querySelector('main.container') ||
+      document.body;
     targetContainer.appendChild(errorDiv);
-    
-    // Auto-remove after 5 seconds
+
+    const ttl = severity === 'warn' ? 6000 : 10000;
     setTimeout(() => {
-      errorDiv.remove();
-    }, 5000);
-    
-    // Focus for screen readers
+      if (errorDiv.isConnected) errorDiv.remove();
+    }, ttl);
+
     errorDiv.focus();
-    
     return errorDiv;
+  },
+
+  /**
+   * Surface a non-fatal warning in the page error log and optional toast.
+   * @param {string} message
+   * @param {string} [context]
+   */
+  showUserWarning(message, context = '') {
+    this.showUserError(message, null, { severity: 'warn', context });
   },
 
   /**

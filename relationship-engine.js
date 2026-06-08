@@ -107,13 +107,15 @@ export class RelationshipEngine {
    */
   init() {
     this.attachEventListeners();
-    Promise.resolve(this.loadStoredData()).then(() => {
-      if (this.shouldAutoGenerateSample()) {
-        this.generateSampleReport();
-      }
-    }).catch(error => {
-      this.debugReporter.logError(error, 'init');
-    });
+    this.ready = this.loadStoredData()
+      .then(() => {
+        if (this.shouldAutoGenerateSample()) {
+          return this.generateSampleReport();
+        }
+      })
+      .catch((error) => {
+        this.debugReporter.logError(error, 'init');
+      });
   }
 
   /**
@@ -640,9 +642,38 @@ export class RelationshipEngine {
    * Start the assessment
    * @returns {Promise<void>}
    */
+  hasInProgressAssessment() {
+    const hasConflictResults =
+      this.analysisData?.compatibilityScores &&
+      Object.keys(this.analysisData.compatibilityScores).length > 0;
+    const hasViabilityResults =
+      this.viabilityScoresByDimension &&
+      Object.keys(this.viabilityScoresByDimension).length > 0;
+    if (hasConflictResults && hasViabilityResults) return false;
+    return (
+      this.questionSequence.length > 0 &&
+      (this.currentQuestionIndex > 0 || Object.keys(this.answers || {}).length > 0)
+    );
+  }
+
+  resumeInProgressAssessment() {
+    this.setLandingVisibility(false);
+    this.setReportHeaderState(false);
+    if (this.currentQuestionIndex < this.questionSequence.length) {
+      this.renderCurrentQuestion();
+      this.updateProgressBar();
+      this.updateStageIndicator();
+    }
+  }
+
   async startAssessment() {
     try {
       await this.loadRelationshipData();
+
+      if (this.hasInProgressAssessment()) {
+        this.resumeInProgressAssessment();
+        return;
+      }
 
       this.assessmentMode = 'both';
       this.activePhase = 'conflict';
@@ -1968,7 +1999,11 @@ export class RelationshipEngine {
         return;
       }
 
-      if (this.currentQuestionIndex > 0 || hasConflictResults) {
+      if (
+        this.currentQuestionIndex > 0 ||
+        hasConflictResults ||
+        Object.keys(this.answers || {}).length > 0
+      ) {
         if (this.activePhase === 'viability') {
           await this.buildViabilitySequence();
           this.setLandingVisibility(false);

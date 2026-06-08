@@ -304,13 +304,15 @@ export class TemperamentEngine {
       void applyAndroidPolarityAttractionPremiumUI('polarity', g);
     });
     this.attachEventListeners();
-    Promise.resolve(this.loadStoredData()).then(() => {
-      if (this.shouldAutoGenerateSample()) {
-        this.generateSampleReport();
-      }
-    }).catch(error => {
-      this.debugReporter.logError(error, 'init');
-    });
+    this.ready = this.loadStoredData()
+      .then(() => {
+        if (this.shouldAutoGenerateSample()) {
+          return this.generateSampleReport();
+        }
+      })
+      .catch((error) => {
+        this.debugReporter.logError(error, 'init');
+      });
   }
 
   /**
@@ -564,6 +566,16 @@ export class TemperamentEngine {
     }
   }
 
+  async abandonAssessment() {
+    if (
+      await showConfirm(
+        'Are you sure you want to abandon this assessment? All progress will be lost.'
+      )
+    ) {
+      this.resetAssessment();
+    }
+  }
+
   shouldAutoGenerateSample() {
     if (premiumBlocksPolarityAttractionActions()) return false;
     const params = new URLSearchParams(window.location.search);
@@ -659,6 +671,21 @@ export class TemperamentEngine {
     }
   }
 
+  hasInProgressAssessment() {
+    return (
+      !this.analysisData?.overallTemperament &&
+      this.questionSequence.length > 0 &&
+      (this.currentQuestionIndex > 0 || Object.keys(this.answers || {}).length > 0)
+    );
+  }
+
+  resumeInProgressAssessment() {
+    this.setReportHeaderState(false);
+    this.ui.transition('assessment');
+    this.renderCurrentQuestion();
+    this.updateProgress();
+  }
+
   async startAssessment() {
     const gate = getStageGateState();
     if (!gate.polarityUnlocked) {
@@ -666,6 +693,10 @@ export class TemperamentEngine {
       return;
     }
     if (!(await assertPolarityAttractionPremiumOrAlert())) return;
+    if (this.hasInProgressAssessment()) {
+      this.resumeInProgressAssessment();
+      return;
+    }
     const introSection = document.getElementById('introSection');
     const actionButtonsSection = document.getElementById('actionButtonsSection');
     const questionnaireSection = document.getElementById('questionnaireSection');
@@ -2058,14 +2089,12 @@ export class TemperamentEngine {
         this.currentQuestionIndex = Math.max(0, this.questionSequence.length - 1);
       }
 
-      if (this.currentQuestionIndex > 0 && this.currentQuestionIndex < this.questionSequence.length) {
-        const introSection = document.getElementById('introSection');
-        const actionButtonsSection = document.getElementById('actionButtonsSection');
-        const questionnaireSection = document.getElementById('questionnaireSection');
-        if (introSection) introSection.classList.add('hidden');
-        if (actionButtonsSection) actionButtonsSection.classList.add('hidden');
-        if (questionnaireSection) questionnaireSection.classList.add('active');
-        this.renderCurrentQuestion();
+      if (
+        !this.analysisData?.overallTemperament &&
+        this.questionSequence.length > 0 &&
+        (this.currentQuestionIndex > 0 || Object.keys(this.answers || {}).length > 0)
+      ) {
+        this.resumeInProgressAssessment();
       }
     } catch (error) {
       this.debugReporter.logError(error, 'loadStoredData');

@@ -30,6 +30,7 @@ html.theme-earth {
   --v3-muted: #c7a7a7;
   --v3-accent: #ffd700;
   --v3-accent-strong: #ffe84d;
+  --v3-danger: #c62828;
   --v3-on-accent: #1a0c0e;
   /* Set at runtime from main.jsx (Vite ?url) — avoids assets/images 404 */
   --v3-backdrop-art-url: none;

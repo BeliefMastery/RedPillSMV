@@ -2,6 +2,7 @@
  * Legacy-compatible DOM shell expected by *-engine.js (IDs and sections).
  */
 import { useEffect } from "react";
+import { bindEngineShellControls } from "@site/shared/spa-questionnaire-host.js";
 
 export default function EngineDomShell({
   intro,
@@ -10,6 +11,12 @@ export default function EngineDomShell({
   engineId,
   engine = null,
   questionTick = 0,
+  phase = "idle",
+  renderQuestions = false,
+  reactQuestion = null,
+  progressPercent = null,
+  progressLabel = null,
+  showShellNav = true,
 }) {
   useEffect(() => {
     let cancelled = false;
@@ -30,7 +37,11 @@ export default function EngineDomShell({
   }, [showSuiteGate, engineId]);
 
   useEffect(() => {
-    if (!engine) return;
+    bindEngineShellControls(engine);
+  }, [engine]);
+
+  useEffect(() => {
+    if (!engine || !renderQuestions) return;
     const container = document.getElementById("questionContainer");
     if (!container) return;
     engine.setExternalQuestionMount?.(container);
@@ -40,7 +51,7 @@ export default function EngineDomShell({
     return () => {
       engine.setExternalQuestionMount?.(null);
     };
-  }, [engine, questionTick]);
+  }, [engine, questionTick, renderQuestions]);
 
   const gateTitle =
     engineId === "polarity"
@@ -49,9 +60,13 @@ export default function EngineDomShell({
         ? "Attraction is locked"
         : "Assessment is locked";
 
+  const showIdle = phase === "idle";
+  const showAssessment = phase === "assessment";
+  const showResults = phase === "results";
+
   return (
     <div className="bm-engine-content section-inner minimal-section">
-      {intro}
+      <div className={showIdle ? undefined : "hidden"}>{intro}</div>
 
       {showSuiteGate && (
         <div id="suiteStageGateInline" className="suite-stage-gate-inline" hidden aria-live="polite">
@@ -80,7 +95,10 @@ export default function EngineDomShell({
         </div>
       )}
 
-      <section className="content-section" id="actionButtonsSection">
+      <section
+        className={`content-section${showIdle ? "" : " hidden"}`}
+        id="actionButtonsSection"
+      >
         <div className="action-buttons" id="actionButtonsWrap">
           <button type="button" className="btn btn-secondary" id="generateSampleReport">
             Generate Sample Report
@@ -94,31 +112,55 @@ export default function EngineDomShell({
         ) : null}
       </section>
 
-      <section className="questionnaire-section hidden" id="questionnaireSection">
-        <div className="progress-bar">
-          <div className="progress-fill" id="progressBar" />
-        </div>
-        <div className="progress-text">
-          <span id="phaseIndicator" />
-          <span id="questionCounter" />
-        </div>
-        <div id="questionContainer" />
-        <div className="bm-questionnaire-nav">
-          <div className="navigation-buttons">
-            <button type="button" className="btn btn-secondary" id="prevQuestion">
-              Previous
-            </button>
-            <button type="button" className="btn btn-primary" id="nextQuestion">
-              Next
-            </button>
+      <section
+        className={`questionnaire-section${showAssessment ? " active" : " hidden"}`}
+        id="questionnaireSection"
+      >
+        <header className="bm-questionnaire-head">
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              id="progressBar"
+              style={
+                progressPercent != null
+                  ? { width: `${Math.min(100, Math.max(0, progressPercent))}%` }
+                  : undefined
+              }
+            />
           </div>
+          <div className="progress-text">
+            <span id="phaseIndicator" />
+            <span id="questionCounter">
+              {progressLabel || null}
+            </span>
+          </div>
+        </header>
+
+        <div className="bm-questionnaire-body">
+          <div id="questionContainer">{reactQuestion}</div>
+        </div>
+
+        <footer className="bm-questionnaire-footer">
+          {showShellNav && (
+            <div className="navigation-buttons">
+              <button type="button" className="btn btn-secondary" id="prevQuestion">
+                Previous
+              </button>
+              <button type="button" className="btn btn-primary" id="nextQuestion">
+                Next
+              </button>
+            </div>
+          )}
           <button type="button" className="bm-abandon-link" id="abandonAssessment">
             Abandon assessment
           </button>
-        </div>
+        </footer>
       </section>
 
-      <section className={`results-section hidden`} id={resultsId}>
+      <section
+        className={`results-section${showResults ? " active" : " hidden"}`}
+        id={resultsId}
+      >
         <div id="resultsContent" />
         <div className="export-section">
           <h3>Save results</h3>

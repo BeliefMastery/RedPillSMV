@@ -133,7 +133,7 @@ export class AttractionEngine {
       void applyAndroidPolarityAttractionPremiumUI('attraction', g);
     });
 
-    void this.bootstrapFromStorage(gate);
+    this.ready = this.bootstrapFromStorage(gate);
   }
 
   /**

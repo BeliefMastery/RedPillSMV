@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter } from "react-router-dom";
+import { initPageErrorReporter } from "@site/shared/page-error-reporter.js";
 import App from "./App.jsx";
 import supernovaBackdrop from "@site/images/SupernovaBLUE.jpg?url";
 import "./styles/tokens.css";
@@ -15,6 +16,8 @@ document.documentElement.style.setProperty(
   "--v3-backdrop-art-url",
   `url("${supernovaBackdrop}")`
 );
+
+initPageErrorReporter();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

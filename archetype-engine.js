@@ -143,34 +143,22 @@ export class ArchetypeEngine {
 
 init() {
   const setup = async () => {
-    // 1. Attach listeners first so the 'Begin' button is functional
     this.attachEventListeners();
-    // Initialize empty buckets before optional restore.
     this.initializeScores();
-    
-    // 2. Load the data silently in the background
-    try {
-      await this.loadStoredData();
-
-      if (this.shouldAutoGenerateSample()) {
-        await this.generateSampleReport();
-        return;
-      }
-      
-      // 3. LOGIC CHECK: If we loaded a mid-assessment state, 
-      // we DON'T call renderCurrentQuestion() yet. 
-      // We wait for the user to click "Begin" or "Resume".
-      console.log('ArchetypeEngine: Data restored. Current Phase:', this.currentPhase);
-    } catch (error) {
-      this.debugReporter.logError(error, 'init');
+    await this.loadStoredData();
+    if (this.shouldAutoGenerateSample()) {
+      await this.generateSampleReport();
     }
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup);
-  } else {
-    setup();
-  }
+  const domReady =
+    document.readyState === 'loading'
+      ? new Promise((resolve) => document.addEventListener('DOMContentLoaded', resolve, { once: true }))
+      : Promise.resolve();
+
+  this.ready = domReady.then(setup).catch((error) => {
+    this.debugReporter.logError(error, 'init');
+  });
 }
 
   initializeScores() {
@@ -531,8 +519,38 @@ init() {
     }
   }
 
+hasInProgressAssessment() {
+  if (this.analysisData?.primaryArchetype?.id) return false;
+  return (
+    Object.keys(this.answers || {}).length > 0 ||
+    this.questionSequence.length > 0 ||
+    this.currentPhase > 0 ||
+    Boolean(this.gender)
+  );
+}
+
+resumeInProgressAssessment() {
+  this._spaLoadGeneration += 1;
+  this.showQuestionContainer();
+  if (!this.gender || this.currentPhase === 0) {
+    this.showGenderSelection();
+    return;
+  }
+  if (!this.iqBracket || this.currentPhase === 0.5) {
+    this.showIQBracketSelection();
+    return;
+  }
+  if (this.questionSequence.length > 0) {
+    this.renderCurrentQuestion();
+    this.updateNavigation();
+  }
+}
+
 startAssessment() {
-  console.log('startAssessment called');
+  if (this.hasInProgressAssessment()) {
+    this.resumeInProgressAssessment();
+    return;
+  }
 
   this._spaLoadGeneration += 1;
 

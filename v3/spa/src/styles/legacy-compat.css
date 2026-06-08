@@ -258,7 +258,12 @@
 
 .questionnaire-section,
 .results-section {
-  margin-top: 1.5rem;
+  margin-top: 0;
+}
+
+.bm-engine-content .questionnaire-section,
+.bm-engine-content .results-section {
+  margin-top: var(--v3-space-3);
 }
 
 /* Option cards: see engine-options.css */

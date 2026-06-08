@@ -17,6 +17,15 @@ export default function QuestionnaireEngineView({
   const snapshot =
     ready && engine?.getQuestionSnapshot ? engine.getQuestionSnapshot() : null;
   const usesDom = engine?.usesDomQuestions?.() ?? true;
+  const reactSnapshot =
+    phase === "assessment" && !usesDom && snapshot && !snapshot.domOnly ? snapshot : null;
+  const isAllocation = reactSnapshot?.question?.type === "allocation";
+  const progressPercent = reactSnapshot
+    ? ((reactSnapshot.currentIndex + 1) / Math.max(reactSnapshot.totalQuestions, 1)) * 100
+    : null;
+  const progressLabel = reactSnapshot
+    ? `Question ${reactSnapshot.currentIndex + 1} of ${reactSnapshot.totalQuestions}`
+    : null;
 
   useEffect(() => {
     if (!ready || !engine) return;
@@ -32,7 +41,19 @@ export default function QuestionnaireEngineView({
   if (error) {
     return (
       <EngineLayout label={label} lead={lead} phase="idle">
-        <p role="alert">Failed to load assessment: {error.message}</p>
+        <div className="page-error-fallback surface" role="alert">
+          <h2 className="v3-hero-title">Assessment failed to load</h2>
+          <p className="v3-muted">{error.message}</p>
+          {error.stack && (
+            <details className="page-error-reporter__details">
+              <summary>Technical detail</summary>
+              <pre>{error.stack}</pre>
+            </details>
+          )}
+          <p className="v3-muted">
+            See the error panel (bottom-right) for the full log, or open the browser console (F12).
+          </p>
+        </div>
       </EngineLayout>
     );
   }
@@ -44,18 +65,24 @@ export default function QuestionnaireEngineView({
         resultsId={resultsId}
         showSuiteGate={showSuiteGate}
         intro={intro}
-        engine={phase === "assessment" ? engine : null}
+        phase={phase}
+        engine={ready ? engine : null}
         questionTick={tick}
+        renderQuestions={phase === "assessment" && usesDom}
+        reactQuestion={
+          reactSnapshot ? (
+            <QuestionFlow
+              key={tick}
+              engine={engine}
+              snapshot={reactSnapshot}
+              onAdvance={() => bump()}
+            />
+          ) : null
+        }
+        progressPercent={progressPercent}
+        progressLabel={progressLabel}
+        showShellNav={!isAllocation}
       />
-
-      {phase === "assessment" && !usesDom && snapshot && !snapshot.domOnly && (
-        <QuestionFlow
-          key={tick}
-          engine={engine}
-          snapshot={snapshot}
-          onAdvance={() => bump()}
-        />
-      )}
 
       {phase === "results" && <ResultsHtmlBridge engine={engine} resultsId={resultsId} />}
     </EngineLayout>

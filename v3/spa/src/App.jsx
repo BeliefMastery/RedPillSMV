@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import LayoutShell from "./components/LayoutShell.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import EngineRoutePage from "./pages/EngineRoutePage.jsx";
@@ -10,11 +11,46 @@ export default function App() {
   return (
     <Routes>
       <Route element={<LayoutShell />}>
-        <Route index element={<HomePage />} />
-        <Route path="engines/:engineId" element={<EngineRoutePage />} />
-        <Route path="integrated-map" element={<IntegratedMapPage />} />
-        <Route path="archetype-spread" element={<ArchetypeSpreadPage />} />
-        <Route path="learn/sexual-contract" element={<SexualContractModulePage />} />
+        <Route
+          index
+          element={
+            <ErrorBoundary label="home">
+              <HomePage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="engines/:engineId"
+          element={
+            <ErrorBoundary label="engine">
+              <EngineRoutePage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="integrated-map"
+          element={
+            <ErrorBoundary label="integrated-map">
+              <IntegratedMapPage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="archetype-spread"
+          element={
+            <ErrorBoundary label="archetype-spread">
+              <ArchetypeSpreadPage />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="learn/sexual-contract"
+          element={
+            <ErrorBoundary label="sexual-contract">
+              <SexualContractModulePage />
+            </ErrorBoundary>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -68,6 +68,7 @@ export function attachDomQuestionSpaApi(engine) {
   };
   engine.destroy = () => {
     engine._destroyed = true;
+    engine._shellAbort?.abort();
     if (typeof engine.cleanup === "function") engine.cleanup();
   };
 
@@ -90,6 +91,7 @@ export function attachDomQuestionSpaApi(engine) {
   }
 
   wrapPhaseNotify(engine);
+  bindEngineShellControls(engine);
 }
 
 function wrapPhaseNotify(engine) {
@@ -97,13 +99,60 @@ function wrapPhaseNotify(engine) {
   const orig = engine.ui.transition.bind(engine.ui);
   engine.ui.transition = (state) => {
     engine._spaUiPhase = state;
-    orig(state);
+    // React owns section visibility in SPA; direct DOM toggles fight re-renders.
+    if (!engine.externalUI) {
+      orig(state);
+    }
     if (engine.externalUI) {
       notifyEngine(engine, "phase", { phase: state });
     }
   };
   engine._phaseWrapped = true;
   engine._spaUiPhase = "idle";
+}
+
+/**
+ * Bind shell button clicks after React mounts EngineDomShell (idempotent per engine instance).
+ */
+export function bindEngineShellControls(engine) {
+  if (!engine) return;
+  engine._shellAbort?.abort();
+  const ac = new AbortController();
+  engine._shellAbort = ac;
+  const { signal } = ac;
+
+  const on = (id, handler) => {
+    const el = document.getElementById(id);
+    if (!el || typeof handler !== "function") return;
+    el.addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault?.();
+        void handler();
+      },
+      { signal }
+    );
+  };
+
+  on("startAssessment", () => engine.startAssessment?.());
+  on("nextQuestion", () => {
+    const snap = engine._lastSnapshot?.question;
+    if (snap?.type === "scaled" && typeof engine.nextQuestionFromExternal === "function") {
+      const val = engine._pendingAnswer ?? snap.initialValue ?? 5;
+      engine.nextQuestionFromExternal(val);
+      return;
+    }
+    engine.nextQuestion?.();
+  });
+  on("prevQuestion", () => engine.prevQuestion?.() ?? engine.previousQuestion?.());
+  on("saveResults", () => engine.saveResults?.());
+  on("newAssessment", () => {
+    if (typeof engine.resetAssessment === "function") engine.resetAssessment();
+    else if (typeof engine.newAssessment === "function") engine.newAssessment();
+    else if (typeof engine.reset === "function") engine.reset();
+  });
+  on("generateSampleReport", () => engine.generateSampleReport?.());
+  on("abandonAssessment", () => engine.abandonAssessment?.());
 }
 
 export function applyAllocationToEngineAnswers(engine, question, answer) {
