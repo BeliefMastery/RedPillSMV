@@ -1577,6 +1577,14 @@ export class TemperamentEngine {
     return '#b71c1c';                         // red
   }
 
+  resolveResultsContainer() {
+    if (this._externalResultsMount) return this._externalResultsMount;
+    return (
+      document.getElementById('temperamentResults') ||
+      document.getElementById('resultsContent')
+    );
+  }
+
   /**
    * Render assessment results
    */
@@ -1589,9 +1597,11 @@ export class TemperamentEngine {
       this.setReportHeaderState(true);
       this.ui.transition('results');
 
-      const container = document.getElementById('temperamentResults');
+      const container = this.resolveResultsContainer();
       if (!container) {
-        ErrorHandler.showUserError('Results container not found.');
+        ErrorHandler.showUserError('Results container not found.', null, {
+          context: 'temperament.renderResults',
+        });
         return;
       }
 
@@ -2132,8 +2142,8 @@ export class TemperamentEngine {
     const actionButtonsSection = document.getElementById('actionButtonsSection');
     const questionnaireSection = document.getElementById('questionnaireSection');
     const resultsSection = document.getElementById('resultsSection');
-    const temperamentResults = document.getElementById('temperamentResults');
-    if (temperamentResults) temperamentResults.innerHTML = '';
+    const resultsMount = this.resolveResultsContainer();
+    if (resultsMount) resultsMount.innerHTML = '';
 
     if (introSection) introSection.classList.remove('hidden');
     if (actionButtonsSection) actionButtonsSection.classList.remove('hidden');

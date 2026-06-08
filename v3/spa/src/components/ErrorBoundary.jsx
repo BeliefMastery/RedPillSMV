@@ -1,5 +1,4 @@
 import { Component } from "react";
-import { reportPageError } from "@site/shared/page-error-reporter.js";
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -12,13 +11,7 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    reportPageError({
-      severity: "error",
-      message: error?.message || "React render error",
-      detail: [error?.stack, info?.componentStack].filter(Boolean).join("\n\n"),
-      context: this.props.label || "react",
-      source: "react",
-    });
+    console.error(`[react:${this.props.label || "app"}]`, error?.message, error, info);
   }
 
   render() {
@@ -32,9 +25,7 @@ export default class ErrorBoundary extends Component {
           <p className="v3-muted">
             {this.state.error.message || "An unexpected error occurred on this page."}
           </p>
-          <p className="v3-muted">
-            Open the error panel (bottom-right) for the full log, or check the browser console (F12).
-          </p>
+          <p className="v3-muted">Check the browser console (F12) for details.</p>
           <button
             type="button"
             className="v3-btn v3-btn--primary"

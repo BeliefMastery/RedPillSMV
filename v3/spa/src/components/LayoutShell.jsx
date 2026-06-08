@@ -12,7 +12,6 @@ import SeoHead from "./SeoHead.jsx";
 import TopNav from "./TopNav.jsx";
 import BottomNav from "./BottomNav.jsx";
 import SiteFooter from "./SiteFooter.jsx";
-import PageErrorReporter from "./PageErrorReporter.jsx";
 import { useSuiteGates } from "../hooks/useSuiteGates.js";
 
 export default function LayoutShell() {
@@ -51,7 +50,6 @@ export default function LayoutShell() {
       </main>
       <BottomNav />
       {location.pathname === "/" && <SiteFooter />}
-      <PageErrorReporter />
     </div>
   );
 }

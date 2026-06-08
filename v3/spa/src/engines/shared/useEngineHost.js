@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { reportPageError } from "@site/shared/page-error-reporter.js";
 import { applyExternalUIOptions } from "@site/shared/spa-engine-external.js";
 import { attachDomQuestionSpaApi } from "@site/shared/spa-questionnaire-host.js";
 import { engineClassNames, engineLoaders } from "./engineModules.js";
@@ -68,13 +67,7 @@ export function useEngineHost(engineId) {
       } catch (e) {
         if (!cancelled) {
           const err = e instanceof Error ? e : new Error(String(e));
-          reportPageError({
-            severity: "error",
-            message: err.message || `Failed to load engine: ${engineId}`,
-            detail: err.stack,
-            context: `engine:${engineId}`,
-            source: "engine",
-          });
+          console.error(`[engine:${engineId}]`, err.message, err);
           setError(err);
         }
       }

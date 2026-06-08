@@ -1,7 +1,6 @@
 // Debug Reporter for Assessment Engines
 // Provides comprehensive debugging and verification tools for data loading and engine performance
 
-import { reportPageError, withoutErrorReporting } from './page-error-reporter.js';
 import { ErrorHandler, SecurityUtils } from './utils.js';
 
 /**
@@ -228,15 +227,7 @@ export class DebugReporter {
       context,
       timestamp: new Date().toISOString()
     });
-    withoutErrorReporting(() => {
-      console.warn(`[${this.engineName}] ${context}: ${message}`);
-    });
-    reportPageError({
-      severity: 'warn',
-      message: `${this.engineName}: ${message}`,
-      context,
-      source: 'engine',
-    });
+    console.warn(`[${this.engineName}] ${context}: ${message}`);
   }
 
   /**

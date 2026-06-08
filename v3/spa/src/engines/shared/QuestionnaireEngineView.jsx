@@ -50,9 +50,7 @@ export default function QuestionnaireEngineView({
               <pre>{error.stack}</pre>
             </details>
           )}
-          <p className="v3-muted">
-            See the error panel (bottom-right) for the full log, or open the browser console (F12).
-          </p>
+          <p className="v3-muted">Open the browser console (F12) for details.</p>
         </div>
       </EngineLayout>
     );
