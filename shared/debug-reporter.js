@@ -3,6 +3,16 @@
 
 import { ErrorHandler, SecurityUtils } from './utils.js';
 
+/** Skip hot-path tracking in production unless explicitly enabled. */
+export function isDebugReportingEnabled() {
+  if (typeof window !== 'undefined' && window.__REDPILL_DEBUG__) return true;
+  try {
+    return import.meta.env?.DEV === true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * DebugReporter - Tracks and reports on engine initialization, data loading, and performance
  */
@@ -87,6 +97,7 @@ export class DebugReporter {
    * @param {Object} moduleData - The loaded module data (for size estimation)
    */
   markModuleLoaded(modulePath, moduleData = null) {
+    if (!isDebugReportingEnabled()) return;
     if (this.report.dataLoading.modules[modulePath]) {
       const module = this.report.dataLoading.modules[modulePath];
       module.status = 'loaded';
@@ -151,6 +162,7 @@ export class DebugReporter {
    * @param {number} duration - Duration in milliseconds
    */
   recordRender(operation, duration) {
+    if (!isDebugReportingEnabled()) return;
     this.report.performance.renderTimes.push({
       operation,
       duration,

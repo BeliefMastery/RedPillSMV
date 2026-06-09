@@ -106,7 +106,9 @@ export class RelationshipEngine {
    * Initialize the engine
    */
   init() {
-    this.attachEventListeners();
+    if (!this.externalUI) {
+      this.attachEventListeners();
+    }
     this.ready = this.loadStoredData()
       .then(() => {
         if (this.shouldAutoGenerateSample()) {

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { applyExternalUIOptions } from "@site/shared/spa-engine-external.js";
 import { attachDomQuestionSpaApi } from "@site/shared/spa-questionnaire-host.js";
 import { engineClassNames, engineLoaders } from "./engineModules.js";
 
@@ -39,10 +38,6 @@ export function useEngineHost(engineId) {
           },
         });
 
-        applyExternalUIOptions(instance, {
-          externalUI: true,
-          onNotify: instance.onNotify,
-        });
         attachDomQuestionSpaApi(instance);
 
         if (instance.ready && typeof instance.ready.then === "function") {
@@ -60,10 +55,9 @@ export function useEngineHost(engineId) {
           const next = instance.getPhase?.() || "idle";
           setPhase(next);
         };
-        syncPhase();
         setReady(true);
-        bump();
         syncPhase();
+        bump();
       } catch (e) {
         if (!cancelled) {
           const err = e instanceof Error ? e : new Error(String(e));

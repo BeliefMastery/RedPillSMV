@@ -167,13 +167,19 @@ async function bootSuiteNavGates() {
   initSuiteNavGates();
 }
 
+function isSpaHost() {
+  return document.getElementById('root') != null;
+}
+
 window.addEventListener('redpill-premium-changed', () => {
   resetSuiteStartGateHint();
   void bootSuiteNavGates();
 });
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => void bootSuiteNavGates());
-} else {
-  void bootSuiteNavGates();
+if (!isSpaHost()) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => void bootSuiteNavGates());
+  } else {
+    void bootSuiteNavGates();
+  }
 }

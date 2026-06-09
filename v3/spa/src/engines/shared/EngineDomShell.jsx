@@ -3,6 +3,8 @@
  */
 import { useEffect } from "react";
 import { bindEngineShellControls } from "@site/shared/spa-questionnaire-host.js";
+import { applySuiteStartGateHints } from "@site/shared/suite-nav-gates.js";
+import { useSuiteGates } from "../../hooks/useSuiteGates.js";
 
 export default function EngineDomShell({
   intro,
@@ -18,23 +20,12 @@ export default function EngineDomShell({
   progressLabel = null,
   showShellNav = true,
 }) {
+  const { gate } = useSuiteGates();
+
   useEffect(() => {
-    let cancelled = false;
-    const refresh = async () => {
-      const gates = await import("@site/shared/suite-nav-gates.js");
-      if (cancelled) return;
-      gates.initSuiteNavGates();
-      if (showSuiteGate) gates.applySuiteStartGateHints();
-    };
-    void refresh();
-    window.addEventListener("storage", refresh);
-    window.addEventListener("redpill-premium-changed", refresh);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("storage", refresh);
-      window.removeEventListener("redpill-premium-changed", refresh);
-    };
-  }, [showSuiteGate, engineId]);
+    if (!showSuiteGate) return;
+    applySuiteStartGateHints();
+  }, [showSuiteGate, engineId, gate]);
 
   useEffect(() => {
     bindEngineShellControls(engine);

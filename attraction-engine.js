@@ -123,7 +123,9 @@ export class AttractionEngine {
       results: { show: ['#resultsSection'], hide: ['#introSection', '#actionButtonsSection', '#questionnaireSection'] }
     });
 
-    this.attachEventListeners();
+    if (!this.externalUI) {
+      this.attachEventListeners();
+    }
 
     const gate = getStageGateState();
     this.applyAttractionSuiteGateUI(gate);

@@ -143,7 +143,9 @@ export class ArchetypeEngine {
 
 init() {
   const setup = async () => {
-    this.attachEventListeners();
+    if (!this.externalUI) {
+      this.attachEventListeners();
+    }
     this.initializeScores();
     await this.loadStoredData();
     if (this.shouldAutoGenerateSample()) {

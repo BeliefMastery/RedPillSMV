@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import EngineLayout from "./EngineLayout.jsx";
 import EngineDomShell from "./EngineDomShell.jsx";
 import QuestionFlow from "./QuestionFlow.jsx";
@@ -13,7 +12,7 @@ export default function QuestionnaireEngineView({
   resultsId,
   showSuiteGate,
 }) {
-  const { engine, phase, tick, ready, error, bump, setPhase } = useEngineHost(engineId);
+  const { engine, phase, tick, ready, error, bump } = useEngineHost(engineId);
   const snapshot =
     ready && engine?.getQuestionSnapshot ? engine.getQuestionSnapshot() : null;
   const usesDom = engine?.usesDomQuestions?.() ?? true;
@@ -26,17 +25,6 @@ export default function QuestionnaireEngineView({
   const progressLabel = reactSnapshot
     ? `Question ${reactSnapshot.currentIndex + 1} of ${reactSnapshot.totalQuestions}`
     : null;
-
-  useEffect(() => {
-    if (!ready || !engine) return;
-    const t = setTimeout(() => bump(), 100);
-    return () => clearTimeout(t);
-  }, [ready, engine]);
-
-  useEffect(() => {
-    if (!ready || !engine?.getPhase) return;
-    setPhase(engine.getPhase());
-  }, [ready, engine, tick, setPhase]);
 
   if (error) {
     return (
@@ -70,7 +58,7 @@ export default function QuestionnaireEngineView({
         reactQuestion={
           reactSnapshot ? (
             <QuestionFlow
-              key={tick}
+              key={reactSnapshot.question.id}
               engine={engine}
               snapshot={reactSnapshot}
               onAdvance={() => bump()}

@@ -78,5 +78,3 @@ export async function withoutErrorReportingAsync(fn) {
 export function formatPageErrorsForCopy() {
   return "";
 }
-
-export const PAGE_ERROR_EVENT = "redpill-page-error";

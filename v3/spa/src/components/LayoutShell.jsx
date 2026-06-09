@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { initSuiteNavGates } from "@site/shared/suite-nav-gates.js";
 import {
   applyThemeToDocument,
   getTheme,
@@ -8,33 +7,21 @@ import {
   migrateLegacyTheme,
   setTheme,
 } from "../lib/themeStore.js";
+import { SuiteGateProvider } from "../context/SuiteGateContext.jsx";
 import SeoHead from "./SeoHead.jsx";
 import TopNav from "./TopNav.jsx";
 import BottomNav from "./BottomNav.jsx";
 import SiteFooter from "./SiteFooter.jsx";
-import { useSuiteGates } from "../hooks/useSuiteGates.js";
 
-export default function LayoutShell() {
+function LayoutShellInner() {
   const [theme, setThemeState] = useState(getTheme);
   const location = useLocation();
-  useSuiteGates();
 
   useEffect(() => {
     migrateLegacyTheme();
     applyThemeToDocument(getTheme());
     setThemeState(getTheme());
   }, []);
-
-  useEffect(() => {
-    initSuiteNavGates();
-    const refresh = () => initSuiteNavGates();
-    window.addEventListener("storage", refresh);
-    window.addEventListener("redpill-premium-changed", refresh);
-    return () => {
-      window.removeEventListener("storage", refresh);
-      window.removeEventListener("redpill-premium-changed", refresh);
-    };
-  }, [location.pathname, location.hash]);
 
   const onThemeChange = (next) => {
     setTheme(next);
@@ -51,5 +38,13 @@ export default function LayoutShell() {
       <BottomNav />
       {location.pathname === "/" && <SiteFooter />}
     </div>
+  );
+}
+
+export default function LayoutShell() {
+  return (
+    <SuiteGateProvider>
+      <LayoutShellInner />
+    </SuiteGateProvider>
   );
 }

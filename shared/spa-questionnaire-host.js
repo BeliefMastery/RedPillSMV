@@ -18,7 +18,10 @@ export function attachDomQuestionSpaApi(engine) {
     const q = engine.questionSequence?.[engine.currentQuestionIndex];
     return buildQuestionSnapshot(engine, q);
   };
-  engine.getSelectionModel = () => engine.getSelectionModel?.call(engine) ?? null;
+  const origGetSelectionModel = engine.getSelectionModel?.bind(engine);
+  if (origGetSelectionModel) {
+    engine.getSelectionModel = () => origGetSelectionModel();
+  }
   engine.usesDomQuestions = () => {
     const snap = engine.getQuestionSnapshot();
     return Boolean(snap?.domOnly || snap?.question?.type === "gender");
@@ -83,7 +86,6 @@ export function attachDomQuestionSpaApi(engine) {
           origRender();
           refreshOptionSelectionUI(container);
         }
-        notifyEngine(this, "question");
         return;
       }
       return origRender();
@@ -91,7 +93,6 @@ export function attachDomQuestionSpaApi(engine) {
   }
 
   wrapPhaseNotify(engine);
-  bindEngineShellControls(engine);
 }
 
 function wrapPhaseNotify(engine) {

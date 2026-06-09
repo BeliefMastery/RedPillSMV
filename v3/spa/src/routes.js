@@ -24,8 +24,6 @@ export const engineRoutes = [
     shortLabel: "Polarity",
     cover: "./images/temperament-analysis-cover.jpg",
     hero: "./images/temperament-tool.jpg",
-    engineModule: "temperament-engine.js",
-    engineClass: "TemperamentEngine",
   },
   {
     id: "attraction",

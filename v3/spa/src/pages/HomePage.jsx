@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getSuiteCompletion, getStageGateState } from "@site/shared/suite-completion.js";
 import { useSuiteGates } from "../hooks/useSuiteGates.js";
 import { engineRoutes } from "../routes.js";
 
@@ -11,20 +9,7 @@ function genderBadge(gender) {
 }
 
 export default function HomePage() {
-  const { isLocked } = useSuiteGates();
-  const [completion, setCompletion] = useState(null);
-  const [gate, setGate] = useState(null);
-
-  useEffect(() => {
-    setCompletion(getSuiteCompletion());
-    setGate(getStageGateState());
-    const refresh = () => {
-      setCompletion(getSuiteCompletion());
-      setGate(getStageGateState());
-    };
-    window.addEventListener("storage", refresh);
-    return () => window.removeEventListener("storage", refresh);
-  }, []);
+  const { isLocked, gate, completion } = useSuiteGates();
 
   const tools = [
     { route: engineRoutes[0], done: completion?.archetype, gender: completion?.genders?.archetype },

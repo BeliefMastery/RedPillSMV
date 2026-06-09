@@ -303,7 +303,9 @@ export class TemperamentEngine {
       this.applyPolaritySuiteGateUI(g);
       void applyAndroidPolarityAttractionPremiumUI('polarity', g);
     });
-    this.attachEventListeners();
+    if (!this.externalUI) {
+      this.attachEventListeners();
+    }
     this.ready = this.loadStoredData()
       .then(() => {
         if (this.shouldAutoGenerateSample()) {

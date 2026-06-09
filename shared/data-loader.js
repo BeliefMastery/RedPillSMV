@@ -4,6 +4,8 @@
  * Integrates with DebugReporter for comprehensive tracking
  */
 
+import { isDebugReportingEnabled } from './debug-reporter.js';
+
 /**
  * Cache for loaded data modules
  */
@@ -30,14 +32,14 @@ export function setDebugReporter(reporter) {
  */
 export async function loadDataModule(modulePath, moduleName = null) {
   // Register with debug reporter if available
-  if (debugReporter) {
+  if (debugReporter && isDebugReportingEnabled()) {
     debugReporter.registerDataModule(modulePath, moduleName || modulePath);
     debugReporter.markModuleLoading(modulePath);
   }
 
   // Check cache first
   if (dataCache.has(modulePath)) {
-    if (debugReporter) {
+    if (debugReporter && isDebugReportingEnabled()) {
       debugReporter.markModuleLoaded(modulePath, dataCache.get(modulePath));
     }
     return dataCache.get(modulePath);
@@ -70,14 +72,14 @@ export async function loadDataModule(modulePath, moduleName = null) {
     dataCache.set(modulePath, module);
     
     // Mark as loaded in debug reporter
-    if (debugReporter) {
+    if (debugReporter && isDebugReportingEnabled()) {
       debugReporter.markModuleLoaded(modulePath, module);
     }
     
     return module;
   } catch (error) {
     // Mark as failed in debug reporter
-    if (debugReporter) {
+    if (debugReporter && isDebugReportingEnabled()) {
       debugReporter.markModuleFailed(modulePath, error);
     }
     console.error(`Failed to load data module: ${modulePath}`, error);
