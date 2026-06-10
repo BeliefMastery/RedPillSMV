@@ -37,7 +37,12 @@ export default function EngineDomShell({
     if (!container) return;
     engine.setExternalQuestionMount?.(container);
     if (typeof engine.renderCurrentQuestion === "function") {
-      engine.renderCurrentQuestion();
+      engine._externalShellRender = true;
+      try {
+        engine.renderCurrentQuestion();
+      } finally {
+        engine._externalShellRender = false;
+      }
     }
     return () => {
       engine.setExternalQuestionMount?.(null);

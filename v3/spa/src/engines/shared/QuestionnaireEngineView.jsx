@@ -15,7 +15,9 @@ export default function QuestionnaireEngineView({
   const { engine, phase, tick, ready, error, bump } = useEngineHost(engineId);
   const snapshot =
     ready && engine?.getQuestionSnapshot ? engine.getQuestionSnapshot() : null;
-  const usesDom = engine?.usesDomQuestions?.() ?? true;
+  const usesDom = snapshot
+    ? Boolean(snapshot.domOnly || snapshot.question?.type === "gender")
+    : true;
   const reactSnapshot =
     phase === "assessment" && !usesDom && snapshot && !snapshot.domOnly ? snapshot : null;
   const isAllocation = reactSnapshot?.question?.type === "allocation";

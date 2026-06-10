@@ -72,6 +72,7 @@ export function attachDomQuestionSpaApi(engine) {
   engine.destroy = () => {
     engine._destroyed = true;
     engine._shellAbort?.abort();
+    engine._debouncedProgressCleanup?.();
     if (typeof engine.cleanup === "function") engine.cleanup();
   };
 

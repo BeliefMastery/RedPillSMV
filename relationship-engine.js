@@ -5,7 +5,7 @@
 import { loadDataModule, setDebugReporter } from './shared/data-loader.js';
 import { createDebugReporter } from './shared/debug-reporter.js';
 import { ErrorHandler, DataStore, DOMUtils, SecurityUtils } from './shared/utils.js';
-import { downloadFile, generateReadableReport } from './shared/export-utils.js';
+import { attachDebouncedProgressSave } from './shared/debounced-progress-save.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm } from './shared/confirm-modal.js';
 import {
@@ -83,6 +83,7 @@ export class RelationshipEngine {
     
     // Initialize data store
     this.dataStore = new DataStore('relationship-assessment', '1.0.0');
+    attachDebouncedProgressSave(this);
 
     this.ui = new EngineUIController({
       idle: {
@@ -820,7 +821,7 @@ export class RelationshipEngine {
           const toggle = questionContainer.querySelector('.question-help-toggle');
           if (toggle) toggle.remove();
         }
-        this.saveProgress();
+        this.scheduleSaveProgress?.();
       };
     }
 
@@ -831,17 +832,21 @@ export class RelationshipEngine {
   }
 
   nextQuestion() {
+    this.flushSaveProgress?.();
     const currentQ = this.questionSequence[this.currentQuestionIndex];
     if (this.answers[currentQ.id] === undefined) {
       this.answers[currentQ.id] = 5; // Auto-save default if not touched
     }
 
     if (this.currentQuestionIndex < this.questionSequence.length - 1) {
-      if (this.maybeShowMidAssessmentCheckpoint()) return;
+      if (this.maybeShowMidAssessmentCheckpoint()) {
+        this.flushSaveProgress?.();
+        return;
+      }
       this.currentQuestionIndex++;
       this.renderCurrentQuestion();
       this.updateProgressBar();
-      this.saveProgress();
+      this.flushSaveProgress?.();
     } else {
       this.completeStage();
     }
@@ -1258,6 +1263,7 @@ export class RelationshipEngine {
   }
 
   prevQuestion() {
+    this.flushSaveProgress?.();
     if (this.currentQuestionIndex > 0) {
       // Save current answer before navigating back
       const currentQ = this.questionSequence[this.currentQuestionIndex];
@@ -1269,7 +1275,7 @@ export class RelationshipEngine {
       this.currentQuestionIndex--;
       this.renderCurrentQuestion();
       this.updateProgressBar();
-      this.saveProgress();
+      this.flushSaveProgress?.();
     }
   }
 
@@ -1920,9 +1926,11 @@ export class RelationshipEngine {
    * Save results: produces a readable HTML report document recording report details (primary export action).
    */
   saveResults() {
-    const reportTitle = 'Relationships Analysis';
-    const html = generateReadableReport(this.analysisData, 'relationship', reportTitle);
-    downloadFile(html, `relationships-report-${Date.now()}.html`, 'text/html');
+    void import('./shared/export-utils.js').then(({ downloadFile, generateReadableReport }) => {
+      const reportTitle = 'Relationships Analysis';
+      const html = generateReadableReport(this.analysisData, 'relationship', reportTitle);
+      downloadFile(html, `relationships-report-${Date.now()}.html`, 'text/html');
+    });
   }
 
   /**

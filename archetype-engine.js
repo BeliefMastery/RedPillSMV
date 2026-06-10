@@ -5,7 +5,7 @@
 import { loadDataModule, setDebugReporter } from './shared/data-loader.js';
 import { createDebugReporter } from './shared/debug-reporter.js';
 import { ErrorHandler, DataStore, DOMUtils, SecurityUtils } from './shared/utils.js';
-import { downloadFile, generateReadableReport } from './shared/export-utils.js';
+import { attachDebouncedProgressSave } from './shared/debounced-progress-save.js';
 import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
@@ -122,6 +122,7 @@ export class ArchetypeEngine {
 
 // Initialize data store
     this.dataStore = new DataStore('archetype-assessment', '1.0.0');
+    attachDebouncedProgressSave(this);
 
     this.ui = new EngineUIController({
       idle: {
@@ -1496,7 +1497,11 @@ showGenderSelection() {
       this.scorePhase6Answer(question, answerValue);
     }
 
-    this.saveProgress();
+    if (question.type === 'value_allocation') {
+      this.scheduleSaveProgress?.();
+    } else {
+      this.saveProgress();
+    }
     this.maybeShowMidAssessmentCheckpoint();
   }
 
@@ -2574,6 +2579,7 @@ showGenderSelection() {
   }
 
   async nextQuestion() {
+    this.flushSaveProgress?.();
     // Check if current question has been answered
     const currentQuestion = this.questionSequence[this.currentQuestionIndex];
     if (currentQuestion && !this.answers[currentQuestion.id]) {
@@ -2584,7 +2590,7 @@ showGenderSelection() {
     if (this.currentQuestionIndex < this.questionSequence.length - 1) {
       this.currentQuestionIndex++;
       this.renderCurrentQuestion();
-      this.saveProgress();
+      this.flushSaveProgress?.();
     } else {
       // End of current phase
       await this.completePhase();
@@ -2592,6 +2598,7 @@ showGenderSelection() {
   }
 
   prevQuestion() {
+    this.flushSaveProgress?.();
     if (this.currentQuestionIndex > 0) {
       this.currentQuestionIndex--;
       this.renderCurrentQuestion();
@@ -3950,8 +3957,10 @@ showGenderSelection() {
       showAlert('Please complete the assessment before saving results.');
       return;
     }
-    const html = generateReadableReport(this.analysisData, 'archetype-analysis', 'Modern Archetype Identification');
-    downloadFile(html, `archetype-report-${Date.now()}.html`, 'text/html');
+    void import('./shared/export-utils.js').then(({ downloadFile, generateReadableReport }) => {
+      const html = generateReadableReport(this.analysisData, 'archetype-analysis', 'Modern Archetype Identification');
+      downloadFile(html, `archetype-report-${Date.now()}.html`, 'text/html');
+    });
   }
 }
 

@@ -5,7 +5,7 @@
 import { loadDataModule, setDebugReporter } from './shared/data-loader.js';
 import { createDebugReporter } from './shared/debug-reporter.js';
 import { ErrorHandler, DataStore, DOMUtils, SecurityUtils } from './shared/utils.js';
-import { downloadFile, generateReadableReport, buildTemperamentSynthesisPlainParagraphs } from './shared/export-utils.js';
+import { attachDebouncedProgressSave } from './shared/debounced-progress-save.js';
 import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
 import {
   TEMPERAMENT_REPORT_TIER1_PARAS,
@@ -272,6 +272,7 @@ export class TemperamentEngine {
     
     // Initialize data store
     this.dataStore = new DataStore('temperament-assessment', '1.0.0');
+    attachDebouncedProgressSave(this);
 
     this.ui = new EngineUIController({
       idle: {
@@ -298,11 +299,12 @@ export class TemperamentEngine {
     const gate = getStageGateState();
     this.applyPolaritySuiteGateUI(gate);
     void applyAndroidPolarityAttractionPremiumUI('polarity', gate);
-    window.addEventListener('redpill-premium-changed', () => {
+    this._onPremiumChanged = () => {
       const g = getStageGateState();
       this.applyPolaritySuiteGateUI(g);
       void applyAndroidPolarityAttractionPremiumUI('polarity', g);
-    });
+    };
+    window.addEventListener('redpill-premium-changed', this._onPremiumChanged);
     if (!this.externalUI) {
       this.attachEventListeners();
     }
@@ -1001,7 +1003,7 @@ export class TemperamentEngine {
         type: 'value_allocation',
         allocationPercents: [left, right]
       };
-      this.saveProgress();
+      this.scheduleSaveProgress?.();
     };
 
     const onFirstInput = () => {
@@ -1104,6 +1106,7 @@ export class TemperamentEngine {
   }
 
   nextQuestion() {
+    this.flushSaveProgress?.();
     const currentQ = this.questionSequence[this.currentQuestionIndex];
 
     if (this.answers[currentQ.id] === undefined) {
@@ -1124,10 +1127,13 @@ export class TemperamentEngine {
     }
 
     if (this.currentQuestionIndex < this.questionSequence.length - 1) {
-      if (this.maybeShowMidAssessmentCheckpoint()) return;
+      if (this.maybeShowMidAssessmentCheckpoint()) {
+        this.flushSaveProgress?.();
+        return;
+      }
       this.currentQuestionIndex++;
       this.renderCurrentQuestion();
-      this.saveProgress();
+      this.flushSaveProgress?.();
     } else {
       this.calculateResults();
       void this.renderResults().catch(err => {
@@ -1152,6 +1158,7 @@ export class TemperamentEngine {
   }
 
   prevQuestion() {
+    this.flushSaveProgress?.();
     if (this.currentQuestionIndex > 0) {
       const currentQ = this.questionSequence[this.currentQuestionIndex];
       if (
@@ -1165,7 +1172,7 @@ export class TemperamentEngine {
       }
       this.currentQuestionIndex--;
       this.renderCurrentQuestion();
-      this.saveProgress();
+      this.flushSaveProgress?.();
     }
   }
 
@@ -1591,6 +1598,7 @@ export class TemperamentEngine {
    * Render assessment results
    */
   async renderResults() {
+    const { buildTemperamentSynthesisPlainParagraphs } = await import('./shared/export-utils.js');
     try {
       await this.loadTemperamentData(); // Ensure data is loaded
       
@@ -2024,8 +2032,17 @@ export class TemperamentEngine {
    * Save results: produces a readable HTML report document recording report details (primary export action).
    */
   saveResults() {
-    const html = generateReadableReport(this.analysisData, 'temperament-analysis', 'Polarity Position Mapping');
-    downloadFile(html, `temperament-report-${Date.now()}.html`, 'text/html');
+    void import('./shared/export-utils.js').then(({ downloadFile, generateReadableReport }) => {
+      const html = generateReadableReport(this.analysisData, 'temperament-analysis', 'Polarity Position Mapping');
+      downloadFile(html, `temperament-report-${Date.now()}.html`, 'text/html');
+    });
+  }
+
+  cleanup() {
+    if (this._onPremiumChanged) {
+      window.removeEventListener('redpill-premium-changed', this._onPremiumChanged);
+      this._onPremiumChanged = null;
+    }
   }
 
   /**

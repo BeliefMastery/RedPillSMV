@@ -6,28 +6,12 @@
  */
 
 import { createDebugReporter } from './shared/debug-reporter.js';
+import { loadDataModule } from './shared/data-loader.js';
 import { suiteEngineHref } from './shared/suite-href.js';
 import { SecurityUtils } from './shared/utils.js';
-import { downloadFile, generateReadableReport } from './shared/export-utils.js';
 import { reportGenderGlyphHtml } from './shared/report-gender-glyph.js';
 import { EngineUIController } from './shared/engine-ui-controller.js';
 import { showConfirm, showAlert } from './shared/confirm-modal.js';
-import {
-  MALE_CLUSTERS,
-  FEMALE_CLUSTERS,
-  MALE_PREFERENCE_QUESTIONS,
-  FEMALE_PREFERENCE_QUESTIONS,
-  MALE_CLUSTER_WEIGHTS,
-  FEMALE_CLUSTER_WEIGHTS,
-  MARKET_SEGMENTS,
-  DEVELOPMENTAL_LEVELS,
-  BAD_BOY_GOOD_GUY_GRID,
-  KEEPER_SWEEPER_CHART,
-  RAD_ACTIVITY_TYPE_MODIFIER,
-  PARTNER_COUNT_DOWNGRADE,
-  AXIS_SUBCATEGORY_WEIGHTS,
-  MALE_AXIS_BAR_LABELS
-} from './attraction-data.js';
 import {
   calculateRadActivityPercentile,
   computeSmvClustersAndSubs,
@@ -80,6 +64,21 @@ import {
   sumDisplayPercents
 } from './shared/questionnaire-allocation.mjs';
 
+let MALE_CLUSTERS;
+let FEMALE_CLUSTERS;
+let MALE_PREFERENCE_QUESTIONS;
+let FEMALE_PREFERENCE_QUESTIONS;
+let MALE_CLUSTER_WEIGHTS;
+let FEMALE_CLUSTER_WEIGHTS;
+let MARKET_SEGMENTS;
+let DEVELOPMENTAL_LEVELS;
+let BAD_BOY_GOOD_GUY_GRID;
+let KEEPER_SWEEPER_CHART;
+let RAD_ACTIVITY_TYPE_MODIFIER;
+let PARTNER_COUNT_DOWNGRADE;
+let AXIS_SUBCATEGORY_WEIGHTS;
+let MALE_AXIS_BAR_LABELS;
+
 const ATTRACTION_RESULTS_KEY = 'attraction-assessment-results';
 const ATTRACTION_PROGRESS_KEY = 'attraction-assessment:progress';
 
@@ -129,13 +128,40 @@ export class AttractionEngine {
 
     const gate = getStageGateState();
     this.applyAttractionSuiteGateUI(gate);
-    window.addEventListener('redpill-premium-changed', () => {
+    this._onPremiumChanged = () => {
       const g = getStageGateState();
       this.applyAttractionSuiteGateUI(g);
       void applyAndroidPolarityAttractionPremiumUI('attraction', g);
-    });
+    };
+    window.addEventListener('redpill-premium-changed', this._onPremiumChanged);
 
     this.ready = this.bootstrapFromStorage(gate);
+  }
+
+  async loadAttractionData() {
+    if (MALE_CLUSTERS) return;
+    const mod = await loadDataModule('./attraction-data.js', 'Attraction Data');
+    MALE_CLUSTERS = mod.MALE_CLUSTERS;
+    FEMALE_CLUSTERS = mod.FEMALE_CLUSTERS;
+    MALE_PREFERENCE_QUESTIONS = mod.MALE_PREFERENCE_QUESTIONS;
+    FEMALE_PREFERENCE_QUESTIONS = mod.FEMALE_PREFERENCE_QUESTIONS;
+    MALE_CLUSTER_WEIGHTS = mod.MALE_CLUSTER_WEIGHTS;
+    FEMALE_CLUSTER_WEIGHTS = mod.FEMALE_CLUSTER_WEIGHTS;
+    MARKET_SEGMENTS = mod.MARKET_SEGMENTS;
+    DEVELOPMENTAL_LEVELS = mod.DEVELOPMENTAL_LEVELS;
+    BAD_BOY_GOOD_GUY_GRID = mod.BAD_BOY_GOOD_GUY_GRID;
+    KEEPER_SWEEPER_CHART = mod.KEEPER_SWEEPER_CHART;
+    RAD_ACTIVITY_TYPE_MODIFIER = mod.RAD_ACTIVITY_TYPE_MODIFIER;
+    PARTNER_COUNT_DOWNGRADE = mod.PARTNER_COUNT_DOWNGRADE;
+    AXIS_SUBCATEGORY_WEIGHTS = mod.AXIS_SUBCATEGORY_WEIGHTS;
+    MALE_AXIS_BAR_LABELS = mod.MALE_AXIS_BAR_LABELS;
+  }
+
+  cleanup() {
+    if (this._onPremiumChanged) {
+      window.removeEventListener('redpill-premium-changed', this._onPremiumChanged);
+      this._onPremiumChanged = null;
+    }
   }
 
   /**
@@ -143,6 +169,7 @@ export class AttractionEngine {
    * @param {{ attractionUnlocked: boolean }} gate
    */
   async bootstrapFromStorage(gate) {
+    await this.loadAttractionData();
     await refreshPolarityAttractionEntitlementFromPlay();
     const g = getStageGateState();
     this.applyAttractionSuiteGateUI(g);
@@ -410,6 +437,7 @@ export class AttractionEngine {
   }
 
   async startAssessment() {
+    await this.loadAttractionData();
     const gate = getStageGateState();
     if (!gate.attractionUnlocked) {
       void showAlert(gate.attractionBlockMessage);
@@ -877,8 +905,8 @@ export class AttractionEngine {
         this.responses[input.name] = parseInt(input.value, 10);
       }
     }
-    this.saveInProgress();
     if (this.maybeShowMidAssessmentCheckpoint(questions.length)) {
+      this.saveInProgress();
       return;
     }
 
@@ -1708,8 +1736,10 @@ export class AttractionEngine {
   saveResults() {
     this.persistResultsToStorage();
     const data = { ...this.smv, gender: this.currentGender };
-    const html = generateReadableReport(data, 'attraction', 'Status Selection Attraction');
-    downloadFile(html, `attraction-report-${this.currentGender}-${Date.now()}.html`, 'text/html');
+    void import('./shared/export-utils.js').then(({ downloadFile, generateReadableReport }) => {
+      const html = generateReadableReport(data, 'attraction', 'Status Selection Attraction');
+      downloadFile(html, `attraction-report-${this.currentGender}-${Date.now()}.html`, 'text/html');
+    });
   }
 
 }

@@ -1,11 +1,21 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import LayoutShell from "./components/LayoutShell.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import EngineRoutePage from "./pages/EngineRoutePage.jsx";
-import IntegratedMapPage from "./pages/IntegratedMapPage.jsx";
-import ArchetypeSpreadPage from "./pages/ArchetypeSpreadPage.jsx";
-import SexualContractModulePage from "./pages/SexualContractModulePage.jsx";
+
+const IntegratedMapPage = lazy(() => import("./pages/IntegratedMapPage.jsx"));
+const ArchetypeSpreadPage = lazy(() => import("./pages/ArchetypeSpreadPage.jsx"));
+const SexualContractModulePage = lazy(() => import("./pages/SexualContractModulePage.jsx"));
+
+function PageLoading() {
+  return (
+    <div className="surface" aria-live="polite">
+      <p className="v3-muted">Loading…</p>
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -31,7 +41,9 @@ export default function App() {
           path="integrated-map"
           element={
             <ErrorBoundary label="integrated-map">
-              <IntegratedMapPage />
+              <Suspense fallback={<PageLoading />}>
+                <IntegratedMapPage />
+              </Suspense>
             </ErrorBoundary>
           }
         />
@@ -39,7 +51,9 @@ export default function App() {
           path="archetype-spread"
           element={
             <ErrorBoundary label="archetype-spread">
-              <ArchetypeSpreadPage />
+              <Suspense fallback={<PageLoading />}>
+                <ArchetypeSpreadPage />
+              </Suspense>
             </ErrorBoundary>
           }
         />
@@ -47,7 +61,9 @@ export default function App() {
           path="learn/sexual-contract"
           element={
             <ErrorBoundary label="sexual-contract">
-              <SexualContractModulePage />
+              <Suspense fallback={<PageLoading />}>
+                <SexualContractModulePage />
+              </Suspense>
             </ErrorBoundary>
           }
         />

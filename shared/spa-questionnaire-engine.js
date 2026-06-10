@@ -108,11 +108,13 @@ export function externalRenderQuestion(engine, question) {
 }
 
 function notifyQuestion(engine, snapshot) {
+  if (engine._externalShellRender) return;
   engine._lastSnapshot = snapshot;
   engine.onNotify?.("question", snapshot);
 }
 
 function notifyDomQuestion(engine) {
+  if (engine._externalShellRender) return;
   engine.onNotify?.("question", { dom: true });
 }
 
