@@ -37,6 +37,9 @@ import {
 } from './shared/sexual-contract-index.mjs';
 import { SEXUAL_CONTRACT_CLUSTER_DELTA_CAP } from './shared/sexual-contract-config.mjs';
 import {
+  buildFemalePostureStandardsParts
+} from './shared/mate-selection-tradeoffs.mjs';
+import {
   getContractRead,
   getContractFragilityCopy,
   getGridHouseholdingNote
@@ -696,15 +699,29 @@ export class AttractionEngine {
       (suiteG === 'male' || suiteG === 'female') && this.currentGender === suiteG
         ? `<p class="form-help suite-gender-lock-notice" role="status">Gender path is fixed to your completed Archetype assessment (<strong>${suiteG === 'male' ? 'Male' : 'Female'}</strong>).</p>`
         : '';
-    let html = `<div class="phase-intro">${lockBanner}<h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math. For men, stated partner ages tune realistic-options copy and delusion; if market position is below mid-tier and age preferences add friction, a short <strong>younger-partner access</strong> note may appear. Headline Sexual Market Value stays the scored model only.</p><form id="preferencesForm" class="preferences-form">`;
+    const femalePostureNote =
+      this.currentGender === 'female'
+        ? ` Partner-posture items capture desired trade-offs for narrative prioritization only (<a href="#/learn/mate-selection-tradeoffs">mate-selection trade-offs</a>).`
+        : '';
+    let html = `<div class="phase-intro">${lockBanner}<h2>Market Preference Configuration</h2><h3 class="phase-subtitle">Define Your Mate Selection Criteria</h3><p class="phase-description">These preferences describe who you’re seeking. They inform delusion checks and contextual notes in your report. Core cluster and axis <strong>weights</strong> in the overall score stay fixed so results stay comparable—preferences do not reweight the math. For men, stated partner ages tune realistic-options copy and delusion; if market position is below mid-tier and age preferences add friction, a short <strong>younger-partner access</strong> note may appear. Headline Sexual Market Value stays the scored model only.${femalePostureNote}</p><form id="preferencesForm" class="preferences-form">`;
     questions.forEach(q => {
       html += `<div class="form-group"><label class="form-label">${SecurityUtils.sanitizeHTML(q.text)}</label>`;
+      if (q.helpText) {
+        html += `<p class="form-help" style="margin:0.25rem 0 0.75rem;font-size:0.88rem;color:var(--muted);line-height:1.45;">${SecurityUtils.sanitizeHTML(q.helpText)}</p>`;
+      }
       if (q.type === 'number') {
         html += `<input type="number" id="${q.id}" name="${q.id}" min="${q.min}" max="${q.max}" ${q.required ? 'required' : ''} class="form-input">`;
       } else if (q.type === 'select') {
         html += `<select id="${q.id}" name="${q.id}" class="form-select">`;
         (q.options || []).forEach(opt => html += `<option value="${opt.value}">${SecurityUtils.sanitizeHTML(opt.label)}</option>`);
         html += `</select>`;
+      } else if (q.type === 'multiselect') {
+        const maxSel = Number(q.maxSelected) || 2;
+        html += `<div class="options-container" data-multiselect="${SecurityUtils.sanitizeHTML(q.id)}" data-max-selected="${maxSel}">`;
+        (q.options || []).forEach(opt => {
+          html += `<label class="option-label"><input type="checkbox" name="${SecurityUtils.sanitizeHTML(q.id)}" value="${SecurityUtils.sanitizeHTML(opt.value)}"><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(opt.label)}</span></span></label>`;
+        });
+        html += `</div>`;
       } else if (q.type === 'scale') {
         html += `<div class="options-container">`;
         (q.options || []).forEach(opt => html += `<label class="option-label"><input type="radio" name="${q.id}" value="${opt.value}" required><span class="option-content"><span class="option-text">${SecurityUtils.sanitizeHTML(opt.label)}</span></span></label>`);
@@ -717,6 +734,17 @@ export class AttractionEngine {
 
     const form = document.getElementById('preferencesForm');
     if (form) {
+      form.querySelectorAll('[data-multiselect]').forEach((wrap) => {
+        const maxSel = Number(wrap.getAttribute('data-max-selected')) || 2;
+        wrap.addEventListener('change', () => {
+          const checked = wrap.querySelectorAll('input[type="checkbox"]:checked');
+          if (checked.length > maxSel) {
+            const last = wrap.querySelector('input[type="checkbox"]:checked:last-of-type');
+            if (last) last.checked = false;
+            showAlert(`Select up to ${maxSel} partner postures.`);
+          }
+        });
+      });
       document.getElementById('submitPreferences').addEventListener('click', () => this.capturePreferences());
     }
   }
@@ -725,6 +753,13 @@ export class AttractionEngine {
     const form = document.getElementById('preferencesForm');
     if (!form || !this.preferences || typeof this.preferences !== 'object') return;
     Object.entries(this.preferences).forEach(([k, v]) => {
+      if (Array.isArray(v)) {
+        v.forEach((val) => {
+          const cb = form.querySelector(`input[type="checkbox"][name="${k}"][value="${String(val)}"]`);
+          if (cb) cb.checked = true;
+        });
+        return;
+      }
       const input = form.querySelector(`#${k}`);
       if (input) {
         input.value = String(v);
@@ -738,11 +773,47 @@ export class AttractionEngine {
   capturePreferences() {
     const form = document.getElementById('preferencesForm');
     if (!form) return;
-    const fd = new FormData(form);
+    const questions = this.getPreferenceQuestions();
+    const next = {};
     let valid = true;
-    fd.forEach((v, k) => { if (!v) valid = false; });
-    if (!valid) { showAlert('Please complete all preference fields'); return; }
-    fd.forEach((v, k) => { this.preferences[k] = isNaN(v) ? v : parseFloat(v); });
+
+    for (const q of questions) {
+      if (q.type === 'multiselect') {
+        const selected = [...form.querySelectorAll(`input[type="checkbox"][name="${q.id}"]:checked`)].map(
+          (el) => el.value
+        );
+        const maxSel = Number(q.maxSelected) || 2;
+        if (q.required && selected.length < 1) valid = false;
+        if (selected.length > maxSel) valid = false;
+        next[q.id] = selected;
+        continue;
+      }
+      if (q.type === 'number') {
+        const el = form.querySelector(`#${q.id}`);
+        const raw = el?.value;
+        if (q.required && (raw === '' || raw == null)) valid = false;
+        next[q.id] = raw === '' || raw == null ? null : parseFloat(raw);
+        continue;
+      }
+      if (q.type === 'select') {
+        const el = form.querySelector(`#${q.id}`);
+        const raw = el?.value;
+        if (q.required && !raw) valid = false;
+        next[q.id] = raw;
+        continue;
+      }
+      if (q.type === 'scale') {
+        const checked = form.querySelector(`input[type="radio"][name="${q.id}"]:checked`);
+        if (q.required && !checked) valid = false;
+        next[q.id] = checked ? parseFloat(checked.value) : null;
+      }
+    }
+
+    if (!valid) {
+      showAlert('Please complete all preference fields (select 1–2 partner postures if shown).');
+      return;
+    }
+    this.preferences = next;
     this.currentPhase = 0;
     this.currentQuestionIndex = 0;
     this.saveInProgress();
@@ -1648,6 +1719,9 @@ export class AttractionEngine {
       );
     }
 
+    const posture = buildFemalePostureStandardsParts(p, { delusionBand: smv.delusionBand });
+    for (const line of posture.parts || []) parts.push(line);
+
     if (!parts.length) return '';
     return `<div class="standards-context-note" style="margin-top:1rem;padding:0.75rem 1rem;background:var(--glass);border-radius:var(--radius);font-size:0.9rem;line-height:1.5;border-left:3px solid var(--accent);"><strong>Preferences vs scored pillars:</strong><ul style="margin:0.5rem 0 0 1rem;">${parts.map(t => `<li>${SecurityUtils.sanitizeHTML(t)}</li>`).join('')}</ul></div>`;
   }
@@ -1668,6 +1742,11 @@ export class AttractionEngine {
       if (q.type === 'number') this.preferences[q.id] = q.min + Math.floor(Math.random() * (q.max - q.min + 1));
       else if (q.type === 'scale' && q.options) this.preferences[q.id] = q.options[Math.floor(Math.random() * q.options.length)].value;
       else if (q.type === 'select' && q.options) this.preferences[q.id] = q.options[Math.floor(Math.random() * q.options.length)].value;
+      else if (q.type === 'multiselect' && q.options?.length) {
+        const maxSel = Math.min(Number(q.maxSelected) || 2, q.options.length);
+        const shuffled = [...q.options].sort(() => Math.random() - 0.5);
+        this.preferences[q.id] = shuffled.slice(0, Math.max(1, maxSel)).map((o) => o.value);
+      }
     });
     const clusters = this.getClusters();
     Object.values(clusters).forEach(cluster => {

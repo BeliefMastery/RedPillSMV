@@ -14,6 +14,8 @@ export const engineRoutes = [
     path: "/engines/archetype",
     label: "Modern Archetype Identification",
     shortLabel: "Archetype",
+    estimatedTime: "~4 min",
+    stepLabel: "Step 1 of 3",
     cover: "./images/redpill-cover.jpg",
     hero: "./images/redpill-tool.jpg",
   },
@@ -22,6 +24,8 @@ export const engineRoutes = [
     path: "/engines/polarity",
     label: "Polarity Position Mapping",
     shortLabel: "Polarity",
+    estimatedTime: "~5 min",
+    stepLabel: "Step 2 of 3",
     cover: "./images/temperament-analysis-cover.jpg",
     hero: "./images/temperament-tool.jpg",
   },
@@ -30,6 +34,8 @@ export const engineRoutes = [
     path: "/engines/attraction",
     label: "Attraction, Status and Selection",
     shortLabel: "Attraction",
+    estimatedTime: "~6 min",
+    stepLabel: "Step 3 of 3",
     cover: "./images/attraction-cover.jpg",
     hero: "./images/attraction-tool.jpg",
   },
@@ -38,6 +44,8 @@ export const engineRoutes = [
     path: "/engines/relationship",
     label: "Relationship Viability",
     shortLabel: "Relationships",
+    estimatedTime: "~6 min",
+    stepLabel: "Standalone",
     cover: "./images/relationship-optimization-cover.jpg",
     hero: "./images/relationship-tool.jpg",
   },
@@ -68,5 +76,10 @@ export const pageMeta = {
     title: "Context inventory | Red-Pill Relational Suite",
     description:
       "Optional local attitude inventory that enriches SCI/PCS reads on Polarity, Attraction, and the integrated map.",
+  },
+  "/learn/mate-selection-tradeoffs": {
+    title: "Mate-selection trade-offs | Red-Pill Relational Suite",
+    description:
+      "Forced-prioritization framing for women’s partner-posture desires and predictable trade-offs.",
   },
 };

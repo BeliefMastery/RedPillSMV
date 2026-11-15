@@ -6,6 +6,8 @@
  * @author Warwick Marshall
  */
 
+import { getFemalePosturePreferenceQuestions } from './shared/mate-selection-tradeoffs.mjs';
+
 const OPTS = [1, 3, 5, 7, 10];
 /** 6-point scale for rad activity type (anti-rad → low-rad → rad → high-rad spectrum) */
 const OPTS_6 = [1, 2, 4, 6, 8, 10];
@@ -85,7 +87,8 @@ export const FEMALE_PREFERENCE_QUESTIONS = [
   { id: 'height_requirement', text: 'Minimum height requirement for partner?', type: 'scale', options: [{ value: 1, label: 'No requirement' }, { value: 3, label: 'Prefer taller' }, { value: 5, label: '5\'10"+' }, { value: 7, label: '6\'0"+' }, { value: 10, label: '6\'2"+ only' }], required: true },
   { id: 'income_requirement', text: 'Minimum income/wealth requirement?', type: 'scale', options: [{ value: 1, label: 'Not important' }, { value: 3, label: 'Self-sufficient' }, { value: 5, label: '$75k+' }, { value: 7, label: '$150k+' }, { value: 10, label: '$250k+' }], required: true },
   { id: 'status_requirement', text: 'How important is social status/prestige?', type: 'scale', options: [{ value: 1, label: 'Character over status' }, { value: 3, label: 'Some standing' }, { value: 5, label: 'Respected professional' }, { value: 7, label: 'High status/influential' }], required: true },
-  { id: 'relationship_goal', text: 'Primary relationship goal?', type: 'select', options: [{ value: 'casual', label: 'Casual / Short-term' }, { value: 'ltr', label: 'Long-term' }, { value: 'marriage', label: 'Marriage' }, { value: 'family', label: 'Marriage + Children' }], required: true }
+  { id: 'relationship_goal', text: 'Primary relationship goal?', type: 'select', options: [{ value: 'casual', label: 'Casual / Short-term' }, { value: 'ltr', label: 'Long-term' }, { value: 'marriage', label: 'Marriage' }, { value: 'family', label: 'Marriage + Children' }], required: true },
+  ...getFemalePosturePreferenceQuestions()
 ];
 
 /** MALE 3C's — 9 questions (3 per C). Male-male hierarchy; weakest identified. */

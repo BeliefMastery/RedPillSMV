@@ -245,15 +245,47 @@
   margin-top: 0.25rem;
 }
 
+.bm-allocation-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.bm-allocation-toolbar .v3-btn--sm {
+  align-self: auto;
+  margin-top: 0;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+}
+
 .bm-allocation-row {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: var(--v3-space-2);
   align-items: center;
+  min-height: 48px;
+  padding: 0.35rem 0;
+  touch-action: pan-y;
+}
+
+.bm-allocation-label {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.bm-allocation-pct {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  min-width: 3.5rem;
+  text-align: right;
 }
 
 .bm-allocation-row input[type="range"] {
   width: 100%;
+  min-height: 36px;
+  touch-action: none;
+  cursor: pointer;
 }
 
 .bm-allocation-sum {

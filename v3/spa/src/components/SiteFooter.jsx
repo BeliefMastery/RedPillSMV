@@ -1,6 +1,12 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import BackupRestoreModal from "./BackupRestoreModal.jsx";
+import GlossaryDrawer from "./GlossaryDrawer.jsx";
 
 export default function SiteFooter() {
+  const [showBackup, setShowBackup] = useState(false);
+  const [showGlossary, setShowGlossary] = useState(false);
+
   return (
     <footer>
       <details className="home-info-dropdown">
@@ -12,6 +18,8 @@ export default function SiteFooter() {
         </p>
         <p>
           <Link to="/archetype-spread">View full archetype spread table</Link>
+          {" · "}
+          <Link to="/learn/mate-selection-tradeoffs">Mate-selection trade-offs</Link>
         </p>
       </details>
       <details className="home-info-dropdown">
@@ -25,7 +33,7 @@ export default function SiteFooter() {
           flow.
         </p>
       </details>
-      <p className="footer-controls">
+      <div className="footer-controls" style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center", justifyContent: "center" }}>
         <label>
           Font scale{" "}
           <select
@@ -43,8 +51,26 @@ export default function SiteFooter() {
             <option value="1.2">Extra large</option>
           </select>
         </label>
-      </p>
+        <button
+          type="button"
+          className="v3-btn v3-btn--outline"
+          style={{ padding: "0.3rem 0.65rem", fontSize: "0.82rem" }}
+          onClick={() => setShowGlossary(true)}
+        >
+          Glossary
+        </button>
+        <button
+          type="button"
+          className="v3-btn v3-btn--outline"
+          style={{ padding: "0.3rem 0.65rem", fontSize: "0.82rem" }}
+          onClick={() => setShowBackup(true)}
+        >
+          Backup / Restore
+        </button>
+      </div>
       <p>&copy; 2025 Belief Mastery &amp; Sovereign of Mind. All rights reserved.</p>
+      {showBackup && <BackupRestoreModal onClose={() => setShowBackup(false)} />}
+      {showGlossary && <GlossaryDrawer onClose={() => setShowGlossary(false)} />}
     </footer>
   );
 }

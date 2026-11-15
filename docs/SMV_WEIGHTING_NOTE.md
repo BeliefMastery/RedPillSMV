@@ -8,7 +8,8 @@ Maintainer reference for how **physical aesthetics** and **fertility markers** e
 - **Market preference answers** (partner age band, relationship goal, physical standards, fertility priority, height/income/status requirements, etc.) are used for:
   - **Delusion index** (standards vs scored position),
   - **Narrative “Preferences vs scored pillars”** blocks: [`getMaleStandardsContextNote`](../attraction-engine.js) and [`getFemaleStandardsContextNote`](../attraction-engine.js),
-  - **Target market** copy where applicable.
+  - **Target market** copy where applicable,
+  - **Female partner-posture trade-offs** (`desired_partner_postures`, `tradeoff_refuse` via [`shared/mate-selection-tradeoffs.mjs`](../shared/mate-selection-tradeoffs.mjs)): narrative tension ranking and conflict callouts only (Learn page `#/learn/mate-selection-tradeoffs`, Archetype/Relationship/Integrated Map excerpts).
 - They **do not** renormalize or rescale cluster/axis weights at runtime. If product later adopts **preference-conditioned weighting**, document new rules here, cap deltas, and extend `scripts/smv-sensitivity-check.mjs`.
 
 ### Male age vs stated partner ages (preferences layer only)

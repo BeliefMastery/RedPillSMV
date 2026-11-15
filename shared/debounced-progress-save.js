@@ -23,8 +23,18 @@ export function attachDebouncedProgressSave(engine, methodName = "saveProgress",
   engine.flushSaveProgress = flush;
 
   const onBeforeUnload = () => flush();
+  const onPageHide = () => flush();
+  const onVisibilityChange = () => {
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+      flush();
+    }
+  };
   if (typeof window !== "undefined") {
     window.addEventListener("beforeunload", onBeforeUnload);
+    window.addEventListener("pagehide", onPageHide);
+  }
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", onVisibilityChange);
   }
 
   engine._debouncedProgressCleanup = () => {
@@ -34,6 +44,10 @@ export function attachDebouncedProgressSave(engine, methodName = "saveProgress",
     }
     if (typeof window !== "undefined") {
       window.removeEventListener("beforeunload", onBeforeUnload);
+      window.removeEventListener("pagehide", onPageHide);
+    }
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     }
   };
 }

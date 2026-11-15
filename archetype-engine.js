@@ -19,6 +19,8 @@ import {
 } from './shared/archetype-profile-decisiveness.mjs';
 import { computeArchetypeLayering } from './shared/archetype-layering-profile.mjs';
 import { evaluateMustHaveGates } from './shared/archetype-must-have-gates.mjs';
+import { buildFemaleArchetypeTradeoffBlock } from './shared/mate-selection-tradeoffs.mjs';
+import { getSuiteSnapshots } from './shared/suite-completion.js';
 import {
   PHASE6_WEIGHT,
   evaluatePhase6Decision,
@@ -3401,6 +3403,40 @@ showGenderSelection() {
         ? `Within-archetype strategy: ${ensurePeriod(primary.growthEdge)}${primaryTraitsSummary ? ` Leverage your strengths: ${primaryTraitsSummary}.` : ''}`
         : `Within-archetype strategy: Build stability by doubling down on your healthiest traits while expanding flexibility.${primaryTraitsSummary ? ` Leverage your strengths: ${primaryTraitsSummary}.` : ''}`;
 
+    let femaleTradeoffHtml = '';
+    if (this.gender === 'female') {
+      let prefs = {};
+      let delusionBand = '';
+      try {
+        const snaps = getSuiteSnapshots();
+        prefs = snaps?.attraction?.preferences || snaps?.attraction?.smv?.preferences || {};
+        delusionBand = snaps?.attraction?.smv?.delusionBand || '';
+      } catch (_) {
+        /* ignore missing suite snapshots */
+      }
+      const block = buildFemaleArchetypeTradeoffBlock({
+        desiredPostureIds: prefs.desired_partner_postures,
+        refuseAxisId: prefs.tradeoff_refuse && prefs.tradeoff_refuse !== 'none' ? prefs.tradeoff_refuse : '',
+        relationshipGoal: prefs.relationship_goal,
+        delusionBand
+      });
+      if (block?.bullets?.length) {
+        const list = block.bullets
+          .map((b) => `<li style="margin-bottom:0.5rem;">${SecurityUtils.sanitizeHTML(b)}</li>`)
+          .join('');
+        const caveat = block.falseDichotomy
+          ? `<p style="color: var(--muted); line-height: 1.7; margin: 0.75rem 0 0; font-size: 0.92rem;"><strong>${SecurityUtils.sanitizeHTML(block.falseDichotomy.title)}:</strong> ${SecurityUtils.sanitizeHTML(block.falseDichotomy.body)}</p>`
+          : '';
+        femaleTradeoffHtml = `<div class="archetype-report-card mate-selection-tradeoffs" style="margin-top: 1.5rem; background: rgba(180, 120, 40, 0.12); border-left: 4px solid #c9a227; border-radius: var(--radius); padding: 1.25rem;">
+            <h4 style="color: #e0c060; margin-top: 0; margin-bottom: 0.75rem;">${SecurityUtils.sanitizeHTML(block.title)}</h4>
+            <p style="color: var(--muted); line-height: 1.7; margin: 0 0 0.75rem;">${SecurityUtils.sanitizeHTML(block.lead)}</p>
+            <ul style="color: var(--muted); line-height: 1.7; margin: 0; padding-left: 1.25rem;">${list}</ul>
+            ${caveat}
+            <p style="margin: 0.85rem 0 0; font-size: 0.88rem;"><a href="#/learn/mate-selection-tradeoffs">Read the full mate-selection trade-offs framing</a></p>
+          </div>`;
+      }
+    }
+
     const decisivenessHtml = (() => {
       const d = this.analysisData?.profileDecisiveness;
       if (!d || !ARCHETYPES) return '';
@@ -3487,6 +3523,8 @@ showGenderSelection() {
             </p>
           </div>
           ` : ''}
+
+          ${femaleTradeoffHtml}
 
           <div class="archetype-report-card" style="margin-top: 1.5rem; background: rgba(0, 120, 200, 0.12); border-left: 4px solid #1e90ff; border-radius: var(--radius); padding: 1.25rem;">
             <h4 style="color: #7fbfff; margin-top: 0; margin-bottom: 0.75rem;">Innate Challenges</h4>

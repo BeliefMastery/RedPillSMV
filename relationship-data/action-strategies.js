@@ -1,7 +1,22 @@
 // Action Strategies for Relationship Optimization
 // Based on relationship-optimization.html and archetypes.html insights
 
-export const ACTION_STRATEGIES = {
+import { getMatePostureActionTips } from '../shared/mate-selection-tradeoffs.mjs';
+
+function withMatePostureTips(pointKey, strategies) {
+  const tips = getMatePostureActionTips(pointKey);
+  if (!tips.length) return strategies;
+  return {
+    ...strategies,
+    relationalInvitation: [...(strategies.relationalInvitation || []), ...tips],
+    acceptanceStrategies: [
+      ...(strategies.acceptanceStrategies || []),
+      'Treat partner-posture trade-offs as forced prioritization: name which cost you can live with before resentment hardens.'
+    ]
+  };
+}
+
+const _ACTION_STRATEGIES = {
   'core-values': {
     selfRegulation: [],
     relationalInvitation: [
@@ -417,4 +432,18 @@ export const ACTION_STRATEGIES = {
     ]
   }
 };
+
+const MATE_POSTURE_TIP_POINTS = new Set([
+  'core-values',
+  'financial-compatibility',
+  'energy-dynamics',
+  'lifestyle-compatibility'
+]);
+
+export const ACTION_STRATEGIES = Object.fromEntries(
+  Object.entries(_ACTION_STRATEGIES).map(([key, strategies]) => [
+    key,
+    MATE_POSTURE_TIP_POINTS.has(key) ? withMatePostureTips(key, strategies) : strategies
+  ])
+);
 

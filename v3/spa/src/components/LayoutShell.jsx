@@ -23,6 +23,20 @@ function LayoutShellInner() {
     setThemeState(getTheme());
   }, []);
 
+  useEffect(() => {
+    const onDocumentClick = (e) => {
+      const anchor = e.target?.closest?.("a[href]");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (!href || !/^https?:\/\//i.test(href)) return;
+      e.preventDefault();
+      const isNative = Boolean(window?.Capacitor?.isNativePlatform?.());
+      window.open(href, isNative ? "_system" : "_blank", "noopener,noreferrer");
+    };
+    document.addEventListener("click", onDocumentClick);
+    return () => document.removeEventListener("click", onDocumentClick);
+  }, []);
+
   const onThemeChange = (next) => {
     setTheme(next);
     setThemeState(next);

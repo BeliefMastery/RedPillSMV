@@ -16,6 +16,7 @@ import { ensurePeriod } from './archetype-narrative-utils.js';
 import { quotedMemeticSummary } from './archetype-memetic-format.js';
 import { getMemeticLinesForId } from './archetype-memetic-lines.js';
 import { computeSexualContractIndex, buildSexualContractInputFromSuite } from './sexual-contract-index.mjs';
+import { buildMateSelectionTradeoffExcerpt as buildMateTradeoffFromModule } from './mate-selection-tradeoffs.mjs';
 
 function takeSentences(text, maxCount) {
   if (!text) return '';
@@ -1047,6 +1048,12 @@ export function buildNextMoveCandidates(archetypeSnap, polaritySnap, attractionS
       );
   const move3 = `Market / SMV — ${ensurePeriod(attText)}`;
 
+  const tradeoff = buildMateTradeoffFromModule(attractionSnap || {}, archetypeSnap || {});
+  if (tradeoff?.nextMove && (attractionSnap?.currentGender === 'female' || gender === 'female')) {
+    const move4 = `Mate selection — ${ensurePeriod(tradeoff.nextMove)}`;
+    return dedupeKeepOrder([move1, move2, move3, move4], 4);
+  }
+
   return dedupeKeepOrder([move1, move2, move3], 3);
 }
 
@@ -1123,4 +1130,9 @@ export function buildSexualContractIntegratedExcerpt() {
     title: 'Sexual contract & collapse context',
     bullets: parts
   };
+}
+
+/** Female mate-selection posture trade-offs (Attraction prefs + framing). */
+export function buildMateSelectionTradeoffExcerpt(attractionSnap, archetypeSnap) {
+  return buildMateTradeoffFromModule(attractionSnap || {}, archetypeSnap || {});
 }

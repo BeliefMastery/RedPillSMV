@@ -1,6 +1,8 @@
 // Archetypal Insights for Relationship Optimization
 // Based on archetypes.html: vulnerability, biological essentialism, polarity, STATUS/SELECTION/ATTRACTION
 
+import { getMatePosturePressureBullets } from '../shared/mate-selection-tradeoffs.mjs';
+
 export const ARCHETYPAL_INSIGHTS = {
   vulnerability: {
     description: 'Each gender carries inherent vulnerability: the masculine fractures at the edge of shame, the feminine at the edge of fear. These are survival codes written into the human field.',
@@ -239,4 +241,12 @@ export const ARCHETYPAL_PRESSURES_BY_POINT = {
   ]
   // No generic fallback: show Archetypal Pressures only when this map has a specific entry for the strain point.
 };
+
+// Append mate-selection posture trade-off bullets (shared module) onto high-fit points.
+for (const pointKey of Object.keys(ARCHETYPAL_PRESSURES_BY_POINT)) {
+  const extra = getMatePosturePressureBullets(pointKey);
+  if (extra.length) {
+    ARCHETYPAL_PRESSURES_BY_POINT[pointKey] = [...ARCHETYPAL_PRESSURES_BY_POINT[pointKey], ...extra];
+  }
+}
 

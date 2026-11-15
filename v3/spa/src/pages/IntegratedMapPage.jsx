@@ -10,7 +10,9 @@ import {
   buildAttractionLayer,
   buildCurrentPatternSummary,
   buildNextMoveCandidates,
+  buildMateSelectionTradeoffExcerpt,
 } from "@site/shared/integrated-map-excerpts.js";
+import IntegratedMapChart from "../components/IntegratedMapChart.jsx";
 
 const ROUTE_MAP = {
   "archetype.html": "/engines/archetype",
@@ -90,11 +92,14 @@ export default function IntegratedMapPage() {
     const nextMoves = buildNextMoveCandidates(a, t, r, {
       layers: { archL, polL, attL },
     });
+    const tradeoff = buildMateSelectionTradeoffExcerpt(r, a);
     setContent({
       type: "map",
       summary,
       layers: [archL, polL, attL],
       nextMoves,
+      tradeoff,
+      snapshots: { a, t, r },
     });
   }, []);
 
@@ -104,6 +109,13 @@ export default function IntegratedMapPage() {
   return (
     <div className="stack">
       <h1 className="v3-hero-title">Integrated map</h1>
+      {content.snapshots && (
+        <IntegratedMapChart
+          archetypeSnapshot={content.snapshots.a}
+          polaritySnapshot={content.snapshots.t}
+          attractionSnapshot={content.snapshots.r}
+        />
+      )}
       {content.summary && (
         <div className="surface">
           <h2 className="v3-section-title">Your current pattern</h2>
@@ -120,6 +132,19 @@ export default function IntegratedMapPage() {
       {content.layers.map((layer) => (
         <LayerSection key={layer.title} layer={layer} />
       ))}
+      {content.tradeoff?.bullets?.length > 0 && (
+        <div className="surface">
+          <h2 className="v3-section-title">{content.tradeoff.title}</h2>
+          <ul>
+            {content.tradeoff.bullets.map((b) => (
+              <li key={b}>{b}</li>
+            ))}
+          </ul>
+          <p className="v3-muted" style={{ marginTop: "0.75rem" }}>
+            <Link to="/learn/mate-selection-tradeoffs">Mate-selection trade-offs framing</Link>
+          </p>
+        </div>
+      )}
       {content.nextMoves?.length > 0 && (
         <div className="surface">
           <h2 className="v3-section-title">Your next move</h2>

@@ -8,6 +8,7 @@ import EngineRoutePage from "./pages/EngineRoutePage.jsx";
 const IntegratedMapPage = lazy(() => import("./pages/IntegratedMapPage.jsx"));
 const ArchetypeSpreadPage = lazy(() => import("./pages/ArchetypeSpreadPage.jsx"));
 const SexualContractModulePage = lazy(() => import("./pages/SexualContractModulePage.jsx"));
+const MateSelectionTradeoffsPage = lazy(() => import("./pages/MateSelectionTradeoffsPage.jsx"));
 
 function PageLoading() {
   return (
@@ -63,6 +64,16 @@ export default function App() {
             <ErrorBoundary label="sexual-contract">
               <Suspense fallback={<PageLoading />}>
                 <SexualContractModulePage />
+              </Suspense>
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="learn/mate-selection-tradeoffs"
+          element={
+            <ErrorBoundary label="mate-selection-tradeoffs">
+              <Suspense fallback={<PageLoading />}>
+                <MateSelectionTradeoffsPage />
               </Suspense>
             </ErrorBoundary>
           }

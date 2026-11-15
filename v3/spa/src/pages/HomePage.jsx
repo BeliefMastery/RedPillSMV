@@ -80,7 +80,11 @@ export default function HomePage() {
                 </Link>
               )}
               <span className="suite-progress-status">
-                {done ? " — Complete" : locked ? ` — Locked` : " — Not started"}
+                {done
+                  ? " — Complete"
+                  : locked
+                    ? ` — ${route.stepLabel} (${lockHint || "Unlocks sequentially"}, ${route.estimatedTime})`
+                    : ` — Not started (${route.estimatedTime})`}
               </span>
               {done && genderBadge(gender)}
             </li>
@@ -106,6 +110,12 @@ export default function HomePage() {
             </p>
           </div>
         )}
+
+        <p className="v3-muted" style={{ marginTop: "1.25rem", fontSize: "0.92rem" }}>
+          Learn: <Link to="/learn/mate-selection-tradeoffs">Mate-selection trade-offs</Link>
+          {" · "}
+          <Link to="/learn/sexual-contract">Context inventory</Link>
+        </p>
       </div>
     </section>
   );

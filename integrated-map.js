@@ -9,7 +9,8 @@ import {
   buildAttractionLayer,
   buildCurrentPatternSummary,
   buildNextMoveCandidates,
-  buildSexualContractIntegratedExcerpt
+  buildSexualContractIntegratedExcerpt,
+  buildMateSelectionTradeoffExcerpt
 } from './shared/integrated-map-excerpts.js';
 
 function esc(s) {
@@ -151,8 +152,12 @@ function renderContent(snapshots) {
   const layerBundle = { archL, polL, attL };
   const nextMoves = buildNextMoveCandidates(a, t, r, { layers: layerBundle });
   const sciBlock = buildSexualContractIntegratedExcerpt();
+  const tradeoffBlock = buildMateSelectionTradeoffExcerpt(r, a);
   const sciHtml = sciBlock
     ? `<section class="integrated-map-sci" style="margin-top:1.5rem;"><h2 class="integrated-map-frame-heading">${esc(sciBlock.title)}</h2><ul>${sciBlock.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul><p style="margin-top:0.5rem;font-size:0.9rem;color:var(--muted);"><a href="#/learn/sexual-contract">Optional context inventory</a> can enrich this read.</p></section>`
+    : '';
+  const tradeoffHtml = tradeoffBlock
+    ? `<section class="integrated-map-mate-tradeoffs" style="margin-top:1.5rem;"><h2 class="integrated-map-frame-heading">${esc(tradeoffBlock.title)}</h2><ul>${tradeoffBlock.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul><p style="margin-top:0.5rem;font-size:0.9rem;color:var(--muted);"><a href="#/learn/mate-selection-tradeoffs">Mate-selection trade-offs framing</a></p></section>`
     : '';
 
   const layers = `
@@ -167,6 +172,7 @@ function renderContent(snapshots) {
     ${renderCurrentPatternSummary(summary)}
     ${layers}
     ${sciHtml}
+    ${tradeoffHtml}
     ${renderNextMove(nextMoves)}
     <p style="text-align:center;margin-top:1.5rem;color:var(--muted);font-size:0.9rem;"><a href="index.html">Home</a> · <a href="relationship.html">Relationships</a> (separate lens)</p>`;
 }
