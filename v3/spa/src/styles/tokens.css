@@ -27,7 +27,7 @@ html.theme-earth {
   --v3-panel-solid: color-mix(in srgb, var(--v3-bg-soft) 92%, #000);
   --v3-text: #f5e9e9;
   --v3-heading: #f5e9e9;
-  --v3-muted: #c7a7a7;
+  --v3-muted: #d4c0c0;
   --v3-accent: #ffd700;
   --v3-accent-strong: #ffe84d;
   --v3-danger: #c62828;
@@ -112,6 +112,7 @@ html.theme-light {
 html.theme-forge {
   --v3-bg: #0a0a0c;
   --v3-bg-soft: #121218;
+  --v3-muted: #cbd5e1;
   --v3-bg-glow: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 61, 0, 0.12), transparent);
   --v3-surface: rgba(24, 24, 32, 0.8);
   --v3-surface-border: rgba(120, 120, 140, 0.2);

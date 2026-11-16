@@ -246,6 +246,13 @@ init() {
                 optionLabel.classList.add('selected');
               }
             }
+            if (this._autoAdvanceTimer) clearTimeout(this._autoAdvanceTimer);
+            this._autoAdvanceTimer = setTimeout(() => {
+              this._autoAdvanceTimer = null;
+              if (this.questionSequence[this.currentQuestionIndex]?.id === question.id) {
+                this.nextQuestion();
+              }
+            }, 250);
           }
         }
       });

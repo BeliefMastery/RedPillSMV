@@ -32,6 +32,42 @@ export default function EngineDomShell({
   }, [engine]);
 
   useEffect(() => {
+    if (phase !== "assessment") return;
+    const onKeyDown = (e) => {
+      const tag = e.target?.tagName;
+      if (tag === "INPUT" && e.target.type !== "radio" && e.target.type !== "range") return;
+      if (tag === "TEXTAREA" || tag === "SELECT" || e.target?.isContentEditable) return;
+
+      if (/^[1-9]$/.test(e.key)) {
+        const idx = parseInt(e.key, 10) - 1;
+        const container = document.getElementById("questionContainer");
+        if (!container) return;
+        const options = container.querySelectorAll(
+          ".option-label, .likert-option, .narrative-option"
+        );
+        if (options[idx]) {
+          e.preventDefault();
+          options[idx].click();
+        }
+      } else if (e.key === "Enter") {
+        const nextBtn = document.getElementById("nextQuestion");
+        if (nextBtn && !nextBtn.disabled && !nextBtn.classList.contains("hidden")) {
+          e.preventDefault();
+          nextBtn.click();
+        }
+      } else if (e.key === "ArrowLeft") {
+        const prevBtn = document.getElementById("prevQuestion");
+        if (prevBtn && !prevBtn.disabled && !prevBtn.classList.contains("hidden")) {
+          e.preventDefault();
+          prevBtn.click();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [phase]);
+
+  useEffect(() => {
     if (!engine || !renderQuestions) return;
     const container = document.getElementById("questionContainer");
     if (!container) return;

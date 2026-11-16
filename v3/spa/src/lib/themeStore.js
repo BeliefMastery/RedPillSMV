@@ -25,11 +25,11 @@ export function getTheme() {
   } catch {
     /* ignore */
   }
-  return "earth";
+  return "forge";
 }
 
 export function setTheme(theme) {
-  const next = THEMES.includes(theme) ? theme : "earth";
+  const next = THEMES.includes(theme) ? theme : "forge";
   try {
     localStorage.setItem(THEME_KEY, next);
   } catch {
