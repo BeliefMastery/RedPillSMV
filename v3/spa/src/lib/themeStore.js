@@ -1,15 +1,16 @@
 const THEME_KEY = "bm_site_theme";
 const LEGACY_KEY = "redpill-style-overlay";
 
-const THEMES = ["earth", "light", "forge", "neomorphism"];
+const THEMES = ["light", "forge"];
 
 const LEGACY_MAP = {
-  default: "earth",
-  cosmic: "earth",
-  earth: "earth",
+  default: "light",
+  cosmic: "light",
+  earth: "light",
   light: "light",
   forge: "forge",
-  neomorphism: "neomorphism",
+  dark: "forge",
+  neomorphism: "light",
 };
 
 export function getThemes() {
@@ -19,17 +20,17 @@ export function getThemes() {
 export function getTheme() {
   try {
     const stored = localStorage.getItem(THEME_KEY);
-    if (stored && THEMES.includes(stored)) return stored;
+    if (stored && LEGACY_MAP[stored]) return LEGACY_MAP[stored];
     const legacy = localStorage.getItem(LEGACY_KEY);
     if (legacy && LEGACY_MAP[legacy]) return LEGACY_MAP[legacy];
   } catch {
     /* ignore */
   }
-  return "forge";
+  return "light";
 }
 
 export function setTheme(theme) {
-  const next = THEMES.includes(theme) ? theme : "forge";
+  const next = THEMES.includes(theme) ? theme : "light";
   try {
     localStorage.setItem(THEME_KEY, next);
   } catch {

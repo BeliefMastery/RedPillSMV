@@ -59,7 +59,7 @@ export default function TopNav({ theme, themes, onThemeChange }) {
           >
             {themes.map((t) => (
               <option key={t} value={t}>
-                {t}
+                {t === "forge" ? "Dark" : "Light"}
               </option>
             ))}
           </select>
